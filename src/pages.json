@@ -1,0 +1,73 @@
+{
+	"pages": [
+		{
+			"path": "pages/shop/shop",
+			"style": {
+				"navigationBarTitleText": "剧环星球",
+				"enablePullDownRefresh": false
+			}
+		}
+	],
+	"subPackages": [
+		{
+			"root": "package_hs",
+			"pages": [
+				{
+					"path": "pages/index/index",
+					"style": {
+						"navigationBarTitleText": "花束",
+						"enablePullDownRefresh": false
+					}
+				}
+			]
+		},
+		{
+			"root": "package_nzgx",
+			"pages": [
+				{
+					"path": "pages/index/index",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/player/player",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/dm/dm",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/team-management/team-management",
+					"style": {
+						"navigationBarTitleText": "团队管理",
+						"enablePullDownRefresh": false
+					}
+				}
+			]
+		}
+	],
+	"preloadRule": {
+		"pages/shop/shop": {
+			"network": "all",
+			"packages": [
+				"package_hs",
+				"package_nzgx"
+			]
+		}
+	},
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	}
+}

@@ -1,0 +1,27 @@
+.flex-row-center{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.flex-row-sb{
+    display: flex;
+    align-items: center;  
+    justify-content: space-between;
+}
+.flex-column-sb{
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.shadow-box{
+    border-radius: 16px; 
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.3);
+    width: 680rpx;
+    background: #FFFFFF;
+    box-sizing: border-box;
+}
+.orange-font{
+    background: linear-gradient(90deg, #F09235 0%, #EA6A00 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}

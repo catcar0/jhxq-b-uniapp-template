@@ -1,27 +1,95 @@
-.flex-row-center{
+.flex-row-center {
     display: flex;
     justify-content: center;
     align-items: center;
 }
-.flex-row-sb{
+
+.flex-row-sb {
     display: flex;
-    align-items: center;  
+    align-items: center;
     justify-content: space-between;
 }
-.flex-column-sb{
+
+.flex-column-sb {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
 }
-.shadow-box{
-    border-radius: 16px; 
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.3);
+
+.flex-column-sb-center {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.shadow-box {
+    border-radius: 16px;
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.03);
     width: 680rpx;
     background: #FFFFFF;
     box-sizing: border-box;
 }
-.orange-font{
+
+.orange-font {
     background: linear-gradient(90deg, #F09235 0%, #EA6A00 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(90deg, #F09235 0%, #EA6A00 100%);
+    color: #FFFFFF;
+    line-height: 100rpx;
+    font-size: 28rpx;
+    border-radius: 16px;
+    font-weight: bold;
+}
+
+.absolute-center {
+    position: absolute;
+    /* top: 50%;
+    left: 50%; */
+    margin-top: 40rpx;
+    margin-left: 60rpx;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 0;
+}
+
+.gap-10 {
+    gap: 10rpx;
+}
+
+.font-player-gradient1 {
+    font-variation-settings: "opsz" auto;
+    background: linear-gradient(182deg, #000000 5%, #670100 94%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+}
+
+.font-player-gradient2 {
+  -webkit-text-stroke: 1rpx black;
+  -webkit-text-fill-color : #D0B382;
+  font-size: 38rpx;
+  /* color:#fff; */
+  font-weight: 400;
+}
+.player-title {
+    /* -webkit-text-fill-color:black; */
+    font-weight: 400;
+    width: auto;
+    height: 70rpx;
+    padding-left: 50rpx;
+    font-size: 45.5rpx;
+    display: flex;
+    align-items: center;
+    background: url('http://159.138.147.87/statics/img/teaminfo_title_bg.png') no-repeat;
+    background-size: 175rpx 70rpx;
+    background-position: left;
 }

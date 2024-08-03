@@ -50,13 +50,16 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "",
+        "appid" : "wx29ab8164ddf20ef0",
         "requiredBackgroundModes" : [ "audio" ],
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "minified" : true
         },
         "usingComponents" : true,
-        "optimization":{"subPackages": true}
+        "optimization" : {
+            "subPackages" : true
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true
@@ -67,8 +70,8 @@
     "mp-toutiao" : {
         "usingComponents" : true
     },
-    "uniStatistics": {  
-        "enable": false
+    "uniStatistics" : {
+        "enable" : false
     },
     "vueVersion" : "3"
 }

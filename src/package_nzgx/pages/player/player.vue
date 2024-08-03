@@ -8,4 +8,4 @@ import DMTabBar from "@/components/DM-TabBar/index.vue"
     </view>
 </template>
 
-<style scoped></style>
+<style scoped></style>room-number.vue

@@ -9,11 +9,12 @@ const charactersList = charactersStore().characters
     <view class="team-management">
         <view class="team-info shadow-box flex-column-sb">
             <view class="title flex-row-center info-item almm">队伍信息</view>
+            <view style="width: 100%;height: 0rpx;border-bottom: 3rpx dashed #C4C4C4;"></view>
             <view class="info-item flex-row-sb">
                 <text>名称</text>
                 <view class="flex-row-sb orange-font team-name">
                     <text>天下第一小分队</text>
-                    <view>修改</view>
+                    <view><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png" alt=""></view>
                 </view>
             </view>
             <view class="info-item flex-row-sb">
@@ -50,6 +51,9 @@ const charactersList = charactersStore().characters
 </template>
 
 <style scoped>
+.edit-icon{
+    width: 35rpx;height: 35rpx;margin-top: 7rpx;
+}
 .team-management {
     padding: 2px 35rpx;
     box-sizing: border-box;
@@ -97,6 +101,8 @@ const charactersList = charactersStore().characters
     height: 108rpx;
     padding: 0rpx 25rpx;
     box-sizing: border-box;
+    background-color: #F7F7F7;
+    border-radius: 20rpx;
 }
 
 .ding {

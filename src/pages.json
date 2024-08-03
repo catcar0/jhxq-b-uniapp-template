@@ -39,6 +39,41 @@
 					}
 				},
 				{
+					"path": "pages/player/room-number",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/player/team-info",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/player/map",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/player/cue-set",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/player/gualing",
+					"style": {
+						"navigationBarTitleText": "",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
 					"path": "pages/dm/dm",
 					"style": {
 						"navigationBarTitleText": "",
@@ -49,6 +84,13 @@
 					"path": "pages/team-management/team-management",
 					"style": {
 						"navigationBarTitleText": "团队管理",
+						"enablePullDownRefresh": false
+					}
+				},
+				{
+					"path": "pages/questionnaire/questionnaire",
+					"style": {
+						"navigationBarTitleText": "问卷",
 						"enablePullDownRefresh": false
 					}
 				}

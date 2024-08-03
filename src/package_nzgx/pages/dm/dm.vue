@@ -6,7 +6,7 @@ import HunChuan from './components/HunChuan.vue'
 <template>
   <scroll-view scroll-y>
     <navigator url="/package_nzgx/pages/team-management/team-management" hover-class="none">
-      <view class="team flex-row-center shadow-box orange-font almm">团队管理</view>
+      <view class="team flex-row-center shadow-box  almm"> <text class="orange-font">团队管理</text> </view>
     </navigator>
     <HunChuan />
   </scroll-view>

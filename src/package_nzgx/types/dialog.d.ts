@@ -3,6 +3,8 @@ export type DmDialog = {
     dialogVisible: boolean,
     title?: string,
     content?:string,
+    location?:string
+    type?:string,
     showCancel?: boolean,
     cancelText?: string,
     confirmText?: string,

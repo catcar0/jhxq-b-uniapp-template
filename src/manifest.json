@@ -54,7 +54,7 @@
         "requiredBackgroundModes" : [ "audio" ],
         "setting" : {
             "urlCheck" : false,
-            "minified" : true
+            "minified" : false
         },
         "usingComponents" : true,
         "optimization" : {

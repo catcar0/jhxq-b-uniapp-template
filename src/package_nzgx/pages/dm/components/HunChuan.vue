@@ -2,7 +2,6 @@
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { ref } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
-import Index from '@/components/DM-MusicMange/index.vue';
 
 const charactersList = charactersStore().characters
 const isShowToast = ref(false)

@@ -32,6 +32,12 @@
 					}
 				},
 				{
+					"path": "pages/test/test",
+					"style": {
+						"navigationBarTitleText": "test"
+					}
+				},
+				{
 					"path": "pages/player/player",
 					"style": {
 						"navigationBarTitleText": "",
@@ -81,14 +87,14 @@
 					}
 				},
 				{
-					"path": "pages/team-management/team-management",
+					"path": "pages/dm/team-management",
 					"style": {
 						"navigationBarTitleText": "团队管理",
 						"enablePullDownRefresh": false
 					}
 				},
 				{
-					"path": "pages/questionnaire/questionnaire",
+					"path": "pages/dm/questionnaire",
 					"style": {
 						"navigationBarTitleText": "问卷",
 						"enablePullDownRefresh": false

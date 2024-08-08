@@ -17,7 +17,9 @@ const fun = (content: any) => {
 }
 
 const props = defineProps({
-    dialogObj: Object
+    dialogObj: Object,
+    userInfo: Object,
+    teamInfo:Object
 });
 
 const emit = defineEmits(['updateDialogObj']);
@@ -42,11 +44,11 @@ const rankList = [
         level: 250
     },
     {
-        name: memberStore.info.teamInfo.name + '小分队',
+        name: props.teamInfo!.name + '小分队',
         rank: 10,
         status: 0,
         time: '2024.09.09',
-        level: memberStore.info.teamInfo.scores
+        level: props.teamInfo!.score
     }
 ]
 const dialogObj = ref({
@@ -82,7 +84,7 @@ const showDialog = (e: any) => {
                 </view>
                 <view class="user-name font-player-gradient1" @tap="modifyDialog">
                     <!-- 厨师沙拉 -->
-                    {{ memberStore.info.characters[memberStore.virtualRoleId].user }}
+                    {{ userInfo!.user }}
                     <img class="edit-icon" src="http://159.138.147.87/statics/img/edit_icon.png" alt="">
                 </view>
                 <view class="team-name font-player-gradient1">

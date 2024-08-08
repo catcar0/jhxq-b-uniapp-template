@@ -7,9 +7,12 @@ const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const charactersList = charactersStore().characters
 import { defineProps, defineEmits } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
 
 const props = defineProps({
-    dialogObj: Object
+    dialogObj: Object,
+    userInfo: Object,
+    flow:Object
 });
 
 const emit = defineEmits(['updateDialogObj']);
@@ -210,9 +213,10 @@ const ani = () => {
         isScale.value = !isScale.value
     }, 2000);
 }
+const userIndex = computed(() => memberStore.virtualRoleId - 1)
 const faq = (item: any) => {
     console.log('aa')
-    memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = true
+    memberStore.info.characters[userIndex.value].mask.slice(-1)[0].isNew = true
     dialogObj.value.dialogVisible = true
     dialogObj.value.title = '你当前收到一条个人任务'
     dialogObj.value.confirmText = '确定'
@@ -226,20 +230,52 @@ const updateInfo = (info: any) => {
 }
 const updateClues = () => {
     const newInfo = memberStore.info
-    newInfo.characters[memberStore.virtualRoleId].cueset.clues.forEach(element => {
+    newInfo.characters[userIndex.value].cueset.clues.forEach(element => {
         element.isNew = false
         element.type = 0
     });
     updateInfo(newInfo)
+}
+const getStatus = (title:string) => {
+  return computed(() => props.flow?.inner.find((item: { title: string; }) => item.title === title)?.status ?? 3);
+};
+const zfStatus = getStatus('开启逐风');
+const zstStatus = getStatus('找尸体');
+const grStatus = getStatus('个人线索发放+个人问题');
+const ypStatus = getStatus('音频搜证');
+const dtStatus = getStatus('地图搜证');
+const glStatus = getStatus('卦灵');
+const fyStatus = getStatus('封印动画');
+const fyStatus2 = getStatus('封印动画2');
+// const zfStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '开启逐风')?.status ?? 3
+// const zstStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '找尸体')?.status ?? 3
+// const grStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题')?.status ?? 3
+// const ypStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '音频搜证')?.status ?? 3
+// const dtStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '地图搜证')?.status ?? 3
+// const glStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '卦灵')?.status ?? 3
+// const fyStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画')?.status ?? 3
+// const fyStatus2 = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画2')?.status ?? 3
+
+const zfContent = props.flow?.inner.find((item: { title: string; }) => item.title === '开启逐风')?.content ?? null
+const zstContent = props.flow?.inner.find((item: { title: string; }) => item.title === '找尸体')?.content ?? null
+const grContent= props.flow?.inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题')?.content ?? null
+const ypContent = props.flow?.inner.find((item: { title: string; }) => item.title === '音频搜证')?.content ?? null
+const dtContent = props.flow?.inner.find((item: { title: string; }) => item.title === '地图搜证')?.content ?? null
+const glContent = props.flow?.inner.find((item: { title: string; }) => item.title === '卦灵')?.content ?? null
+const fyContent = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画')?.content ?? null
+
+
+const show1 = () =>{
+    console.log(zfStatus, zstStatus, fyStatus2, fyStatus, ypStatus)
 }
 
 const isNewClueShow = ref(false)
 const isDeepClue = ref(false)
 const voiceIndex = ref(-1)
 const newClueSrc = ref('http://159.138.147.87/statics/img/clue2.png')
-watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues, () => {
-    //   console.log(memberStore.info.characters[memberStore.virtualRoleId].cueset.clues[0])
-    const newclue = memberStore.info.characters[memberStore.virtualRoleId].cueset.clues.slice(-1)[0]
+watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
+      console.log(memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0])
+    const newclue = memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0]
     if (newclue.type === 0) {
         if (newclue.isNew) {
             if (newclue.type === 0) {
@@ -259,8 +295,8 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
         dialogObj.value.content = '获得一条深入线索'
         dialogObj.value.type = 'success'
         dialogObj.value.confirmText = '查看'
-        memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = true
-        memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].type = 2
+        memberStore.info.characters[userIndex.value].mask.slice(-1)[0].isNew = true
+        memberStore.info.characters[userIndex.value].mask.slice(-1)[0].type = 2
         modifyDialog()
     } else if (newclue.type === 2) {
         isNewClueShow.value = true
@@ -268,7 +304,8 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
         newClueSrc.value = `http://159.138.147.87/statics/img/${newclue.name}.png`
     }
 
-})
+},
+{ deep: true })
 </script>
 
 <template>
@@ -298,11 +335,11 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
         </view>
     </view>
 
-    <view class="map">
-
+    <view class="map" @tap="show1">
+        <view>{{ zstStatus }}{{ ypStatus }}{{ grStatus }}</view>
         <!-- 地图搜证 -->
         <view class="map-search" v-for="(item, index) in locationList" :key="item.name"
-            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 2 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].status === 0">
+            v-if="zstStatus === 2 && ypStatus === 0">
             <view class="location flex-row-center hyshtj" :style="{ top: item.position.top, left: item.position.left }">
                 {{ item.name }}
             </view>
@@ -313,7 +350,7 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
         <view class="audio-search" @tap="voiceIndex = index"
             v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content"
             :key="item.name"
-            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].status === 2 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[4].status === 0">
+            v-if="ypStatus === 2 && dtStatus === 0">
             <view class="audio-serach-location flex-row-center hyshtj" @tap="audioIndex = index"
                 :style="{ top: item.position.top, left: item.position.left, zIndex: audioIndex === index ? '10011' : '1' }">
                 <view v-if="item.users[0] !== -1" class="audio-serach-location-avatar">
@@ -343,13 +380,13 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
 
                     <view class="flex-row-sb avatar-box">
                             <view class="avatar flex-row-center">
-                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = parseInt(memberStore.virtualRoleId);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] === -1">+</view>
+                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = parseInt(userIndex);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] === -1">+</view>
                                 <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0]].avatar" alt="">
                                 <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = -1;updateInfo(memberStore.info)" class="out-btn"
                                 src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
                             </view>
                             <view class="avatar flex-row-center">
-                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = parseInt(memberStore.virtualRoleId);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] === -1">+</view>
+                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = parseInt(userIndex);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] === -1">+</view>
                                 <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]].avatar" alt="">
                                  <!-- <text v-else>{{ charactersList[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]] }}</text> -->
                                 <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = -1;updateInfo(memberStore.info)" class="out-btn"
@@ -379,13 +416,13 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues,
         </view>
 
         <!-- 答疑解惑 -->
-        <view class="FAQ" @tap="faq(memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0])"
-            v-if="memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0] && !memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew">
+        <view class="FAQ" @tap="faq(userInfo!.mask.slice(-1)[0])"
+            v-if="userInfo!.mask.slice(-1)[0] && !userInfo!.mask.slice(-1)[0].isNew">
         </view>
 
         <!-- 开启逐风 -->
         <view class="newClue-mask"
-            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
+            v-if="zfStatus === 3 && zstStatus === 0">
             <view class="zhufeng">
             </view>
             <view class="zhufeng-text">我是逐风，我可以帮你梳理信息，

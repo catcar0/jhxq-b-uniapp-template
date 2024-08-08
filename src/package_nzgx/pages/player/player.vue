@@ -37,9 +37,9 @@ const pageJump = (val: any) => {
     console.log(val)
     currentPage.value = val
 }
-watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.qa, () => {
-    //   console.log(memberStore.info.characters[memberStore.virtualRoleId].cueset.clues[0])
-    const newqa = memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0]
+
+watch(() => memberStore.info.characters[memberStore.virtualRoleId - 1].mask, () => {
+    const newqa = memberStore.info.characters[memberStore.virtualRoleId - 1].mask.slice(-1)[0]
     if (newqa.type === 0) {
         if (newqa.a === '' && newqa.isNew) {
             setTimeout(() => {
@@ -51,14 +51,12 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.qa, ()
             }, 10000);
         }
     } else if (newqa.type === 1) {
-        // dialogObj.value.title = '获得新线索'
-        // dialogObj.value.content = '您获得新的6条个人线索，请前往线索集查看'
-        // dialogObj.value.type = 'getClues'
-        // dialogObj.value.confirmText = '查看'
-        // modifyDialog()
     }
 
 })
+const teamInfo = computed(() => memberStore.info?.teamInfo)
+const userInfo = computed(() => memberStore.info?.characters[memberStore.virtualRoleId - 1])
+const flow  = computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex])
 onMounted(() => {
     if (memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId) {
         webSocketStore.gameConnect();
@@ -75,15 +73,15 @@ onUnmounted(() => {
 
 <template>
     <view>
-        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" @page="pageJump" />
-        <jump v-if="memberStore.info" :hide-index="currentPage" @page="pageJump" />
+        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" @page="pageJump" :userInfo="userInfo" />
+        <jump v-if="memberStore.info" :hide-index="currentPage" @page="pageJump" :flow="flow" :userInfo="userInfo" />
 
         <RoomNumber v-show="currentPage === 'RoomNumber'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj"
             @page="pageJump" />
-        <TeamInfo v-if="memberStore.info" v-show="currentPage === 'TeamInfo'" :dialog-obj="dialogObj"
+        <TeamInfo v-if="memberStore.info" v-show="currentPage === 'TeamInfo'" :dialog-obj="dialogObj" :teamInfo="teamInfo" :userInfo="userInfo"
             @updateDialogObj="updateDialogObj" />
-        <ZfMap v-show="currentPage === 'ZfMap'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
-        <Gualing v-show="currentPage === 'Gualing'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
+        <ZfMap v-show="currentPage === 'ZfMap'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" :flow="flow" :userInfo="userInfo" />
+        <!-- <Gualing v-show="currentPage === 'Gualing'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" /> -->
         <CueSet v-show="currentPage === 'CueSet'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
     </view>
 </template>

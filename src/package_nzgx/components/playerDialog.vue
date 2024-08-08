@@ -7,7 +7,7 @@ import { useWebSocketStore } from '@/package_nzgx/stores'
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 import type { DmDialog } from '@/package_nzgx/types/dialog'
-const props = defineProps<{ dialogObj: DmDialog }>()
+const props = defineProps<{ dialogObj: DmDialog,userInfo: Object }>()
 const emit = defineEmits(["update:show", "confirm", "cancel", "page"]);
 const jump = (url: string) => {
     emit('page', url);
@@ -25,9 +25,10 @@ const updateInfo = (info: any) => {
         info
     )
 }
+const userIndex = computed(() => memberStore.virtualRoleId - 1)
 const changeTeamName = () => {
     const newInfo = memberStore.info
-    newInfo.characters[memberStore.virtualRoleId].user = userName
+    newInfo.characters[userIndex.value].user = userName.value
     updateInfo(newInfo)
 }
 const close = () => {
@@ -36,7 +37,7 @@ const close = () => {
 }
 const updateClues = () => {
     const newInfo = memberStore.info
-    newInfo.characters[memberStore.virtualRoleId].cueset.clues.forEach(element => {
+    newInfo.characters[userIndex.value].cueset.clues.forEach(element => {
         element.isNew = false
         element.type = 0
     });
@@ -54,19 +55,19 @@ const confirm = () => {
     }
     if (props.dialogObj.type === 'newTask') {
         const newInfo = memberStore.info
-        newInfo.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = false
+        newInfo.characters[userIndex.value].mask.slice(-1)[0].isNew = false
         updateInfo(newInfo)
         jump('ZfMap')
     }
     if (props.dialogObj.type === 'newTask2') {
         const newInfo = memberStore.info
-        newInfo.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = false
+        newInfo.characters[userIndex.value].mask.slice(-1)[0].isNew = false
         updateInfo(newInfo)
         // jump('ZfMap')
     }
     if (props.dialogObj.type  === 'success') {
         const newInfo = memberStore.info
-        newInfo.characters[memberStore.virtualRoleId].cueset.clues.slice(-1)[0].type = 2
+        newInfo.characters[userIndex.value].cueset.clues.slice(-1)[0].type = 2
         updateInfo(newInfo)
     }
 }

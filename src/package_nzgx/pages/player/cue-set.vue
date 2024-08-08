@@ -72,7 +72,7 @@ const audioList = ref<AudioItem[]>([
                     </view>
                     <view class="clues-box flex-row-center">
                         <!-- <view class="make-old2"></view> -->
-                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId].cueset.clues" :key="index">
+                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues" :key="index">
                             <view @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = index" class="clues-item"
                                 :class="cluesIndex === index ? 'clue-selected-border1' : ''">
                                 <img class="clue-selected-border2" v-show="cluesIndex === index"

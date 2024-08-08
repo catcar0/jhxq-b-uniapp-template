@@ -119,7 +119,7 @@ onUnmounted(() => {
     <button @tap="openBook">DM创建房间</button>
     <button @tap="joinRoom('gm')">DM加入房间</button>
     <button @tap="joinRoom2('1')">玩家1加入房间</button>
-    <!-- <button @tap="joinGame('gm')">DM加入游戏</button> -->
+    <button @tap="joinGame('gm')">DM加入游戏</button>
     <!-- <button @tap="joinGame('1')">玩家1加入游戏</button> -->
     <!-- <button @tap="startGame">开始游戏</button> -->
     <button @tap="initInfo">初始化info</button>
@@ -131,10 +131,10 @@ onUnmounted(() => {
     <button @tap="joinRoom('player5')">玩家5加入房间</button>
     <button @tap="joinRoom('player6')">玩家6加入房间</button> -->
   </view>
-  <!-- <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.messages }}</view> -->
+  <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.messages }}</view>
   <view>{{ memberStore.roomId }}</view>
-  <!-- <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.info }}</view>
-  <view style="font-size: 20rpx;width: 100%;">{{ memberStore.info }}</view> -->
+  <!-- <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.info }}</view> -->
+  <view style="font-size: 20rpx;width: 100%;">{{ memberStore.info }}</view>
 </template>
 
 <style scoped></style>

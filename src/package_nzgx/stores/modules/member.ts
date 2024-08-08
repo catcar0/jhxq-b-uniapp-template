@@ -26,7 +26,7 @@ export const useMemberStore = defineStore(
     }
     // 保存会员信息，登录时使用
     const setVirtualRoleId = (val: any) => {
-      virtualRoleId.value = val
+          virtualRoleId.value = val
     }
     const setInfo = (val: any) => {
       info.value = val

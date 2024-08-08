@@ -4,19 +4,19 @@ import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-const props = defineProps<{ hideIndex:string }>()
+const props = defineProps<{ hideIndex:string, flow:any, userInfo: any }>()
 const emit = defineEmits(["page"]);
 const pages = computed(() => {
     return [
         {
-            name: memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 0 ? '???' : memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.slice(-2)[0].status === 0 ? '逐风' : '卦灵',
+            name: props.flow.inner.find((item: { title: string; }) => item.title === '开启逐风').status === 0 ? '???' : props.flow.inner.find((item: { title: string; }) => item.title === '卦灵').status === 0 ? '逐风' : '卦灵',
             url: 'ZfMap',
-            status: memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 0 ? '0' : '1'
+            status: props.flow.inner.find((item: { title: string; }) => item.title === '开启逐风').status === 0 ? '0' : '1'
         },
         {
             name: "线索集",
             url: 'CueSet',
-            status: memberStore.info.characters[memberStore.virtualRoleId].cueset.clues.length === 0 ? '0' : '1'
+            status: props.userInfo.cueset.clues.length === 0 ? '0' : '1'
         },
         {
             name: "业绩表",

@@ -38,13 +38,13 @@ const play = () => {
             webSocketStore.gameConnect()
             setTimeout(() => {
                 webSocketStore.gameplayerFirstSend()
-            }, 500);
-            uni.showToast({ icon: 'success', title: '加入成功' })
-            emit('page', 'TeamInfo')
+                uni.showToast({ icon: 'success', title: '加入成功' })
+                emit('page', 'TeamInfo')
+            }, 1000);
         }else{
             uni.showToast({ icon: 'success', title: '房间号不存在' })
         }
-    }, 500);
+    }, 1000);
 }
 </script>
 

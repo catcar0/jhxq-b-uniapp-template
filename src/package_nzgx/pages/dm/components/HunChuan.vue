@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
@@ -32,7 +32,7 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
             newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-            newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
+            // newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
             updateInfo(newInfo)
         } else {
             if (newInfo.flow[index - 1].inner.slice(-1)[0].status === 0) {
@@ -51,100 +51,71 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
     }
 }
 const onChangeDetail = (ev: any, item: any, index: number) => {
-    console.log(index)
-    if (ev.detail.value) {
-        const newInfo = memberStore.info
-        if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title === '个人线索发放+个人问题') {
-            if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].status === 3) {
-                if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status === 0) {
-                    for (let index2 = 0; index2 < 12; index2++) {
-                        for (let index = 1; index < 6; index++) {
-                        newInfo.characters[index].cueset.clues.push(
-                        {
-                            name: 'clue3',
-                            context: '黄鹂',
-                            isRead: false,
-                            isNew: true,
-                            type: 1
-                        }
-                    )
-                        
-                    }
-                        
-                    }
-                    newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].content.forEach(element => {
-                        newInfo.characters[element.userIndex].cueset.qa.push(
-                        {
-                            q: '你和李梦是什么关系？为什么你一定要保护她',
-                            a: '',
-                            isRead: false,
-                            isNew: true,
-                            type: 0
-                        }
-                    )
-                    });
-                }
-                newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 2
-                newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].isSwitchOn = true
-                updateInfo(newInfo)
-                dialogObj.value.type = newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title
-            } else {
-                updateSwitch.value = false
-                setTimeout(() => {
-                    updateSwitch.value = true
-                }, 0);
-                ShowToast('请按照游戏流程逐步开启')
-            }
-        } else if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title === '开启逐风') {
-            newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 3
-            newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].isSwitchOn = true
-            updateInfo(newInfo)
-            dialogObj.value.type = newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title
-        }
-        else {
-            if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].title === '个人线索发放+个人问题') {
-                newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 2
-                newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].isSwitchOn = true
-                updateInfo(newInfo)
-                dialogObj.value.type = newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title
-            } else {
-                if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].status === 3) {
-                    console.log(newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1])
-                    newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 2
-                    newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].isSwitchOn = true
-                    updateInfo(newInfo)
-                    dialogObj.value.type = newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].title
-                } else {
-                    updateSwitch.value = false
-                    setTimeout(() => {
-                        updateSwitch.value = true
-                    }, 10);
-                    ShowToast('请按照游戏流程逐步开启')
-                }
+    console.log(index);
+
+    const { flow, teamInfo, characters } = memberStore.info;
+    const currentFlow = flow[teamInfo.flowIndex].inner[index];
+
+    if (!ev.detail.value) return;
+
+    const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
+        currentFlow.status = status;
+        currentFlow.isSwitchOn = isSwitchOn;
+        updateInfo(memberStore.info);
+        dialogObj.value.type = currentFlow.title;
+    };
+
+    const showWarning = () => {
+        updateSwitch.value = false;
+        setTimeout(() => {
+            updateSwitch.value = true;
+        }, 0);
+        ShowToast('请按照游戏流程逐步开启');
+    };
+
+    const addCluesAndMasks = () => {
+        for (let i = 0; i < 12; i++) {
+            for (let j = 0; j < 6; j++) {
+                characters[j].cueset.clues.push({
+                    name: 'clue3',
+                    context: '黄鹂',
+                    isRead: false,
+                    isNew: true,
+                    type: 1,
+                });
             }
         }
-        // if (index === 0) {
-        //     newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 3
-        //     updateInfo(newInfo)
-        // } else {
-        //     if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].status === 0) {
-        //         if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].title = '个人线索发放+个人问题') {
-        //             newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 2
-        //             updateInfo(newInfo)
-        //         } else {
-        //             updateSwitch.value = false
-        //             setTimeout(() => {
-        //                 updateSwitch.value = true
-        //             }, 10);
-        //             ShowToast('请按照游戏流程逐步开启')
-        //         }
-        //     } else if(newInfo.flow[newInfo.teamInfo.flowIndex].inner[index - 1].status === 3)  {
-        //         newInfo.flow[newInfo.teamInfo.flowIndex].inner[index].status = 2
-        //         updateInfo(newInfo)
-        //     }
-        // }
+        currentFlow.content.forEach(element => {
+            characters[element.userIndex].mask.push({
+                q: '你和李梦是什么关系？为什么你一定要保护她',
+                a: '',
+                isRead: false,
+                isNew: true,
+                type: 0,
+            });
+        });
+    };
+
+    const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
+
+    if (currentFlow.title === '个人线索发放+个人问题') {
+        if (previousFlow.status === 3 && currentFlow.status === 0) {
+            addCluesAndMasks();
+            updateFlowStatus(2, true);
+        } else {
+            showWarning();
+        }
+    } else if (currentFlow.title === '开启逐风') {
+        updateFlowStatus(3, true);
+    } else {
+        if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
+            updateFlowStatus(2, true);
+        } else {
+            showWarning();
+        }
     }
-}
+};
+
 const showZstDialog = (location: string, clue: any, zst_index: number) => {
     dialogObj.value.title = '请确认答案'
     dialogObj.value.content = '请DM确认选择该地点的用户回答'
@@ -165,89 +136,6 @@ const showQaDialog = (index: number) => {
     showDialog()
 }
 const statusText = ref(['待开启', '待开启', '进行中', '已完成'])
-const hunchuanList = ref([
-    {
-        title: '第一次魂穿',
-        status: 3
-    },
-    {
-        title: '第二次魂穿',
-        status: 1
-    },
-    {
-        title: '第三次魂穿',
-        status: 0
-    },
-    {
-        title: '海报分享',
-        status: 0
-    },
-])
-const hunchuanDetails: any = ref([
-    {
-        title: '开启逐风',
-        content: [{}],
-        status: 0
-    },
-    {
-        title: '找尸体',
-        content: [
-            {
-                location: '后山',
-                status: 2
-            },
-            {
-                location: '教室',
-                status: 0
-            },
-            {
-                location: '食堂',
-                status: 0
-            },
-            {
-                location: '活动楼',
-                status: 0
-            }
-        ],
-        status: 0
-    },
-    {
-        title: '个人线索发放+个人问题',
-        content: [{}],
-        status: 0
-    },
-    {
-        title: '音频搜证',
-        content: [
-            {
-                users: [1, 2],
-                location: '后山花坛',
-                status: 3,
-            },
-            {
-                users: [3],
-                location: '教室',
-                status: 0,
-            }
-        ],
-        status: 0
-    },
-    {
-        title: '地图搜证',
-        content: [{}],
-        status: 0
-    },
-    {
-        title: '卦灵',
-        content: [{}],
-        status: 0
-    },
-    {
-        title: '封印动画',
-        content: [{}],
-        status: 0
-    },
-])
 const matchIndex = ref(0)
 const dialogObj = ref({
     dialogVisible: false,
@@ -261,21 +149,22 @@ const dialogObj = ref({
     clue: '',
     zst_index: 0,
     qa_index: 0,
-    qa: {
-        user: [1, 2],
-        qalist: [
-            {
-                question: '问题1',
-                answer: '答案1'
-            },
-            {
-                question: '问题2',
-                answer: '答案2'
-            }
-        ]
-    }
 })
 
+const getContent = (title:string) => {
+  return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const zfContent = getContent('开启逐风');
+const zstContent = getContent('找尸体');
+const grContent = getContent('个人线索发放+个人问题');
+const ypContent = getContent('音频搜证');
+const dtContent = getContent('地图搜证');
+const glContent = getContent('卦灵');
+const fyContent = getContent('封印动画');
+const fyContent2 = getContent('封印动画2');
+const aa = () =>{
+    console.log(ypContent)
+}
 // 关闭弹窗
 const closeDialog = () => {
     dialogObj.value.dialogVisible = false
@@ -295,7 +184,7 @@ const showDialog = () => {
     <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" />
 
     <!-- 三次魂穿+海报分享 -->
-    <view style="padding-bottom: 300rpx;" >
+    <view style="padding-bottom: 300rpx;" @tap="aa">
         <view class=" shadow-box" v-for="(item, index) in memberStore.info.flow" :class="'hunchuan-box-' + item.status">
 
             <!-- 魂穿名称和状态 -->
@@ -375,24 +264,24 @@ const showDialog = () => {
 
                         <view class="flex-row-center evidence-avatar-box">
                             <view class="flex-column-sb-center gap-10" v-for="(item, index) in 2">
-                                <img v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[matchIndex].users[index] !== -1" class="avatar"
-                                    :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[matchIndex].users[index]].avatar"
+                                <img v-if="ypContent[matchIndex].users[index] !== -1" class="avatar"
+                                    :src="memberStore.info.characters[ypContent[matchIndex].users[index]].avatar"
                                     alt="">
                                 <view v-else class="avatar evidence-avatar">
                                 </view>
-                                <text v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[matchIndex].users[index] !== -1">{{
-                                    memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[matchIndex].users[index]].name
+                                <text v-if="ypContent[matchIndex].users[index] !== -1">{{
+                                    memberStore.info.characters[ypContent[matchIndex].users[index]].name
                                     }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
                         <view class="button"
-                            :style="{ background: memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[matchIndex].users.length === 2 ? '#8AEB99' : ' linear-gradient(90deg, #F09235 0%, #EA6A00 100%)' }">
+                            :style="{ background: ypContent[matchIndex].users.length === 2 ? '#8AEB99' : ' linear-gradient(90deg, #F09235 0%, #EA6A00 100%)' }">
                             匹配判断</view>
                     </view>
 
                     <!-- 卦灵 -->
-                    <view v-show="hunchuanDetails[5].status === 2 && index === 5">
+                    <view v-if="detail.status === 2 && detail.title === '卦灵'">
                         <navigator url="/package_nzgx/pages/questionnaire/questionnaire" hover-class="none">
                             <view class="survey-box flex-row-center">
                                 <text class="absolute-center survey-title">还原问卷</text>

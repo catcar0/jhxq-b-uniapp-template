@@ -34,7 +34,11 @@ export class WebSocketService {
         console.log('WebSocket message received:', event.data);
         // 处理消息
         const websocketStore = useWebSocketStore();
-        websocketStore.addMessage(JSON.parse(event.data));
+        if (JSON.parse(event.data).type === 'scores') {
+          websocketStore.gameAddMessage(JSON.parse(event.data).data.statuses.allinfo.info);
+        } else {
+          websocketStore.addMessage(JSON.parse(event.data));
+        }
       });
   
       this.socketTask.onError((error) => {

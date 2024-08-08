@@ -1,20 +1,52 @@
 // src/stores/websocketStore.ts
 import { defineStore } from 'pinia';
 import { WebSocketService } from '@/package_nzgx/services/WebSocketService';
-
+import { useMemberStore } from "@/package_nzgx/stores"
+const memberStore = useMemberStore()
+const token = memberStore.profile?.token
+const roomId = memberStore.roomId
+const virtualRoleId = memberStore.virtualRoleId
 export const useWebSocketStore = defineStore('webSocket', {
     state: () => ({
-        webSocketService: new WebSocketService('ws://132.232.57.64:8010/?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjIsImV4cCI6MTcyNjM1NzUxNSwiYXZhdGFyIjoiaHR0cDovL2RlZmF1bHQudXJsL2RlZmF1bHQuanBnIiwidmlydHVhbFJvbGUiOiJkZWZhdWx0Um9sZSJ9.NK8wZ56tqIuGyDx6eJPuAI-iBYnYjyvahFs_1NRZFY0'), // 替换为你的 WebSocket URL
+        webSocketService: new WebSocketService(`ws://132.232.57.64:8010/?token=${token}`), // 替换为你的 WebSocket URL
+        gameWebSocketService: new WebSocketService(`ws://132.232.57.64:8020/?token=${token}&room_id=${roomId}&virtual_role_id=${virtualRoleId}`), // 替换为你的 WebSocket URL
         messages: [],
+        info: []
     }),
     actions: {
-        addMessage(message: string) {
+        gameAddMessage(newInfo: any) {
+            this.info = newInfo;
+            memberStore.setInfo(this.info)
+        },
+        gameConnect() {
+            this.gameWebSocketService.connect();
+        },
+        gameSend(info: any) {
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'update_status',
+                status_key: 'info',
+                status_value: info,
+                virtual_role_id: 'allinfo'
+            }));
+        },
+        gameplayerFirstSend() {
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'update_status',
+                status_key: 'first',
+                status_value: '',
+                virtual_role_id: 'first'
+            }));
+        },
+        gameClose() {
+            this.gameWebSocketService.close();
+        },
+        addMessage(message: any) {
             this.messages.push(message);
         },
         connect() {
             this.webSocketService.connect();
         },
-        send(message: string) {
+        send(message: any) {
             this.webSocketService.send(message);
         },
         close() {

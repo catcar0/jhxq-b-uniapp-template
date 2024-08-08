@@ -11,7 +11,7 @@ const httpInterceptor = {
         options.header = {
             ...options.header,
             // 'source-client': 'miniapp'
-            // 'Content-Type': 'application/xml'
+            'Content-Type': 'application/x-www-form-urlencoded'
         }
         const memberStore = useMemberStore()
         const token = memberStore.profile?.token

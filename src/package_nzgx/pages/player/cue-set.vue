@@ -1,11 +1,14 @@
 <script setup lang='ts'>
 import { onBeforeUnmount, onMounted, ref } from 'vue';
-import jump from '@/package_nzgx/pages/player/components/jump.vue';
 import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
 const setClass = ['物品', '音频', '记录']
 const classIndex = ref(0)
 const clues = ['clue1', 'clue2', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3']
-const cluesIndex = ref(0)
+const cluesIndex = ref(-1)
 interface AudioItem {
     src: string;
     isPlaying: boolean;
@@ -47,7 +50,6 @@ const audioList = ref<AudioItem[]>([
 </script>
 
 <template>
-    <jump :hideIndex="0" />
     <view class="cue-set">
         <view class="set-class flex-row-sb">
             <view @tap="classIndex = index" v-for="(item, index) in setClass" :key="item" class="flex-row-center"
@@ -63,20 +65,20 @@ const audioList = ref<AudioItem[]>([
                     <view class="font-player-gradient1">线索集</view>
                 </view>
                 <scroll-view scroll-y style="height: 71vh;">
-                    <img class="clue-big-image" :src="`http://159.138.147.87/statics/img/${clues[cluesIndex]}.png`"
+                    <img v-if="cluesIndex !== -1" class="clue-big-image" :src="`http://159.138.147.87/statics/img/${memberStore.info.characters[memberStore.virtualRoleId].cueset.clues[cluesIndex].name}.png`"
                         alt="">
-                    <view class="flex-row-center clue-text">
+                    <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
                         举报他们了，你也受不了他们很久了吧？这次我一定会配合你（是春天的字迹）
                     </view>
                     <view class="clues-box flex-row-center">
                         <!-- <view class="make-old2"></view> -->
-                        <view v-for="(item, index) in clues" :key="index">
-                            <view @tap="cluesIndex = index" class="clues-item"
+                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId].cueset.clues" :key="index">
+                            <view @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = index" class="clues-item"
                                 :class="cluesIndex === index ? 'clue-selected-border1' : ''">
                                 <img class="clue-selected-border2" v-show="cluesIndex === index"
                                     src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
                                 <view class="clue-small-image"
-                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/img/${item}.png)` }">
+                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/img/${item.name}.png)` }">
                                     <!-- <img class="clue-small-image"  :src="`http://159.138.147.87/statics/img/${item}.png`" alt=""> -->
                                 </view>
                             </view>
@@ -274,6 +276,9 @@ const audioList = ref<AudioItem[]>([
 .clues-box {
     margin-left: -20rpx;
     width: 645rpx;
+    justify-content: flex-start;
+    padding-left: 50rpx;
+    /* min-height: 303rpx; */
     /* height: 303rpx; */
     font-size: 20rpx;
     font-weight: 600;

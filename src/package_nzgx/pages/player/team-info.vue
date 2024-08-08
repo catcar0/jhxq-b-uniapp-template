@@ -1,7 +1,31 @@
 <script setup lang='ts'>
-import dmDialog from '@/package_nzgx/components/playerDialog.vue';
-import jump from '@/package_nzgx/pages/player/components/jump.vue';
 import { ref } from 'vue';
+import { defineProps, defineEmits } from 'vue';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
+const updateInfo = (info: any) => {
+  webSocketStore.gameSend(
+    info
+  )
+}
+const fun = (content: any) => {
+  const newInfo = memberStore.info
+  newInfo.aa.bb = content
+  updateInfo(newInfo)
+}
+
+const props = defineProps({
+    dialogObj: Object
+});
+
+const emit = defineEmits(['updateDialogObj']);
+
+const modifyDialog = () => {
+    dialogObj.value.dialogVisible = true
+    emit('updateDialogObj', dialogObj);
+};
 const rankList = [
     {
         name: '小分队1',
@@ -18,11 +42,11 @@ const rankList = [
         level: 250
     },
     {
-        name: '小分队3',
+        name: memberStore.info.teamInfo.name + '小分队',
         rank: 10,
         status: 0,
         time: '2024.09.09',
-        level: 50
+        level: memberStore.info.teamInfo.scores
     }
 ]
 const dialogObj = ref({
@@ -34,10 +58,7 @@ const dialogObj = ref({
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
 })
-const closeDialog = (val: any) => {
-    console.log(val)
-    dialogObj.value.dialogVisible = false
-}
+
 
 const showDialog = (e: any) => {
     console.log(e)
@@ -46,8 +67,6 @@ const showDialog = (e: any) => {
 </script>
 
 <template>
-    <jump :hideIndex="1" />
-    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" />
     <view class="team-info">
         <view class="user-avatar">
             <img class="user-avatar-img" src="http://159.138.147.87/statics/img/avatar_frame.png" alt="">
@@ -61,8 +80,9 @@ const showDialog = (e: any) => {
                 <view class="player-title hyshtj ">
                     <view class="font-player-gradient1">职员信息</view>
                 </view>
-                <view class="user-name font-player-gradient1" @tap="showDialog">
-                    厨师沙拉
+                <view class="user-name font-player-gradient1" @tap="modifyDialog">
+                    <!-- 厨师沙拉 -->
+                    {{ memberStore.info.characters[memberStore.virtualRoleId].user }}
                     <img class="edit-icon" src="http://159.138.147.87/statics/img/edit_icon.png" alt="">
                 </view>
                 <view class="team-name font-player-gradient1">

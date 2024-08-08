@@ -1,36 +1,47 @@
 <script setup lang='ts'>
-import { ref } from 'vue';
-const props = defineProps<{ hideIndex:number }>()
-const pages = ref([
-    {
-        name:"线索集",
-        url:'./cue-set'
-    },
-    {
-        name:"业绩表",
-        url:'./team-info'
-    },
-    {
-        name:"逐风",
-        url:'./map'
-    }
-])
-const jump = (url:string)=>{
-    uni.navigateTo({
-	url:url
+import { computed, ref } from 'vue';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
+const props = defineProps<{ hideIndex:string }>()
+const emit = defineEmits(["page"]);
+const pages = computed(() => {
+    return [
+        {
+            name: memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 0 ? '???' : memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.slice(-2)[0].status === 0 ? '逐风' : '卦灵',
+            url: 'ZfMap',
+            status: memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 0 ? '0' : '1'
+        },
+        {
+            name: "线索集",
+            url: 'CueSet',
+            status: memberStore.info.characters[memberStore.virtualRoleId].cueset.clues.length === 0 ? '0' : '1'
+        },
+        {
+            name: "业绩表",
+            url: 'TeamInfo',
+            status: '1'
+        }
+    ];
 });
+const jump = (url:string)=>{
+    emit('page', url);
 }
 </script>
 
 <template>
     <view class="jump-box hyshtj">
-        <view v-show="hideIndex !== index" @tap="jump(item.url)" v-for="(item,index) in pages" :key="index" class="paper flex-row-center ">
+        <view v-show="hideIndex !== item.url" @tap="jump(item.url)" v-for="(item,index) in pages" :key="index" class="paper flex-row-center " :class="item.status === '0'? 'hide': ''">
             <text class="font-player-gradient1">{{ item.name }}</text>
         </view>
     </view>
 </template>
 
 <style scoped>
+.hide {
+    filter: brightness(50%);
+}
 .jump-box{
     position: fixed;
     z-index: 10000;

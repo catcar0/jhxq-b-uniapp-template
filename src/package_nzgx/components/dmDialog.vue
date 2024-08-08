@@ -2,9 +2,18 @@
 import { setPageOverflow } from '@/utils/uniUtils';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import type { DmDialog } from '@/package_nzgx/types/dialog'
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
 import { charactersStore } from '@/package_nzgx/stores';
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
 const charactersList = charactersStore().characters
-const props = defineProps<{ dialogObj: DmDialog }>()
+const props = defineProps<{ dialogObj: any }>()
 
 const emit = defineEmits(["update:show", "confirm", "cancel"]);
 
@@ -23,7 +32,49 @@ const close = () => {
 
 const confirm = () => {
     emit('confirm');
+    if (props.dialogObj.type === '找尸体') {
+        zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
+    }
+    if (props.dialogObj.type === '个人线索发放+个人问题') {
+        const newInfo = memberStore.info
+        newInfo.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[props.dialogObj.qa_index].status = 3
+        newInfo.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[props.dialogObj.qa_index].status = 3
+        newInfo.characters[newInfo.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[props.dialogObj.qa_index].userIndex].score += 10
+        newInfo.characters[newInfo.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[props.dialogObj.qa_index].userIndex].cueset.clues.push(
+                        {
+                            name: 'clue2',
+                            context: '海报背面',
+                            isRead: false,
+                            isNew: true,
+                            type: 3
+                        }
+                    )
+        updateInfo(newInfo)
+    }
 }
+const zst = (userIndex: number, clue: any, index:number) => {
+    const newInfo = memberStore.info
+    newInfo.characters[userIndex + 1].cueset.clues.push(
+        {
+            name:clue.name,
+            context:clue.context,
+            isRead:false,
+            isNew:true,
+            type:clue.type
+        }
+    )
+    newInfo.characters[userIndex + 1].score += 10
+    newInfo.flow[newInfo.teamInfo.flowIndex].inner[1].content[index].status = 3
+    if (newInfo.flow[newInfo.teamInfo.flowIndex].inner[1].content.slice(-1)[0].status === 3){
+        newInfo.flow[newInfo.teamInfo.flowIndex].inner[1].status = 3
+    }
+    updateInfo(newInfo)
+}
+// const fun = (content: any) => {
+//   const newInfo = memberStore.info
+//   newInfo.aa.bb = content
+//   updateInfo(newInfo)
+// }
 const zstselectIndex = ref<number>(0)
 const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
@@ -35,8 +86,8 @@ const zstSelectUser = (index: number) => {
         <view class="dialog-inner">
             <view class="dialog-header">
                 <text>{{ dialogObj.title }}</text>
-                <!-- <image v-if="dialogObj.showCancel" @tap="close" src="@/static/icons/common_close.png"
-                    :mode="'widthFix'" /> -->
+                <image v-if="dialogObj.showCancel" @tap="close" src="@/static/icons/common_close.png"
+                    :mode="'widthFix'" />
             </view>
             <view class="dialog-content">
                 {{ dialogObj.content }}
@@ -47,7 +98,8 @@ const zstSelectUser = (index: number) => {
                 <view style="width: 100%;height: 200prx;" class="flex-row-center">
                     <img class="big-avatar" :src="charactersList[zstselectIndex!].avatar" alt="">
                 </view>
-                <view style="width: 100%;height: 170rpx;font-size: 36rpx;" class="flex-row-center">{{ dialogObj.location }}</view>
+                <view style="width: 100%;height: 170rpx;font-size: 36rpx;" class="flex-row-center">{{ dialogObj.location
+                    }}</view>
                 <view class="flex-row-sb">
                     <view @tap="zstSelectUser(index)" v-for="(item, index) in charactersList" :key="item.name">
                         <img class="avatar" :class="zstselectIndex == index ? 'avatar-selected' : ''" :src="item.avatar"
@@ -58,14 +110,14 @@ const zstSelectUser = (index: number) => {
             <!-- 个人线索发放＋个人问题 -->
             <view v-show="dialogObj.type === '个人线索发放+个人问题'">
                 <view class="flex-row-center" style="gap: 200rpx;margin-top: 30rpx;">
-                    <view class="flex-column-sb-center" style="gap:10rpx" v-for="(item, index) in dialogObj.qa?.user">
-                        <img class="qa-avatar" :src="charactersList[item].avatar" alt="">
-                        <text>{{ charactersList[item].name }}</text>
+                    <view class="flex-column-sb-center" style="gap:10rpx" v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content">
+                        <img class="qa-avatar" :style="{backgroundColor: dialogObj.qa_index === index? '#F09235':'#C4C4C4'}" :src="memberStore.info.characters[item.userIndex].avatar" alt="">
+                        <text>{{ memberStore.info.characters[item.userIndex].name }}</text>
                     </view>
                 </view>
-                <view v-for="item in dialogObj.qa?.qalist">
-                    <view>Q:{{ item.question }}</view>
-                    <text style="text-decoration: underline;">A:{{ item.answer}}</text>
+                <view v-for="qaitem in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[dialogObj.qa_index].qalist">
+                    <view>Q:{{ qaitem.question }}</view>
+                    <text style="text-decoration: underline;">A:{{ qaitem.answer }}</text>
                 </view>
             </view>
 
@@ -73,19 +125,20 @@ const zstSelectUser = (index: number) => {
                 <button @tap="confirm" class="theme-button button">{{ dialogObj.confirmText || '确认' }}</button>
                 <button v-if="dialogObj.showCancel" @tap="close" class="theme-button cancel-button">{{
                     dialogObj.cancelText || '取消'
-                }}</button>
+                    }}</button>
             </view>
         </view>
     </view>
 </template>
 
 <style scoped>
-.big-avatar{
+.big-avatar {
     width: 200rpx;
     height: 200rpx;
     border-radius: 999rpx;
     background-color: #C4C4C4;
 }
+
 .avatar {
     width: 80rpx;
     height: 80rpx;

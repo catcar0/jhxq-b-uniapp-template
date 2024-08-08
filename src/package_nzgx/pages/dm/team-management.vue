@@ -1,7 +1,10 @@
 <script setup lang='ts'>
 import DMTabBar from "@/components/DM-TabBar/index.vue"
 import { charactersStore } from '@/package_nzgx/stores';
-
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
 const charactersList = charactersStore().characters
 </script>
 
@@ -13,7 +16,7 @@ const charactersList = charactersStore().characters
             <view class="info-item flex-row-sb">
                 <text>名称</text>
                 <view class="flex-row-sb orange-font team-name">
-                    <text>天下第一小分队</text>
+                    <text> {{ memberStore.info.teamInfo.name }} 小分队</text>
                     <view><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png" alt=""></view>
                 </view>
             </view>
@@ -24,7 +27,7 @@ const charactersList = charactersStore().characters
         </view>
         <view class="user-box shadow-box flex-column-sb">
             <view class="title flex-row-center info-item almm">玩家列表</view>
-            <view v-for="item in charactersList" :key="item.name" class="flex-row-sb user-item">
+            <view v-for="item in memberStore.info.characters.slice(1,10)" :key="item.name" class="flex-row-sb user-item" >
                 <view class="user-item-avatar">
                     <img class="user-item-avatar" :src="item.avatar" alt="">
                 </view>

@@ -2,11 +2,17 @@
 import { setPageOverflow } from '@/utils/uniUtils';
 import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
 import { computed, onUnmounted, ref, watch } from 'vue';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
 import type { DmDialog } from '@/package_nzgx/types/dialog'
 const props = defineProps<{ dialogObj: DmDialog }>()
-
-const emit = defineEmits(["update:show", "confirm", "cancel"]);
-
+const emit = defineEmits(["update:show", "confirm", "cancel", "page"]);
+const jump = (url: string) => {
+    emit('page', url);
+}
+const userName = ref('')
 watch(() => props, (value) => {
     setPageOverflow(value ? 'hidden' : 'auto');
 })
@@ -14,14 +20,55 @@ watch(() => props, (value) => {
 onUnmounted(() => {
     setPageOverflow('auto');
 })
-
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
+const changeTeamName = () => {
+    const newInfo = memberStore.info
+    newInfo.characters[memberStore.virtualRoleId].user = userName
+    updateInfo(newInfo)
+}
 const close = () => {
     emit('update:show', false);
     emit('cancel');
 }
-
+const updateClues = () => {
+    const newInfo = memberStore.info
+    newInfo.characters[memberStore.virtualRoleId].cueset.clues.forEach(element => {
+        element.isNew = false
+        element.type = 0
+    });
+    updateInfo(newInfo)
+}
 const confirm = () => {
-    emit('confirm',false);
+    emit('confirm', { type: props.dialogObj.type, content: '' });
+
+    if (props.dialogObj.type === 'changeTeamName') {
+        changeTeamName()
+    }
+    if (props.dialogObj.type === 'getClues') {
+        updateClues()
+        jump('CueSet')
+    }
+    if (props.dialogObj.type === 'newTask') {
+        const newInfo = memberStore.info
+        newInfo.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = false
+        updateInfo(newInfo)
+        jump('ZfMap')
+    }
+    if (props.dialogObj.type === 'newTask2') {
+        const newInfo = memberStore.info
+        newInfo.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = false
+        updateInfo(newInfo)
+        // jump('ZfMap')
+    }
+    if (props.dialogObj.type  === 'success') {
+        const newInfo = memberStore.info
+        newInfo.characters[memberStore.virtualRoleId].cueset.clues.slice(-1)[0].type = 2
+        updateInfo(newInfo)
+    }
 }
 const zstselectIndex = ref<number>()
 const zstSelectUser = (index: number) => {
@@ -47,23 +94,27 @@ const audioList = ref<AudioItem[]>([
     <view class="dialog-mask" :class="{ show: dialogObj.dialogVisible }">
         <view class="dialog-inner">
             <view class="dialog-header">
-                <image class="close-icon"  @tap="close" src="http://159.138.147.87/statics/img/close_icon.png"
-                :mode="'widthFix'" />
+                <image class="close-icon" @tap="close" src="http://159.138.147.87/statics/img/close_icon.png"
+                    :mode="'widthFix'" />
             </view>
             <text class="hyshtj font-player-gradient1 dialog-title">{{ dialogObj.title }}</text>
-            <view class="dialog-content font-player-gradient1 ">
+            <view v-show="dialogObj.type === '个人线索发放+个人问题' || dialogObj.type === 'getClues' || dialogObj.type ==='success'" class="dialog-content font-player-gradient1 ">
                 {{ dialogObj.content }}
             </view>
-            <view v-if="dialogObj.type==='changeTeamName'">
+            <view v-show="dialogObj.type ==='newTask' || dialogObj.type ==='newTask2'" class="dialog-content font-player-gradient1 " style="font-size: 25rpx;line-height: 200%;">
+                {{ dialogObj.content }}
+                <view>请在获得足够线索后，寻找DM回答</view>
+            </view>
+            <view v-if="dialogObj.type === 'changeTeamName'">
                 <view class="input-box flex-row-center">
-                    <input type="text" style="text-align: center;">
+                    <input type="text" style="text-align: center;" v-model="userName">
                 </view>
             </view>
-            <audioplay v-if="dialogObj.type==='voice'"  :audioList="audioList" />
+            <audioplay v-if="dialogObj.type === 'voice'" :audioList="audioList" />
             <view class="dialog-control">
                 <view @tap="confirm" class="theme-button button">
                     <view class="theme-button-clear"></view>
-                    <view class="hyshtj font-player-gradient2">                    {{ dialogObj.confirmText || '确认' }}</view>
+                    <view class="hyshtj font-player-gradient2"> {{ dialogObj.confirmText || '确认' }}</view>
                 </view>
                 <!-- <button v-if="dialogObj.showCancel" @tap="close" class="theme-button cancel-button">{{
                     dialogObj.cancelText || '取消'
@@ -74,9 +125,11 @@ const audioList = ref<AudioItem[]>([
 </template>
 
 <style scoped>
-.close-icon{
-    width: 70rpx;height: 70rpx;
+.close-icon {
+    width: 70rpx;
+    height: 70rpx;
 }
+
 .dialog-mask {
     position: fixed;
     z-index: 99999;
@@ -116,7 +169,7 @@ const audioList = ref<AudioItem[]>([
     background: url('http://159.138.147.87/statics/img/player_dialog_bg.png') no-repeat;
     background-size: 100% 100%;
     background-position: center;
-    padding:40rpx 50rpx 90rpx 50rpx;
+    padding: 40rpx 50rpx 90rpx 50rpx;
     box-sizing: border-box;
     transform: translateY(20px);
     transition: .3s ease;
@@ -140,14 +193,17 @@ const audioList = ref<AudioItem[]>([
     min-width: 48rpx;
     height: 48rpx;
 }
-.dialog-title{
-    font-size: 50rpx;
+
+.dialog-title {
+    font-size: 40rpx;
 }
+
 .dialog-content {
-    padding: 20rpx 0;
+    padding: 20rpx 30rpx;
     color: #747474;
     font-size: 28rpx;
     font-weight: 600;
+    text-align: center;
 }
 
 .dialog-control {
@@ -173,7 +229,8 @@ const audioList = ref<AudioItem[]>([
     background: #D8D8D8;
     color: #FFFFFF;
 }
-.theme-button-clear{
+
+.theme-button-clear {
     position: absolute;
     width: 185rpx;
     height: 95.5rpx;
@@ -182,7 +239,8 @@ const audioList = ref<AudioItem[]>([
     background-position: center;
     filter: brightness(100) contrast(100%) opacity(0.5);
 }
-.input-box{
+
+.input-box {
     width: 500rpx;
     height: 100rpx;
     background: url('http://159.138.147.87/statics/img/dialog_input_bg.png') no-repeat;

@@ -14,16 +14,19 @@ const toDm = (name: 'hs' | 'nzgx') => {
 
 // 模拟开本
 const toTest = async (script_id: 19 | 20) => {
-  LemToken.set('token_XrrLRTI9T9Rt0w2QsBQtd9Mgp26ZvimK');
-  uni.showLoading({ mask: true, title: "请稍等..." });
-  try {
-    let res = await GetTestOpenCode(script_id);
-    create(res.data.open_book_code, script_id);
-    uni.hideLoading();
-  } catch (err: any) {
-    console.log(err)
-    Toast(err.message || "模拟开房失败");
-  }
+  uni.navigateTo({
+    url: `/package_nzgx/pages/test/test`
+  })
+  // LemToken.set('token_XrrLRTI9T9Rt0w2QsBQtd9Mgp26ZvimK');
+  // uni.showLoading({ mask: true, title: "请稍等..." });
+  // try {
+  //   let res = await GetTestOpenCode(script_id);
+  //   create(res.data.open_book_code, script_id);
+  //   uni.hideLoading();
+  // } catch (err: any) {
+  //   console.log(err)
+  //   Toast(err.message || "模拟开房失败");
+  // }
 }
 
 // 创建跳转DM小程序

@@ -1,9 +1,23 @@
 <script setup lang='ts'>
-import { ref } from 'vue';
-import jump from '@/package_nzgx/pages/player/components/jump.vue';
+import { computed, ref, watch } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
-import dmDialog from '@/package_nzgx/components/playerDialog.vue';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
 const charactersList = charactersStore().characters
+import { defineProps, defineEmits } from 'vue';
+
+const props = defineProps({
+    dialogObj: Object
+});
+
+const emit = defineEmits(['updateDialogObj']);
+
+const modifyDialog = () => {
+    dialogObj.value.dialogVisible = true
+    emit('updateDialogObj', dialogObj);
+};
 const locationList = ref(
     [
         {
@@ -186,33 +200,84 @@ const dialogObj = ref({
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
 })
-const closeDialog = (val: any) => {
-    console.log(val)
-    dialogObj.value.dialogVisible = false
-}
-
-const showDialog = (e: any) => {
-    console.log(e)
-    dialogObj.value.dialogVisible = true
-}
 const isRotate = ref(false)
 const isScale = ref(false)
-setTimeout(() => {
-    isRotate.value = !isRotate.value
-}, 1000);
-setTimeout(() => {
-    isScale.value = !isScale.value
-}, 2000);
+const ani = () => {
+    setTimeout(() => {
+        isRotate.value = !isRotate.value
+    }, 1000);
+    setTimeout(() => {
+        isScale.value = !isScale.value
+    }, 2000);
+}
+const faq = (item: any) => {
+    console.log('aa')
+    memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = true
+    dialogObj.value.dialogVisible = true
+    dialogObj.value.title = '你当前收到一条个人任务'
+    dialogObj.value.confirmText = '确定'
+    dialogObj.value.content = item.q
+    dialogObj.value.type = 'newTask2'
+}
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
+const updateClues = () => {
+    const newInfo = memberStore.info
+    newInfo.characters[memberStore.virtualRoleId].cueset.clues.forEach(element => {
+        element.isNew = false
+        element.type = 0
+    });
+    updateInfo(newInfo)
+}
+
+const isNewClueShow = ref(false)
+const isDeepClue = ref(false)
+const voiceIndex = ref(-1)
+const newClueSrc = ref('http://159.138.147.87/statics/img/clue2.png')
+watch(() => memberStore.info.characters[memberStore.virtualRoleId].cueset.clues, () => {
+    //   console.log(memberStore.info.characters[memberStore.virtualRoleId].cueset.clues[0])
+    const newclue = memberStore.info.characters[memberStore.virtualRoleId].cueset.clues.slice(-1)[0]
+    if (newclue.type === 0) {
+        if (newclue.isNew) {
+            if (newclue.type === 0) {
+                isNewClueShow.value = true
+                isDeepClue.value = false
+                newClueSrc.value = `http://159.138.147.87/statics/img/${newclue.name}.png`
+            }
+        }
+    } else if (newclue.type === 1) {
+        dialogObj.value.title = '获得新线索'
+        dialogObj.value.content = '您获得新的6条个人线索，请前往线索集查看'
+        dialogObj.value.type = 'getClues'
+        dialogObj.value.confirmText = '查看'
+        modifyDialog()
+    } else if (newclue.type === 3) {
+        dialogObj.value.title = '个人任务成功'
+        dialogObj.value.content = '获得一条深入线索'
+        dialogObj.value.type = 'success'
+        dialogObj.value.confirmText = '查看'
+        memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew = true
+        memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].type = 2
+        modifyDialog()
+    } else if (newclue.type === 2) {
+        isNewClueShow.value = true
+        isDeepClue.value = true
+        newClueSrc.value = `http://159.138.147.87/statics/img/${newclue.name}.png`
+    }
+
+})
 </script>
 
 <template>
-    <jump :hideIndex="2" />
 
     <!-- 新线索+深入线索动画弹窗 -->
-    <view class="newClue-mask flex-row-center" v-show="false">
-        <view :class="isScale ? 'notScale' : 'isScale'"
+    <view class="newClue-mask flex-row-center" v-show="isNewClueShow">
+        <view :class="isScale ? 'notScale' : 'isScale'" v-if="isDeepClue"
             style="transition: all 2s;;position: absolute;z-index: 13000;width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;padding-bottom: 120rpx;">
-            <img mode='aspectFit' class="newClue-img-A" :class="isRotate ? 'newClue-img-A-rotate' : ''"
+            <img mode='aspectFit' class="newClue-img-A" :class="isRotate ? 'newClue-img-A-rotate' : ''" @tap="ani()"
                 src="http://159.138.147.87/statics/img/clue1.png" alt="">
             <view
                 style="transform: rotateY(180deg);width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
@@ -220,13 +285,13 @@ setTimeout(() => {
                     src="http://159.138.147.87/statics/img/clue2.png" alt="">
             </view>
         </view>
-        <view class="newClue flex-column-sb-center" :class="isScale ? 'show' : 'hide'">
+        <view class="newClue flex-column-sb-center" :class="isDeepClue ? isScale ? 'show' : 'hide' : ''">
             <view class="newClue-title hyshtj">
-                获得一条深入线索
+               {{ isDeepClue? " 获得一条深入线索":" 获得一条新线索" }}
             </view>
-            <img class="newClue-img" src="http://159.138.147.87/statics/img/clue2.png" alt="">
+            <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt="">
             <view style="">这里看起来似乎有些不同寻常</view>
-            <view class="theme-button2 button">
+            <view class="theme-button2 button" @tap="isNewClueShow = false; updateClues()">
                 <view class="theme-button-clear"></view>
                 <view class="newClue-btn-text hyshtj">收入线索集</view>
             </view>
@@ -234,10 +299,10 @@ setTimeout(() => {
     </view>
 
     <view class="map">
-        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" />
 
         <!-- 地图搜证 -->
-        <view class="map-search" v-for="(item, index) in locationList" :key="item.name" v-show="false">
+        <view class="map-search" v-for="(item, index) in locationList" :key="item.name"
+            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 2 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].status === 0">
             <view class="location flex-row-center hyshtj" :style="{ top: item.position.top, left: item.position.left }">
                 {{ item.name }}
             </view>
@@ -245,15 +310,20 @@ setTimeout(() => {
                 src="http://159.138.147.87/statics/img/location_icon.png" alt="">
         </view>
         <!-- 音频搜证地点 -->
-        <view class="audio-search" v-for="(item, index) in audioList" :key="item.name" v-show="true">
+        <view class="audio-search" @tap="voiceIndex = index"
+            v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content"
+            :key="item.name"
+            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].status === 2 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[4].status === 0">
             <view class="audio-serach-location flex-row-center hyshtj" @tap="audioIndex = index"
-                :style="{ top: item.position.top, left: item.position.left, zIndex: audioIndex === index ? '10000' : '1' }">
-                <view  v-if="item.users[0] !== -1" class="audio-serach-location-avatar">
-                    <img class="audio-serach-location-avatar-img" :src="charactersList[item.users[0]].avatar" alt="">
+                :style="{ top: item.position.top, left: item.position.left, zIndex: audioIndex === index ? '10011' : '1' }">
+                <view v-if="item.users[0] !== -1" class="audio-serach-location-avatar">
+                    <img class="audio-serach-location-avatar-img" :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[0]].avatar" alt="">
                 </view>
-                <view v-if="item.users[1] !== -1" class="audio-serach-location-avatar" style="margin-left: 80rpx;z-index: -1;">
-                    <img class="audio-serach-location-avatar-img" :src="charactersList[item.users[1]].avatar" alt="">
+                <view v-if="item.users[1] !== -1" class="audio-serach-location-avatar"
+                    style="margin-left: 80rpx;z-index: -1;">
+                    <img class="audio-serach-location-avatar-img" :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[1]].avatar" alt="">
                 </view>
+                <!-- {{memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[1]]}} -->
                 <!-- {{ avatar }} -->
                 {{ item.name }}
             </view>
@@ -261,31 +331,46 @@ setTimeout(() => {
 
         <!-- 音频搜证选择地点入座 -->
         <view>
-            <view class="dialog-mask" :class="{ show: false }"
+            <view class="dialog-mask" :class="{ show: voiceIndex !== -1 }" v-if="voiceIndex !== -1"
                 :style="{ background: dialogObj.dialogVisible ? 'rgba(0, 0, 0, 0)' : 'rgba(0, 0, 0, 0.6)' }">
                 <view class="dialog-inner">
                     <view class="dialog-header">
                     </view>
-                    <text class="hyshtj font-player-gradient1 dialog-title">{{ dialogObj.title }}</text>
+                    <text class="hyshtj font-player-gradient1 dialog-title">图书馆传来一些声音</text>
                     <view class="dialog-content">
                         这里似乎有人交流过，请找出在此处交流的二人。
                     </view>
 
                     <view class="flex-row-sb avatar-box">
-                        <view v-for="(item, index) in audioList[audioIndex].users" :key="index">
                             <view class="avatar flex-row-center">
-                                <view @tap="audioList[audioIndex].users[index] = 2" v-if="item === -1">+</view>
-                                <img v-else :src="charactersList[item].avatar" alt="">
-                                <img @tap="audioList[audioIndex].users[index] = -1" class="out-btn"
+                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = parseInt(memberStore.virtualRoleId);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] === -1">+</view>
+                                <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0]].avatar" alt="">
+                                <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = -1;updateInfo(memberStore.info)" class="out-btn"
+                                src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
+                            </view>
+                            <view class="avatar flex-row-center">
+                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = parseInt(memberStore.virtualRoleId);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] === -1">+</view>
+                                <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]].avatar" alt="">
+                                 <!-- <text v-else>{{ charactersList[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]] }}</text> -->
+                                <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = -1;updateInfo(memberStore.info)" class="out-btn"
                                     src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
                             </view>
-                        </view>
+                        <!-- <view
+                            v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content.users"
+                            :key="index">
+                            <view class="avatar flex-row-center">
+                                <view @tap="item = 2" v-if="item === -1">+</view>
+                                <img v-else :src="charactersList[item].avatar" alt="">
+                                <img @tap="item = -1" class="out-btn"
+                                    src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
+                            </view>
+                        </view> -->
                     </view>
 
                     <view class="dialog-control hyshtj">
-                        <view @tap="showDialog" class="theme-button button">
+                        <view @tap="voiceIndex = -1" class="theme-button button">
                             <view class="theme-button-clear "></view>
-                            <view  class="font-player-gradient2 hyshtj">返回</view>
+                            <view class="font-player-gradient2 hyshtj">返回</view>
                         </view>
                     </view>
 
@@ -294,11 +379,13 @@ setTimeout(() => {
         </view>
 
         <!-- 答疑解惑 -->
-        <view class="FAQ">
+        <view class="FAQ" @tap="faq(memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0])"
+            v-if="memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0] && !memberStore.info.characters[memberStore.virtualRoleId].cueset.qa.slice(-1)[0].isNew">
         </view>
 
         <!-- 开启逐风 -->
-        <view class="newClue-mask" v-show="false">
+        <view class="newClue-mask"
+            v-show="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[0].status === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
             <view class="zhufeng">
             </view>
             <view class="zhufeng-text">我是逐风，我可以帮你梳理信息，
@@ -319,10 +406,12 @@ setTimeout(() => {
     /* box-sizing: border-box; */
     border-radius: 999rpx;
 }
-.audio-serach-location-avatar-img{
+
+.audio-serach-location-avatar-img {
     width: 40rpx;
     height: 40rpx;
 }
+
 .show {
     opacity: 1;
     animation: 1s changeShow;
@@ -381,6 +470,7 @@ setTimeout(() => {
 .newClue-title {
     font-size: 35rpx;
     margin-top: -20rpx;
+    pointer-events: all;
 }
 
 .newClue {
@@ -480,6 +570,7 @@ setTimeout(() => {
     background: url('http://159.138.147.87/statics/img/FAQ.png') no-repeat;
     background-size: 100% 100%;
     background-position: center;
+    pointer-events: all;
 }
 
 .zhufeng {
@@ -501,7 +592,7 @@ setTimeout(() => {
 
 .dialog-mask {
     position: fixed;
-    z-index: 9999;
+    z-index: 10000;
     top: 0;
     left: 0;
     width: 100%;
@@ -565,7 +656,7 @@ setTimeout(() => {
 }
 
 .dialog-title {
-    font-size: 50rpx;
+    font-size: 40rpx;
 }
 
 .dialog-content {
@@ -595,6 +686,8 @@ setTimeout(() => {
 
 .theme-button2 {
     width: 245rpx;
+    position: relative;
+    z-index: 14000;
     line-height: 124.5rpx;
     font-size: 28rpx;
     /* border-radius: 16px; */

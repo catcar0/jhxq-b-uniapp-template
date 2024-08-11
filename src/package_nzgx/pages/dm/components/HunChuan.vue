@@ -4,9 +4,9 @@ import { computed, ref } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-const charactersList = charactersStore().characters
 const isShowToast = ref(false)
 const toastContent = ref('')
 const ShowToast = (content: string) => {
@@ -50,20 +50,15 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
         }
     }
 }
-const onChangeDetail = (ev: any, item: any, index: number) => {
-    console.log(index);
+
+const onConfirm = ref<Function>();
+    const onChangeDetail = (ev: any, item: any, index: number) => {
+    // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
+    if (item.status === 2 || item.status === 3) return;
 
     const { flow, teamInfo, characters } = memberStore.info;
     const currentFlow = flow[teamInfo.flowIndex].inner[index];
-
-    if (!ev.detail.value) return;
-
-    const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
-        currentFlow.status = status;
-        currentFlow.isSwitchOn = isSwitchOn;
-        updateInfo(memberStore.info);
-        dialogObj.value.type = currentFlow.title;
-    };
+    const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
 
     const showWarning = () => {
         updateSwitch.value = false;
@@ -73,48 +68,70 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         ShowToast('请按照游戏流程逐步开启');
     };
 
-    const addCluesAndMasks = () => {
-        for (let i = 0; i < 12; i++) {
-            for (let j = 0; j < 6; j++) {
-                characters[j].cueset.clues.push({
-                    name: 'clue3',
-                    context: '黄鹂',
+    // 提前执行逻辑判断
+    if (currentFlow.title === '个人线索发放+个人问题') {
+        if (!(previousFlow.status === 3 && currentFlow.status === 0)) {
+            showWarning();
+            return; // 如果不满足条件，阻止弹窗的显示
+        }
+    } else if (!(previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3)) {
+        showWarning();
+        return; // 如果不满足条件，阻止弹窗的显示
+    }
+
+    // 如果前面的判断通过，显示确认弹窗
+    dialogObj.value.title = '注意';
+    dialogObj.value.content = '确认开启下一环节吗，开启后不可返回';
+    dialogObj.value.confirmText = '确认';
+    dialogObj.value.cancelText = '取消';
+    updateSwitch.value = false;
+        setTimeout(() => {
+            updateSwitch.value = true;
+        }, 0);
+    showDialog();
+
+    onConfirm.value = () => {
+        console.log(index);
+
+        if (!ev.detail.value) return;
+
+        const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
+            currentFlow.status = status;
+            currentFlow.isSwitchOn = isSwitchOn;
+            updateInfo(memberStore.info);
+            dialogObj.value.type = currentFlow.title;
+        };
+
+        const addCluesAndMasks = () => {
+            currentFlow.clues.forEach(element => {
+                addNewItem(0, element, 1, 'clues', '')
+            });
+            currentFlow.content.forEach(element => {
+                characters[element.userIndex].mask.push({
+                    qa: element.qalist,
                     isRead: false,
                     isNew: true,
-                    type: 1,
+                    isError: false,
+                    type: -1,
                 });
+            });
+        };
+
+        if (currentFlow.title === '个人线索发放+个人问题') {
+            if (previousFlow.status === 3 && currentFlow.status === 0) {
+                addCluesAndMasks();
+                updateFlowStatus(2, true);
+            }
+        } else if (currentFlow.title === '开启逐风') {
+            updateFlowStatus(3, true);
+        } else {
+            if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
+                updateFlowStatus(2, true);
             }
         }
-        currentFlow.content.forEach(element => {
-            characters[element.userIndex].mask.push({
-                q: '你和李梦是什么关系？为什么你一定要保护她',
-                a: '',
-                isRead: false,
-                isNew: true,
-                type: 0,
-            });
-        });
     };
-
-    const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
-
-    if (currentFlow.title === '个人线索发放+个人问题') {
-        if (previousFlow.status === 3 && currentFlow.status === 0) {
-            addCluesAndMasks();
-            updateFlowStatus(2, true);
-        } else {
-            showWarning();
-        }
-    } else if (currentFlow.title === '开启逐风') {
-        updateFlowStatus(3, true);
-    } else {
-        if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
-            updateFlowStatus(2, true);
-        } else {
-            showWarning();
-        }
-    }
 };
+
 
 const showZstDialog = (location: string, clue: any, zst_index: number) => {
     dialogObj.value.title = '请确认答案'
@@ -126,13 +143,17 @@ const showZstDialog = (location: string, clue: any, zst_index: number) => {
     dialogObj.value.cancelText = '回答错误'
     showDialog()
 }
-const showQaDialog = (index: number) => {
+const showQaDialog = (index: number, qa: any, userIndex:number, deepclue:string,clue:string) => {
     dialogObj.value.title = '注意'
     dialogObj.value.content = '请DM确认向以下用户提问并核对答案:'
     dialogObj.value.confirmText = '回答正确'
     dialogObj.value.cancelText = '回答错误'
     dialogObj.value.qa_index = index
     dialogObj.value.type = '个人线索发放+个人问题'
+    dialogObj.value.userIndex = userIndex
+    dialogObj.value.qa = qa
+    dialogObj.value.deepClue = deepclue
+    dialogObj.value.clue = clue
     showDialog()
 }
 const statusText = ref(['待开启', '待开启', '进行中', '已完成'])
@@ -147,12 +168,15 @@ const dialogObj = ref({
     location: '',
     type: '',
     clue: '',
+    deepClue:'',
     zst_index: 0,
     qa_index: 0,
+    userIndex:0,
+    qa:[]
 })
 
-const getContent = (title:string) => {
-  return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
 };
 const zfContent = getContent('开启逐风');
 const zstContent = getContent('找尸体');
@@ -162,8 +186,86 @@ const dtContent = getContent('地图搜证');
 const glContent = getContent('卦灵');
 const fyContent = getContent('封印动画');
 const fyContent2 = getContent('封印动画2');
-const aa = () =>{
+const aa = () => {
     console.log(ypContent)
+}
+const matchResult = (result: string) => {
+    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].result = result
+    if (result === '验证成功') {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].status = 3
+        for (let index = 0; index < 6; index++) {
+            memberStore.info.characters[index].cueset.audio.push({
+                name: ypContent.value[matchIndex.value].clue,
+                isNew: ypContent.value[matchIndex.value].users.includes(index),
+                deepClue: '',
+                type: 0
+            })
+        }
+    }
+    const allStatusAreThree = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content.every(item => item.status === 3);
+    console.log(allStatusAreThree)
+    // 如果所有 status 都为 3，则将最外层的 status 设置为 3
+    if (allStatusAreThree) {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').status = 3;
+    }
+    updateInfo(memberStore.info);
+}
+const match = (canMatch: boolean, currentContent: any, allContent: any) => {
+    if (!canMatch) {
+        console.log("匹配失败");
+        return;
+    }
+
+    const currentUsers = [...currentContent.users].sort((a, b) => a - b);
+    const currentAnser = [...currentContent.anser].sort((a, b) => a - b);
+
+    let foundPartialMatch = false;
+    let missingUser = null;
+    let foundInOtherLocation = false;
+
+    // 检查 currentContent 内部的完全匹配和部分匹配
+    if (JSON.stringify(currentUsers) === JSON.stringify(currentAnser)) {
+        matchResult("验证成功");
+        return;
+    } else {
+        const partialMatch = currentUsers.filter(user => currentAnser.includes(user));
+        if (partialMatch.length > 0) {
+            foundPartialMatch = true;
+
+            const missing = currentUsers.filter(user => !currentAnser.includes(user));
+            if (missing.length === 1) {
+                missingUser = missing[0];
+            }
+        }
+    }
+
+    // 检查在其他地点是否有匹配
+    for (const location of allContent) {
+        if (location.name === currentContent.name) {
+            continue;
+        }
+
+        const locationAnser = [...location.anser].sort((a, b) => a - b);
+        const commonUsers = currentUsers.filter(user => locationAnser.includes(user));
+
+        if (commonUsers.length > 0) {
+            foundInOtherLocation = true;
+            break;
+        }
+    }
+
+    // 根据检查结果输出消息
+    if (foundPartialMatch) {
+        if (missingUser !== null) {
+            matchResult(`这里似乎没有${memberStore.info.characters[missingUser].name}的声音。`);
+        } else {
+            matchResult("换个地方试试吧。");
+        }
+    } else if (foundInOtherLocation) {
+        matchResult("换个地方试试吧。");
+    } else {
+        matchResult("TA们似乎没有在此处对话过。");
+    }
 }
 // 关闭弹窗
 const closeDialog = () => {
@@ -173,6 +275,16 @@ const closeDialog = () => {
 const showDialog = () => {
     dialogObj.value.dialogVisible = true
 }
+const openhy = () => {
+    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 2
+    updateInfo(memberStore.info);
+}
+const openxa = () => {
+    if (glContent.value.hy.status === 3) {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
+        updateInfo(memberStore.info);
+    }
+}
 </script>
 
 <template>
@@ -181,7 +293,7 @@ const showDialog = () => {
         <view class="toast flex-row-center">{{ toastContent }}</view>
     </view>
 
-    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" />
+    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" :onConfirm='onConfirm' />
 
     <!-- 三次魂穿+海报分享 -->
     <view style="padding-bottom: 300rpx;" @tap="aa">
@@ -201,7 +313,7 @@ const showDialog = () => {
             </view>
 
             <!-- 魂穿任务 -->
-            <view class="flex-column-sb  hunchuan-details-box" v-show="item.status === 2 && index !== 3" >
+            <view class="flex-column-sb  hunchuan-details-box" v-show="item.status === 2 && index !== 3">
 
                 <view class="hunchuan-details" :class="'hunchuan-box-' + (detail.status === 3 ? 3 : '01')"
                     v-for="(detail, detailIndex) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner"
@@ -210,8 +322,8 @@ const showDialog = () => {
                     <!-- 具体魂穿任务名称和状态 -->
                     <view class="flex-row-sb task-box">
                         <view> {{ detailIndex + 1 }}.&nbsp;{{ detail.title }}</view>
-                        <switch v-if="updateSwitch" class="switch" :checked="detail.isSwitchOn"
-                            :disabled="detail.status === 3" @change="onChangeDetail($event, detail, detailIndex)" />
+                        <switch v-if="updateSwitch" class="switch" :checked="detail.status === 3 || detail.status === 2"
+                            :disabled="detail.status === 3 || detail.status === 2" @change="onChangeDetail($event, detail, detailIndex)" />
                     </view>
 
                     <!-- 需要完成的具体任务内容 -->
@@ -234,10 +346,10 @@ const showDialog = () => {
                     <view v-if="detail.status === 2 && detail.title === '个人线索发放+个人问题'">
                         <text style="font-size: 24.5rpx;">请DM确认向以下用户提问并核对答案:</text>
                         <view class="flex-row-center qa-box">
-                            <view @tap="showQaDialog(qa_index)" class="flex-column-sb-center gap-10"
+                            <view @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue)" class="flex-column-sb-center gap-10"
                                 v-for="(qa, qa_index) in detail.content">
-                                <img class="avatar" :src="memberStore.info.characters[qa_index + 1].avatar" alt="">
-                                <text>{{ memberStore.info.characters[qa_index + 1].name }}</text>
+                                <img class="avatar" :src="memberStore.info.characters[qa.userIndex].avatar" alt="">
+                                <text>{{ memberStore.info.characters[qa.userIndex].name }}</text>
                                 <view v-show="qa.status === 3" class="flex-row-center status" :class="'status-' + 3">
                                     {{
                                         statusText[3] }}</view>
@@ -258,7 +370,7 @@ const showDialog = () => {
                                 </view>
                                 <view @tap="matchIndex = index_sz"
                                     :class='matchIndex == index_sz ? "evidence-box-location-selected" : ""'
-                                    class="evidence-box-location flex-row-center">{{ item.location }}</view>
+                                    class="evidence-box-location flex-row-center">{{ item.name }}</view>
                             </view>
                         </view>
 
@@ -271,27 +383,34 @@ const showDialog = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                    }}</text>
+                                }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
                         <view class="button"
-                            :style="{ background: ypContent[matchIndex].users.length === 2 ? '#8AEB99' : ' linear-gradient(90deg, #F09235 0%, #EA6A00 100%)' }">
-                            匹配判断</view>
+                            @tap="match((ypContent[matchIndex].users[0] !== -1 && ypContent[matchIndex].users[1] !== -1), ypContent[matchIndex], ypContent)"
+                            :style="{ background: (ypContent[matchIndex].users[0] !== -1 && ypContent[matchIndex].users[1] !== -1) ? '#8AEB99' : ' linear-gradient(90deg, #F09235 0%, #EA6A00 100%)' }">
+                            匹配判断 </view>
                     </view>
 
                     <!-- 卦灵 -->
                     <view v-if="detail.status === 2 && detail.title === '卦灵'">
-                        <navigator url="/package_nzgx/pages/questionnaire/questionnaire" hover-class="none">
-                            <view class="survey-box flex-row-center">
-                                <text class="absolute-center survey-title">还原问卷</text>
-                                <view class="flex-row-center status survey-status" :class="'status-' + 3">{{
-                                    statusText[3] }}</view>
+                        <navigator :url="`/package_nzgx/pages/dm/questionnaire?name=${glContent.hy.name}`"
+                            hover-class="none">
+                            <view class="survey-box flex-row-center" @tap="openhy">
+                                <text class="absolute-center survey-title">{{ glContent.hy.name }}</text>
+                                <view class="flex-row-center status survey-status"
+                                    :class="'status-' + glContent.hy.status">{{
+                                        statusText[glContent.hy.status] }}</view>
                             </view>
-                            <view class="survey-box flex-row-center">
-                                <text class="absolute-center survey-title">凶案问卷</text>
-                                <view class="flex-row-center status survey-status" :class="'status-' + 3">{{
-                                    statusText[3] }}</view>
+                        </navigator>
+                        <navigator :url="`/package_nzgx/pages/dm/questionnaire?name=${glContent.xa.name}`"
+                            hover-class="none">
+                            <view class="survey-box flex-row-center" @tap="openxa">
+                                <text class="absolute-center survey-title">{{ glContent.xa.name }}</text>
+                                <view class="flex-row-center status survey-status"
+                                    :class="'status-' + glContent.xa.status">{{
+                                        statusText[glContent.xa.status] }}</view>
                             </view>
                         </navigator>
                     </view>

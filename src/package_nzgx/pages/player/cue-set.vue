@@ -3,11 +3,11 @@ import { onBeforeUnmount, onMounted, ref } from 'vue';
 import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { allClues } from '@/package_nzgx/services/clues';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const setClass = ['物品', '音频', '记录']
 const classIndex = ref(0)
-const clues = ['clue1', 'clue2', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3']
 const cluesIndex = ref(-1)
 interface AudioItem {
     src: string;
@@ -65,10 +65,11 @@ const audioList = ref<AudioItem[]>([
                     <view class="font-player-gradient1">线索集</view>
                 </view>
                 <scroll-view scroll-y style="height: 71vh;">
-                    <img v-if="cluesIndex !== -1" class="clue-big-image" :src="`http://159.138.147.87/statics/img/${memberStore.info.characters[memberStore.virtualRoleId].cueset.clues[cluesIndex].name}.png`"
+                    <img v-if="cluesIndex !== -1" class="clue-big-image" :src="allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url + '.png'"
                         alt="">
                     <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
-                        举报他们了，你也受不了他们很久了吧？这次我一定会配合你（是春天的字迹）
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].content1 }}
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].name }}
                     </view>
                     <view class="clues-box flex-row-center">
                         <!-- <view class="make-old2"></view> -->
@@ -78,11 +79,11 @@ const audioList = ref<AudioItem[]>([
                                 <img class="clue-selected-border2" v-show="cluesIndex === index"
                                     src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
                                 <view class="clue-small-image"
-                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/img/${item.name}.png)` }">
+                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${item.name}.png)` }">
                                     <!-- <img class="clue-small-image"  :src="`http://159.138.147.87/statics/img/${item}.png`" alt=""> -->
                                 </view>
                             </view>
-                            <view style="padding-top: 15rpx;text-align: center;"><text>海报</text></view>
+                            <view style="padding-top: 15rpx;text-align: center;"><text>{{ allClues[item.name].name }}</text></view>
                         </view>
                     </view>
                 </scroll-view>
@@ -94,7 +95,7 @@ const audioList = ref<AudioItem[]>([
                     <view class="font-player-gradient1">调查记录</view>
                 </view>
                 <scroll-view scroll-y style="width: 625rpx;height: 71vh;padding-top: 20rpx;">
-                    <audioplay class="a" :audioList="audioList" />
+                    <audioplay class="a" :audioList="audioList" :isDialog="false" />
                 </scroll-view>
                 <!-- <view class="audio-box flex-row-sb" v-for="(item, index) in audioList" :key="index">
                 </view> -->

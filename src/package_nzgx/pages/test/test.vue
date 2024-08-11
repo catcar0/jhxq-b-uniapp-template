@@ -102,6 +102,16 @@ const generateRandomNumber = (minDigits = 3, maxDigits = 12) => {
   const max = Math.pow(10, maxDigits) - 1;
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+const getUserInfo = () =>{
+  console.log('aa')
+  uni.getUserInfo({
+        provider: 'weixin',
+        success: (res) => {
+          console.log('getUserInfo', res);
+        },
+      });
+}
 onMounted(() => {
   if (memberStore.profile.token) {
     webSocketStore.connect();
@@ -123,6 +133,10 @@ onUnmounted(() => {
     <!-- <button @tap="joinGame('1')">玩家1加入游戏</button> -->
     <!-- <button @tap="startGame">开始游戏</button> -->
     <button @tap="initInfo">初始化info</button>
+    <button @tap="getUserInfo">
+        微信用户一键登录
+      </button>
+
     <!-- <button @tap="updateInfo">更新info</button>
     <button @tap="fun('dd')">获取并修改info</button> -->
     <!-- <button @tap="joinRoom('player2')">玩家2加入房间</button>

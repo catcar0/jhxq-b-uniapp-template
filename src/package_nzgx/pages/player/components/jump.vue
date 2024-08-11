@@ -10,7 +10,7 @@ const pages = computed(() => {
     return [
         {
             name: props.flow.inner.find((item: { title: string; }) => item.title === '开启逐风').status === 0 ? '???' : props.flow.inner.find((item: { title: string; }) => item.title === '卦灵').status === 0 ? '逐风' : '卦灵',
-            url: 'ZfMap',
+            url: props.flow.inner.find((item: { title: string; }) => item.title === '卦灵').status === 0 ? 'ZfMap' : 'Gualing',
             status: props.flow.inner.find((item: { title: string; }) => item.title === '开启逐风').status === 0 ? '0' : '1'
         },
         {

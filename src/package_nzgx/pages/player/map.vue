@@ -3,16 +3,16 @@ import { computed, ref, watch } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { allClues } from '@/package_nzgx/services/clues';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-const charactersList = charactersStore().characters
 import { defineProps, defineEmits } from 'vue';
-import { onShow } from '@dcloudio/uni-app';
+import { addNewItem } from '@/package_nzgx/services/info';
 
 const props = defineProps({
     dialogObj: Object,
     userInfo: Object,
-    flow:Object
+    flow: Object
 });
 
 const emit = defineEmits(['updateDialogObj']);
@@ -21,6 +21,7 @@ const modifyDialog = () => {
     dialogObj.value.dialogVisible = true
     emit('updateDialogObj', dialogObj);
 };
+// 第一次魂穿 0 3 11 13 5
 const locationList = ref(
     [
         {
@@ -31,7 +32,9 @@ const locationList = ref(
                 iconTop: '110rpx',
                 iconLeft: '330rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue17',
+            id: 0
         },
         {
             name: '后山',
@@ -41,7 +44,9 @@ const locationList = ref(
                 iconTop: '170rpx',
                 iconLeft: '540rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue2',
+            id: 1
         },
         {
             name: '操场',
@@ -51,7 +56,9 @@ const locationList = ref(
                 iconTop: '260rpx',
                 iconLeft: '350rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 2
         },
         {
             name: '厕所',
@@ -61,7 +68,9 @@ const locationList = ref(
                 iconTop: '240rpx',
                 iconLeft: '110rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue14',
+            id: 3
         },
         {
             name: '花坛',
@@ -71,7 +80,9 @@ const locationList = ref(
                 iconTop: '320rpx',
                 iconLeft: '500rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 4
         },
         {
             name: '教学楼',
@@ -81,7 +92,9 @@ const locationList = ref(
                 iconTop: '450rpx',
                 iconLeft: '220rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue18',
+            id: 5
         },
         {
             name: '保安室',
@@ -91,7 +104,9 @@ const locationList = ref(
                 iconTop: '410rpx',
                 iconLeft: '30rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 6
         },
         {
             name: '校公告栏',
@@ -101,7 +116,9 @@ const locationList = ref(
                 iconTop: '540rpx',
                 iconLeft: '460rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 7
         },
         {
             name: '食堂',
@@ -111,7 +128,9 @@ const locationList = ref(
                 iconTop: '630rpx',
                 iconLeft: '260rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 8
         },
         {
             name: '洗衣房',
@@ -121,7 +140,9 @@ const locationList = ref(
                 iconTop: '750rpx',
                 iconLeft: '690rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 9
         },
         {
             name: '图书馆',
@@ -131,7 +152,9 @@ const locationList = ref(
                 iconTop: '850rpx',
                 iconLeft: '410rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 10
         },
         {
             name: '活动楼',
@@ -141,7 +164,9 @@ const locationList = ref(
                 iconTop: '870rpx',
                 iconLeft: '50rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue16',
+            id: 11
         },
         {
             name: '宿舍',
@@ -151,7 +176,9 @@ const locationList = ref(
                 iconTop: '930rpx',
                 iconLeft: '630rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 12
         },
         {
             name: '教务处',
@@ -161,7 +188,9 @@ const locationList = ref(
                 iconTop: '1070rpx',
                 iconLeft: '40rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue15',
+            id: 13
         },
         {
             name: '独栋小楼',
@@ -171,29 +200,14 @@ const locationList = ref(
                 iconTop: '1230rpx',
                 iconLeft: '310rpx'
             },
-            isShow: true
+            isShow: true,
+            clue: 'clue1',
+            id: 14
         },
     ]
 )
 const audioIndex = ref(0)
-const audioList = ref([
-    {
-        name: '图书馆',
-        position: {
-            top: '245rpx',
-            left: '210rpx',
-        },
-        users: [-1, 2]
-    },
-    {
-        name: '图书馆',
-        position: {
-            top: '730rpx',
-            left: '490rpx',
-        },
-        users: [1, -1]
-    }
-])
+
 const dialogObj = ref({
     dialogVisible: false,
     title: '请输入您的昵称',
@@ -202,6 +216,8 @@ const dialogObj = ref({
     cancelText: '取消',
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
+    hideCloseIcon: false,
+    clue:''
 })
 const isRotate = ref(false)
 const isScale = ref(false)
@@ -215,12 +231,15 @@ const ani = () => {
 }
 const userIndex = computed(() => memberStore.virtualRoleId - 1)
 const faq = (item: any) => {
-    console.log('aa')
-    memberStore.info.characters[userIndex.value].mask.slice(-1)[0].isNew = true
+    let newContent = '';
+    item.qa.forEach(itema => {
+        const questionText = itema.question.replace(/^\d+\.\s*/, '');
+        newContent += questionText + '\n';
+    });
     dialogObj.value.dialogVisible = true
     dialogObj.value.title = '你当前收到一条个人任务'
     dialogObj.value.confirmText = '确定'
-    dialogObj.value.content = item.q
+    dialogObj.value.content = newContent
     dialogObj.value.type = 'newTask2'
 }
 const updateInfo = (info: any) => {
@@ -236,8 +255,8 @@ const updateClues = () => {
     });
     updateInfo(newInfo)
 }
-const getStatus = (title:string) => {
-  return computed(() => props.flow?.inner.find((item: { title: string; }) => item.title === title)?.status ?? 3);
+const getStatus = (title: string) => {
+    return computed(() => props.flow?.inner.find((item: { title: string; }) => item.title === title)?.status ?? 3);
 };
 const zfStatus = getStatus('开启逐风');
 const zstStatus = getStatus('找尸体');
@@ -247,65 +266,148 @@ const dtStatus = getStatus('地图搜证');
 const glStatus = getStatus('卦灵');
 const fyStatus = getStatus('封印动画');
 const fyStatus2 = getStatus('封印动画2');
-// const zfStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '开启逐风')?.status ?? 3
-// const zstStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '找尸体')?.status ?? 3
-// const grStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题')?.status ?? 3
-// const ypStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '音频搜证')?.status ?? 3
-// const dtStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '地图搜证')?.status ?? 3
-// const glStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '卦灵')?.status ?? 3
-// const fyStatus = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画')?.status ?? 3
-// const fyStatus2 = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画2')?.status ?? 3
+// ypContent[voiceIndex].users
+const getYpUsers = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content[voiceIndex.value].users ?? null);
+};
+const ypUsers = getYpUsers('音频搜证');
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const zfContent = getContent('开启逐风');
+const zstContent = getContent('找尸体');
+const grContent = getContent('个人线索发放+个人问题');
+const ypContent = getContent('音频搜证');
+const dtContent = getContent('地图搜证');
+const glContent = getContent('卦灵');
+const fyContent = getContent('封印动画');
+const fyContent2 = getContent('封印动画2');
 
-const zfContent = props.flow?.inner.find((item: { title: string; }) => item.title === '开启逐风')?.content ?? null
-const zstContent = props.flow?.inner.find((item: { title: string; }) => item.title === '找尸体')?.content ?? null
-const grContent= props.flow?.inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题')?.content ?? null
-const ypContent = props.flow?.inner.find((item: { title: string; }) => item.title === '音频搜证')?.content ?? null
-const dtContent = props.flow?.inner.find((item: { title: string; }) => item.title === '地图搜证')?.content ?? null
-const glContent = props.flow?.inner.find((item: { title: string; }) => item.title === '卦灵')?.content ?? null
-const fyContent = props.flow?.inner.find((item: { title: string; }) => item.title === '封印动画')?.content ?? null
-
-
-const show1 = () =>{
-    console.log(zfStatus, zstStatus, fyStatus2, fyStatus, ypStatus)
+const canJoin = ref(true)
+const userJoinRoom = ref(-1)
+const updateYpUsers = (user: number, newUserIndex: number, index: number, roomUserIndex: number) => {
+    if (newUserIndex !== -1 && !canJoin.value) {
+        console.log('无法加入')
+        return
+    }
+    if (user === -1 || user === userIndex.value) {
+        user = newUserIndex
+        if (newUserIndex === -1) {
+            canJoin.value = true; userJoinRoom.value = -1
+        }
+        else canJoin.value = false; userJoinRoom.value = index
+    }
+    console.log('----------', newUserIndex, canJoin.value, index)
+    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[voiceIndex.value].users[roomUserIndex] = user
+    updateInfo(memberStore.info)
 }
 
 const isNewClueShow = ref(false)
 const isDeepClue = ref(false)
 const voiceIndex = ref(-1)
 const newClueSrc = ref('http://159.138.147.87/statics/img/clue2.png')
-watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
-      console.log(memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0])
-    const newclue = memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0]
-    if (newclue.type === 0) {
-        if (newclue.isNew) {
-            if (newclue.type === 0) {
-                isNewClueShow.value = true
-                isDeepClue.value = false
-                newClueSrc.value = `http://159.138.147.87/statics/img/${newclue.name}.png`
-            }
-        }
-    } else if (newclue.type === 1) {
-        dialogObj.value.title = '获得新线索'
-        dialogObj.value.content = '您获得新的6条个人线索，请前往线索集查看'
-        dialogObj.value.type = 'getClues'
-        dialogObj.value.confirmText = '查看'
-        modifyDialog()
-    } else if (newclue.type === 3) {
-        dialogObj.value.title = '个人任务成功'
-        dialogObj.value.content = '获得一条深入线索'
-        dialogObj.value.type = 'success'
-        dialogObj.value.confirmText = '查看'
-        memberStore.info.characters[userIndex.value].mask.slice(-1)[0].isNew = true
-        memberStore.info.characters[userIndex.value].mask.slice(-1)[0].type = 2
-        modifyDialog()
-    } else if (newclue.type === 2) {
-        isNewClueShow.value = true
-        isDeepClue.value = true
-        newClueSrc.value = `http://159.138.147.87/statics/img/${newclue.name}.png`
+const oldClueSrc = ref('http://159.138.147.87/statics/img/clue1.png')
+watch(() => canJoin, () => {
+    console.log(canJoin)
+})
+watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value], (a, b) => {
+    // console.log(a, b, userJoinRoom.value)
+    if (!a || !a.result || a.result === '' || (a !== undefined && b === undefined) || (a.users[0] === -1 || a.users[1] === -1)) {
+        return
     }
-
+    if(a.result === '已验证成功') return
+    if (a.result === '验证成功') {
+        dialogObj.value.title = '推理成功'
+        dialogObj.value.content = '收获一条音频线索'
+        dialogObj.value.type = 'voice'
+        dialogObj.value.confirmText = '收入线索集'
+        dialogObj.value.hideCloseIcon = true
+        dialogObj.value.clue = a.clue
+        voiceIndex.value = -1
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result='已验证成功'
+        updateInfo(memberStore.info)
+        // addNewItem(userIndex.value, a.clue, 0 ,'audio','')
+        modifyDialog()
+    } else {
+        canJoin.value = true
+        voiceIndex.value = -1
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].users = [-1,-1]
+        dialogObj.value.title = '推理失败'
+        dialogObj.value.content = a.result
+        dialogObj.value.type = 'matchResult'
+        dialogObj.value.confirmText = '确定'
+        dialogObj.value.hideCloseIcon = true
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result = ''
+        updateInfo(memberStore.info)
+        modifyDialog()
+    }
 },
-{ deep: true })
+    { deep: true })
+watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
+    const newclue = memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0];
+    if (!newclue) {
+        return
+    }
+    if (newclue.isNew) {
+        switch (newclue.type) {
+            case 0:
+                isNewClueShow.value = true;
+                isDeepClue.value = false;
+                newClueSrc.value = `http://159.138.147.87/statics/clues/${newclue.name}.png`;
+                break;
+            case 1:
+                dialogObj.value.title = '获得新线索';
+                dialogObj.value.content = '您获得新的6条个人线索，请前往线索集查看';
+                dialogObj.value.type = 'getClues';
+                dialogObj.value.confirmText = '查看';
+                modifyDialog();
+                break;
+            case 2:
+                isNewClueShow.value = true;
+                isDeepClue.value = true;
+                newClueSrc.value = allClues[newclue.name].url + '.png';
+                oldClueSrc.value = allClues[newclue.deepClue].url + '.png';
+                break;
+            case 3:
+                dialogObj.value.title = '个人任务成功';
+                dialogObj.value.content = '获得一条深入线索';
+                dialogObj.value.type = 'success';
+                dialogObj.value.confirmText = '查看';
+                // memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0].type = 2
+                memberStore.info.characters[userIndex.value].mask.slice(-1)[0].type = 2;
+                modifyDialog();
+                break;
+            default:
+                // 处理未定义的类型
+                console.warn('未处理的线索类型:', newclue.type);
+        }
+    }
+},
+    { deep: true })
+
+const filterLocations = (list: any) => {
+    if (dtStatus.value === 2) {
+        const newList = list.filter(item => dtContent.value[0].locations.includes(item.id))
+        if (newList.every(item => item.isShow === false)) {
+            memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '地图搜证').status = 3
+            updateInfo(memberStore.info)
+        }
+        return newList;
+    } else {
+        return list
+    }
+};
+const mapSerch = (clue: string, id: number, isShow: boolean) => {
+    if (!isShow) {
+        return
+    }
+    if (dtStatus.value === 2) {
+        addNewItem(userIndex.value,clue,0,'clues','')
+        locationList.value[id].clue = ''
+        locationList.value[id].isShow = false
+        updateInfo(memberStore.info)
+    }
+}
 </script>
 
 <template>
@@ -315,16 +417,16 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
         <view :class="isScale ? 'notScale' : 'isScale'" v-if="isDeepClue"
             style="transition: all 2s;;position: absolute;z-index: 13000;width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;padding-bottom: 120rpx;">
             <img mode='aspectFit' class="newClue-img-A" :class="isRotate ? 'newClue-img-A-rotate' : ''" @tap="ani()"
-                src="http://159.138.147.87/statics/img/clue1.png" alt="">
+                :src="oldClueSrc" alt="">
             <view
                 style="transform: rotateY(180deg);width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
                 <img mode='aspectFit' class="newClue-img-B" :class="isRotate ? 'newClue-img-B-rotate' : ''"
-                    src="http://159.138.147.87/statics/img/clue2.png" alt="">
+                    :src="newClueSrc" alt="">
             </view>
         </view>
         <view class="newClue flex-column-sb-center" :class="isDeepClue ? isScale ? 'show' : 'hide' : ''">
             <view class="newClue-title hyshtj">
-               {{ isDeepClue? " 获得一条深入线索":" 获得一条新线索" }}
+                {{ isDeepClue ? " 获得一条深入线索" : " 获得一条新线索" }}
             </view>
             <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt="">
             <view style="">这里看起来似乎有些不同寻常</view>
@@ -335,11 +437,12 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
         </view>
     </view>
 
-    <view class="map" @tap="show1">
+    <view class="map">
         <view>{{ zstStatus }}{{ ypStatus }}{{ grStatus }}</view>
         <!-- 地图搜证 -->
-        <view class="map-search" v-for="(item, index) in locationList" :key="item.name"
-            v-if="zstStatus === 2 && ypStatus === 0">
+        <view class="map-search" v-for="(item, index) in filterLocations(locationList)" :key="item.name"
+            v-if="(zstStatus === 2 && ypStatus === 0) || (dtStatus === 2 && glStatus === 0)"
+            @tap="mapSerch(item.clue, item.id, item.isShow)" :style="{ filter: item.isShow ? '' : 'brightness(50%)' }">
             <view class="location flex-row-center hyshtj" :style="{ top: item.position.top, left: item.position.left }">
                 {{ item.name }}
             </view>
@@ -347,21 +450,20 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
                 src="http://159.138.147.87/statics/img/location_icon.png" alt="">
         </view>
         <!-- 音频搜证地点 -->
-        <view class="audio-search" @tap="voiceIndex = index"
-            v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content"
-            :key="item.name"
-            v-if="ypStatus === 2 && dtStatus === 0">
+        <view class="audio-search" @tap="voiceIndex = index" v-for="(item, index) in ypContent" :key="item.name"
+            v-show="ypStatus === 2 && dtStatus === 0 && item.status !== 3">
             <view class="audio-serach-location flex-row-center hyshtj" @tap="audioIndex = index"
                 :style="{ top: item.position.top, left: item.position.left, zIndex: audioIndex === index ? '10011' : '1' }">
                 <view v-if="item.users[0] !== -1" class="audio-serach-location-avatar">
-                    <img class="audio-serach-location-avatar-img" :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[0]].avatar" alt="">
+                    <img class="audio-serach-location-avatar-img"
+                        :src="memberStore.info.characters[ypContent[index].users[0]].avatar" alt="">
                 </view>
                 <view v-if="item.users[1] !== -1" class="audio-serach-location-avatar"
                     style="margin-left: 80rpx;z-index: -1;">
-                    <img class="audio-serach-location-avatar-img" :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[1]].avatar" alt="">
+                    <img class="audio-serach-location-avatar-img"
+                        :src="memberStore.info.characters[ypContent[index].users[1]].avatar" alt="">
                 </view>
-                <!-- {{memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[index].users[1]]}} -->
-                <!-- {{ avatar }} -->
+
                 {{ item.name }}
             </view>
         </view>
@@ -379,29 +481,16 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
                     </view>
 
                     <view class="flex-row-sb avatar-box">
-                            <view class="avatar flex-row-center">
-                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = parseInt(userIndex);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] === -1">+</view>
-                                <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0]].avatar" alt="">
-                                <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[0] = -1;updateInfo(memberStore.info)" class="out-btn"
+                        <view class="avatar flex-row-center" v-for="(item, index) in ypContent" :key="index">
+                            <view @tap="updateYpUsers(ypUsers[index], userIndex, voiceIndex, index)"
+                                v-if="ypUsers[index] === -1">+
+                            </view>
+                            <img v-else :src="memberStore.info.characters[ypUsers[index]].avatar" alt="">
+                            <img v-if="ypUsers[index] === userIndex"
+                                @tap="updateYpUsers(ypUsers[index], -1, voiceIndex, index)" class="out-btn"
                                 src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
-                            </view>
-                            <view class="avatar flex-row-center">
-                                <view @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = parseInt(userIndex);updateInfo(memberStore.info)" v-if="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] === -1">+</view>
-                                <img v-else :src="memberStore.info.characters[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]].avatar" alt="">
-                                 <!-- <text v-else>{{ charactersList[memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1]] }}</text> -->
-                                <img @tap="memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content[voiceIndex].users[1] = -1;updateInfo(memberStore.info)" class="out-btn"
-                                    src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
-                            </view>
-                        <!-- <view
-                            v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[3].content.users"
-                            :key="index">
-                            <view class="avatar flex-row-center">
-                                <view @tap="item = 2" v-if="item === -1">+</view>
-                                <img v-else :src="charactersList[item].avatar" alt="">
-                                <img @tap="item = -1" class="out-btn"
-                                    src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
-                            </view>
-                        </view> -->
+                        </view>
+
                     </view>
 
                     <view class="dialog-control hyshtj">
@@ -417,12 +506,11 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
 
         <!-- 答疑解惑 -->
         <view class="FAQ" @tap="faq(userInfo!.mask.slice(-1)[0])"
-            v-if="userInfo!.mask.slice(-1)[0] && !userInfo!.mask.slice(-1)[0].isNew">
+            v-if="userInfo!.mask.slice(-1)[0] && userInfo!.mask.slice(-1)[0].type === 0">
         </view>
 
         <!-- 开启逐风 -->
-        <view class="newClue-mask"
-            v-if="zfStatus === 3 && zstStatus === 0">
+        <view class="newClue-mask" v-if="zfStatus === 3 && zstStatus === 0">
             <view class="zhufeng">
             </view>
             <view class="zhufeng-text">我是逐风，我可以帮你梳理信息，

@@ -5,6 +5,7 @@ import type { DmDialog } from '@/package_nzgx/types/dialog'
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { charactersStore } from '@/package_nzgx/stores';
+import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const updateInfo = (info: any) => {
@@ -13,7 +14,7 @@ const updateInfo = (info: any) => {
     )
 }
 const charactersList = charactersStore().characters
-const props = defineProps<{ dialogObj: any }>()
+const props = defineProps<{ dialogObj: any,onConfirm:Function}>()
 
 const emit = defineEmits(["update:show", "confirm", "cancel"]);
 
@@ -28,46 +29,34 @@ onUnmounted(() => {
 const close = () => {
     emit('update:show', false);
     emit('cancel');
+    if (props.dialogObj.type === '个人线索发放+个人问题') {
+        memberStore.info.characters[props.dialogObj.userIndex].mask.slice(-1)[0].isError = true
+        scoreChange('user',0,[props.dialogObj.userIndex])
+    }
 }
 
 const confirm = () => {
     emit('confirm');
+    if (props.dialogObj.type === '开启下一环节') {
+        props.onConfirm();
+    }
     if (props.dialogObj.type === '找尸体') {
         zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
     }
     if (props.dialogObj.type === '个人线索发放+个人问题') {
-        const newInfo = memberStore.info
-        newInfo.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].status = 3
-        newInfo.characters[newInfo.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].userIndex].score += 10
-        newInfo.characters[newInfo.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].userIndex].cueset.clues.push(
-                        {
-                            name: 'clue2',
-                            context: '海报背面',
-                            isRead: false,
-                            isNew: true,
-                            type: 3
-                        }
-                    )
-        updateInfo(newInfo)
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].status = 3
+        scoreChange('user',50,[props.dialogObj.userIndex])
+        addNewItem(props.dialogObj.userIndex, props.dialogObj.clue, 3, 'clues',props.dialogObj.deepClue)
     }
 }
-const zst = (userIndex: number, clue: any, index:number) => {
-    const newInfo = memberStore.info
-    newInfo.characters[userIndex].cueset.clues.push(
-        {
-            name:clue.name,
-            context:clue.context,
-            isRead:false,
-            isNew:true,
-            type:clue.type
-        }
-    )
-    newInfo.characters[userIndex].score += 10
-    newInfo.flow[newInfo.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
-    if (newInfo.flow[newInfo.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content.slice(-1)[0].status === 3){
-        newInfo.flow[newInfo.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').status = 3
+const zst = (userIndex: number, clue: string, index: number) => {
+    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
+    addNewItem(userIndex,clue, 0, 'clues', '')
+    scoreChange('user', 10, [userIndex])
+    if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content.every((contentItem: { status: number }) => contentItem.status === 3)) {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').status = 3;
+        updateInfo(memberStore.info)
     }
-    updateInfo(newInfo)
 }
 // const fun = (content: any) => {
 //   const newInfo = memberStore.info
@@ -109,12 +98,16 @@ const zstSelectUser = (index: number) => {
             <!-- 个人线索发放＋个人问题 -->
             <view v-if="dialogObj.type === '个人线索发放+个人问题'">
                 <view class="flex-row-center" style="gap: 200rpx;margin-top: 30rpx;">
-                    <view class="flex-column-sb-center" style="gap:10rpx" v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content">
-                        <img class="qa-avatar" :style="{backgroundColor: dialogObj.qa_index === index? '#F09235':'#C4C4C4'}" :src="memberStore.info.characters[item.userIndex].avatar" alt="">
+                    <view class="flex-column-sb-center" style="gap:10rpx"
+                        v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content">
+                        <img class="qa-avatar"
+                            :style="{ backgroundColor: dialogObj.qa_index === index ? '#F09235' : '#C4C4C4' }"
+                            :src="memberStore.info.characters[item.userIndex].avatar" alt="">
                         <text>{{ memberStore.info.characters[item.userIndex].name }}</text>
                     </view>
                 </view>
-                <view v-for="qaitem in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[dialogObj.qa_index].qalist">
+                <view
+                    v-for="qaitem in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[dialogObj.qa_index].qalist">
                     <view>Q:{{ qaitem.question }}</view>
                     <text style="text-decoration: underline;">A:{{ qaitem.answer }}</text>
                 </view>
@@ -124,7 +117,7 @@ const zstSelectUser = (index: number) => {
                 <button @tap="confirm" class="theme-button button">{{ dialogObj.confirmText || '确认' }}</button>
                 <button v-if="dialogObj.showCancel" @tap="close" class="theme-button cancel-button">{{
                     dialogObj.cancelText || '取消'
-                    }}</button>
+                }}</button>
             </view>
         </view>
     </view>

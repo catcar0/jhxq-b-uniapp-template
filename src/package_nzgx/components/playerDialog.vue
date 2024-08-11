@@ -4,10 +4,11 @@ import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
 import { computed, onUnmounted, ref, watch } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { allClues } from '@/package_nzgx/services/clues';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 import type { DmDialog } from '@/package_nzgx/types/dialog'
-const props = defineProps<{ dialogObj: DmDialog,userInfo: Object }>()
+const props = defineProps<{ dialogObj: DmDialog, userInfo: Object }>()
 const emit = defineEmits(["update:show", "confirm", "cancel", "page"]);
 const jump = (url: string) => {
     emit('page', url);
@@ -65,9 +66,14 @@ const confirm = () => {
         updateInfo(newInfo)
         // jump('ZfMap')
     }
-    if (props.dialogObj.type  === 'success') {
+    if (props.dialogObj.type === 'success') {
         const newInfo = memberStore.info
         newInfo.characters[userIndex.value].cueset.clues.slice(-1)[0].type = 2
+        updateInfo(newInfo)
+    }
+    if (props.dialogObj.type === 'error') {
+        const newInfo = memberStore.info
+        newInfo.characters[userIndex.value].mask.slice(-1)[0].isError = false
         updateInfo(newInfo)
     }
 }
@@ -75,34 +81,60 @@ const zstselectIndex = ref<number>()
 const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
 }
-const audioList = ref<AudioItem[]>([
-    {
-        roles: '尹萍&陈敏',
-        location: '后山花坛',
-        content: '春天已经准备春天已经准备春天已经准备春天已经准备',
-        src: 'http://159.138.147.87/statics/voice/test.mp3',
-        isPlaying: false,
-        context: null,
-        scrollText: '春天已经准备春天已经准备春天已经准备春天已经准备',
-        scrollPosition: 0,
-        scrollOffset: 0,
-        scrollAnimationFrame: 0
+const audioList = computed<AudioItem[]>(() => {
+    const clue = props.dialogObj.clue;
+    const clueData = allClues[clue];
+
+    if (!clueData) {
+        return [];
     }
-])
+
+    return [
+        {
+            roles: clueData.name,
+            location: clueData.content1,
+            content: clueData.content2,
+            src: clueData.content1.url + '.mp3',
+            isPlaying: false,
+            context: null,
+            scrollText: clueData.content2,
+            scrollPosition: 0,
+            scrollOffset: 0,
+            scrollAnimationFrame: 0
+        }
+    ];
+});
+// const audioList = ref<AudioItem[]>([
+//     {
+//         roles: allClues[props.dialogObj.clue].name,
+//         location: allClues[props.dialogObj.clue].content1,
+//         content: allClues[props.dialogObj.clue].content2,
+//         src: allClues[props.dialogObj.clue].content1.url + '.mp3',
+//         isPlaying: false,
+//         context: null,
+//         scrollText: allClues[props.dialogObj.clue].content2,
+//         scrollPosition: 0,
+//         scrollOffset: 0,
+//         scrollAnimationFrame: 0
+//     }
+// ])
 </script>
 
 <template>
     <view class="dialog-mask" :class="{ show: dialogObj.dialogVisible }">
         <view class="dialog-inner">
             <view class="dialog-header">
-                <image class="close-icon" @tap="close" src="http://159.138.147.87/statics/img/close_icon.png"
-                    :mode="'widthFix'" />
+                <image v-if="!dialogObj.hideCloseIcon" class="close-icon" @tap="close"
+                    src="http://159.138.147.87/statics/img/close_icon.png" :mode="'widthFix'" />
             </view>
             <text class="hyshtj font-player-gradient1 dialog-title">{{ dialogObj.title }}</text>
-            <view v-show="dialogObj.type === '个人线索发放+个人问题' || dialogObj.type === 'getClues' || dialogObj.type ==='success'" class="dialog-content font-player-gradient1 ">
+            <view
+                v-show="dialogObj.type === '个人线索发放+个人问题' || dialogObj.type === 'getClues' || dialogObj.type === 'success' || dialogObj.type === 'matchResult' || dialogObj.type === 'error'"
+                class="dialog-content font-player-gradient1 ">
                 {{ dialogObj.content }}
             </view>
-            <view v-show="dialogObj.type ==='newTask' || dialogObj.type ==='newTask2'" class="dialog-content font-player-gradient1 " style="font-size: 25rpx;line-height: 200%;">
+            <view v-show="dialogObj.type === 'newTask' || dialogObj.type === 'newTask2'"
+                class="dialog-content font-player-gradient1 " style="font-size: 25rpx;line-height: 200%;">
                 {{ dialogObj.content }}
                 <view>请在获得足够线索后，寻找DM回答</view>
             </view>
@@ -111,7 +143,7 @@ const audioList = ref<AudioItem[]>([
                     <input type="text" style="text-align: center;" v-model="userName">
                 </view>
             </view>
-            <audioplay v-if="dialogObj.type === 'voice'" :audioList="audioList" />
+            <audioplay v-if="dialogObj.type === 'voice'" :audioList="audioList" :isDialog="true" />
             <view class="dialog-control">
                 <view @tap="confirm" class="theme-button button">
                     <view class="theme-button-clear"></view>

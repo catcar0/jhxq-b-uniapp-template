@@ -31,7 +31,7 @@ export class WebSocketService {
       });
   
       this.socketTask.onMessage((event) => {
-        console.log('WebSocket message received:', event.data);
+        // console.log('WebSocket message received:', event.data);
         // 处理消息
         const websocketStore = useWebSocketStore();
         if (JSON.parse(event.data).type === 'scores') {

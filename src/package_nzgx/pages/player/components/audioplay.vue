@@ -14,7 +14,7 @@ interface AudioItem {
     scrollAnimationFrame?: number; // 修改为 `number` 类型
 }
 
-const props = defineProps<{ audioList: AudioItem[] }>();
+const props = defineProps<{ audioList: AudioItem[],isDialog:boolean }>();
 
 const updatePlayingState = (index: number, isPlaying: boolean) => {
     if (props.audioList[index]) {
@@ -114,10 +114,10 @@ onBeforeUnmount(() => {
 
 
 <template>
-    <view class="audio-box flex-row-sb" v-for="(item, index) in audioList" :key="index">
+    <view class="flex-row-sb" :class="isDialog? 'audio-box2':'audio-box'" v-for="(item, index) in audioList" :key="index">
         <view class="audio-icon1 flex-row-center" @tap="togglePlayPause(index)">
             <img class="audio-icon1-img"
-                :src="`http://159.138.147.87/statics/img/${item.isPlaying ? 'play' : 'pause'}.png`" alt="">
+                :src="`http://159.138.147.87/statics/img/${item.isPlaying ? 'pause' : 'play'}.png`" alt="">
         </view>
         <view class="flex-column-sb audio-info">
             <text class="audio-roles">{{ item.roles }}</text>
@@ -133,7 +133,20 @@ onBeforeUnmount(() => {
     </view>
 </template>
 
-<style scoped>.audio-box {
+<style scoped>
+.audio-box2{
+    background: url('http://159.138.147.87/statics/img/paper3.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+    height: 121rpx;
+    width: 625rpx;
+    transform: scale(0.8);
+    /* margin-top: 20rpx; */
+    margin-bottom: 20rpx;
+    padding: 20rpx;
+    box-sizing: border-box;
+}
+.audio-box {
     background-color: #D3B58B;
     height: 121rpx;
     width: 625rpx;

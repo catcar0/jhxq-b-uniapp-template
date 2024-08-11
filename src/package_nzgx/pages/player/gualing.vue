@@ -1,40 +1,44 @@
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { charactersStore } from '@/package_nzgx/stores';
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+import { allClues } from '@/package_nzgx/services/clues';
+import { onLoad } from "@dcloudio/uni-app";
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const glContent = getContent('卦灵');
+
+const qaList = computed(() => {
+    if (glContent.value.hy.status === 2) {
+        return glContent.value.hy;
+    } else if (glContent.value.xa.status === 2) {
+        return glContent.value.xa;
+    } else {
+        return null; // 或者根据需要返回 undefined
+    }
+})
 const characterIndex = ref(0)
 const isVerify = ref(false)
 const charactersList = charactersStore().characters
 const clues = ['clue1', 'clue2', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3', 'clue3',]
-const cluesIndex = ref(0)
+const cluesIndex = ref(-1)
 const glIndex = ref(-1)
-const glList = ref([
-    {
-        question: '在今天以前，我们对春天做了什么',
-        clue: '',
-        verify: 0
-    },
-    {
-        question: '凶手是谁',
-        clue: '',
-        verify: 1
-    },
-    {
-        question: '对于我们的行为，春天有什么反应',
-        clue: '',
-        verify: 1
-    },
-    {
-        question: '为什么何阑会对李梦是 “有人比我们更着急？这和春天的死有没有联系”',
-        clue: '',
-        verify: 0
-    },
-])
+const addClue  =(clue:string)=>{
+    qaList.value.qa[glIndex.value].usersAnser[memberStore.virtualRoleId - 1].anser.push(
+        clue
+    ); 
+    glIndex.value = -1
+}
 </script>
 
 <template>
-    <view class="gualing">
-        <view class="gualing-introduce flex-column-sb-center" v-show="false">
-            <view class="class-title">
+    <view  :class="qaList === null? 'gualing2':'gualing1'">
+        <view class="gualing-introduce flex-column-sb-center" v-if="qaList === null">
+            <view class="class-title hyshtj">
                 卦灵
             </view>
             <img class="gualing-introduce-img" src="http://159.138.147.87/statics/img/turtle_shell.png" alt="">
@@ -42,39 +46,47 @@ const glList = ref([
                 我是卦灵，我可以帮你们对每一次魂穿获取到的信息进行提问，我会对你们的回答进行逻辑验证。
             </text>
         </view>
-        <view class="gualing-inner">
+        <view class="gualing-inner" v-if="qaList !== null">
             <view class="transform-box">
                 <view class="class-title hyshtj">
                     卦灵
                 </view>
-
                 <view class="qa-box" v-if="glIndex === -1">
-                    <view v-for="(item, index) in glList" :key="index" @tap="glIndex = index">
+                    <view v-for="(item, index) in qaList.qa" :key="index" @tap="glIndex = index">
                         <view class="question">{{ item.question }}</view>
+                        <view>{{ item.usersAnser[memberStore.virtualRoleId - 1] }}</view>
                         <view class="anser">
-                            <img v-if="item.clue === ''" class="anser-select-icon"
-                                src="http://159.138.147.87/statics/img/gl_select_icon.png" alt="">
-                            <view v-if="item.clue !== ''" class="clues-item">
-                                <img v-if="item.clue.length < 6" class="clue-selected-border2"
-                                    src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
-                                <img v-else="item.clue.length < 6" class="clue-selected-border5"
-                                    src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
-                                <view v-if="item.clue.length < 6" class="clue-small-image clue-selected-border1"
-                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/img/${item.clue}.png)` }">
-                                </view>
-                                <img v-else class="clue-small-image" :src="item.clue" alt="">
-                                <!-- <view v-else class="clue-small-image clue-selected-border1"
-                            :style="{ backgroundImage: item.clue }">
-                        </view> -->
-                            </view>
+                            <img v-if="item.usersAnser[memberStore.virtualRoleId - 1].anser.length === 0" class="anser-select-icon"
+                                    src="http://159.138.147.87/statics/img/gl_select_icon.png" alt="">
 
-                            <view v-show="isVerify" class="verify-icon-box">
-                                <img class="verify-icon" v-show="item.question !== '凶手是谁'"
-                                    :src="`http://159.138.147.87/statics/img/${item.verify === 0 ? 'gl_correct_icon' : 'gl_wrong_icon'}.png`"
-                                    alt="">
-                                <img class="verify-icon" v-show="item.question === '凶手是谁'"
-                                    :src="`http://159.138.147.87/statics/img/${item.verify === 0 ? 'gl_mission_success_icon' : 'gl_mission_fail_icon'}.png`"
-                                    alt="">
+                            <view v-if="item.usersAnser[memberStore.virtualRoleId - 1].anser.length !== 0"  v-for="(anser, index) in item.usersAnser[memberStore.virtualRoleId - 1].anser">
+                                {{ item.usersAnser[memberStore.virtualRoleId - 1] }}
+                                <view  class="clues-item">
+
+                                    <img v-if="anser.length < 6" class="clue-selected-border2"
+                                        src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
+
+                                    <img v-else class="clue-selected-border5"
+                                        src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
+
+                                    <view v-if="anser.length < 6" class="clue-small-image clue-selected-border1"
+                                        :style="{ backgroundImage: `url(http://159.138.147.87/statics/img/${anser}.png)` }">
+                                    </view>
+
+                                    <img v-else class="clue-small-image"
+                                        :src="`url(http://159.138.147.87/statics/img/${anser}.png)`" alt="">
+
+                                </view>
+
+                                <!-- <view v-show="isVerify" class="verify-icon-box">
+                                    <img class="verify-icon" v-show="item.question !== '凶手是谁'"
+                                        :src="`http://159.138.147.87/statics/img/${item.verify === 0 ? 'gl_correct_icon' : 'gl_wrong_icon'}.png`"
+                                        alt="">
+                                    <img class="verify-icon" v-show="item.question === '凶手是谁'"
+                                        :src="`http://159.138.147.87/statics/img/${item.verify === 0 ? 'gl_mission_success_icon' : 'gl_mission_fail_icon'}.png`"
+                                        alt="">
+                                </view> -->
+
                             </view>
                         </view>
                     </view>
@@ -84,16 +96,38 @@ const glList = ref([
                     </view>
                 </view>
 
-                <view class="select-clue" v-if="glIndex !== -1 && glList[glIndex].question !== '凶手是谁'">
-                    <view>{{ glList[glIndex].question }}</view>
-                    <img class="clue-selected-border3" src="http://159.138.147.87/statics/img/cue_seleted2.png" alt="">
+                <view class="select-clue" v-if="glIndex !== -1 && qaList.qa[glIndex].question !== '凶手是谁'">
+                    <view>{{ qaList.qa[glIndex].question }}</view>
+                    <scroll-view scroll-y style="height: 71vh;">
+                    <img v-if="cluesIndex !== -1" class="clue-big-image" :src="allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url + '.png'"
+                        alt="">
+                    <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].content1 }}
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].name }}
+                    </view>
+                    <view class="clues-box flex-row-center">
+                        <!-- <view class="make-old2"></view> -->
+                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues" :key="index">
+                            <view @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = index" class="clues-item"
+                                :class="cluesIndex === index ? 'clue-selected-border1' : ''">
+                                <img class="clue-selected-border2" v-show="cluesIndex === index"
+                                    src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
+                                <view class="clue-small-image"
+                                    :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${item.name}.png)` }">
+                                </view>
+                            </view>
+                            <view style="padding-top: 15rpx;text-align: center;"><text>{{ allClues[item.name].name }}</text></view>
+                        </view>
+                    </view>
+                </scroll-view>
+                    <!-- <img class="clue-selected-border3" src="http://159.138.147.87/statics/img/cue_seleted2.png" alt="">
                     <img class="clue-big-image" :src="`http://159.138.147.87/statics/img/${clues[cluesIndex]}.png`"
                         alt="">
                     <view class="flex-row-center clue-text">
                         举报他们了，你也受不了他们很久了吧？这次我一定会配合你（是春天的字迹）
                     </view>
                     <view class="clues-box flex-row-center">
-                        <view v-for="(item, index) in clues" :key="index" @tap="cluesIndex = index" class="clues-item"
+                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues" :key="index" @tap="cluesIndex = index" class="clues-item"
                             :class="cluesIndex === index ? 'clue-selected-border1' : ''">
                             <img class="clue-selected-border2" v-show="cluesIndex === index"
                                 src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
@@ -102,13 +136,13 @@ const glList = ref([
                             </view>
                             <text>海报</text>
                         </view>
-                    </view>
-                    <view @tap="glList[glIndex].clue = clues[cluesIndex]; glIndex = -1" class="theme-button button">选择
+                    </view> -->
+                    <view @tap="addClue(clues[cluesIndex])" class="theme-button button">选择
                     </view>
                 </view>
 
-                <view class="select-clue" v-if="glIndex !== -1 && glList[glIndex].question === '凶手是谁'">
-                    <view>{{ glList[glIndex].question }}</view>
+                <view class="select-clue" v-if="glIndex !== -1 && qaList.qa[glIndex].question === '凶手是谁'">
+                    <view>{{ qaList.qa[glIndex].question }}</view>
                     <img class="clue-selected-border3" src="http://159.138.147.87/statics/img/cue_seleted2.png" alt="">
                     <img class="clue-big-image" :src="charactersList[characterIndex].avatar" alt="">
                     <view class="flex-row-center clue-text">
@@ -126,7 +160,7 @@ const glList = ref([
                             <text>{{ item.name }}</text>
                         </view>
                     </view>
-                    <view @tap="glList[glIndex].clue = charactersList[characterIndex].avatar; glIndex = -1"
+                    <view @tap="qaList.qa[glIndex].clue = charactersList[characterIndex].avatar; glIndex = -1"
                         class="theme-button button">
                         <view class="theme-button-clear"></view>
                         <view>确定</view>
@@ -265,14 +299,20 @@ const glList = ref([
     background-position: center;
 }
 
-.gualing {
+.gualing1 {
     width: 100%;
     height: 100vh;
     background: url('http://159.138.147.87/statics/img/gualing_bg2.png') no-repeat;
     background-size: 100% 100%;
     background-position: center;
 }
-
+.gualing2 {
+    width: 100%;
+    height: 100vh;
+    background: url('http://159.138.147.87/statics/img/gualing_bg3.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+}
 .class-title {
     width: auto;
     min-width: 130rpx;
@@ -290,7 +330,7 @@ const glList = ref([
 .gualing-introduce {
     width: 70%;
     margin-left: 15%;
-    transform: rotate(-1deg);
+    transform: rotate(-2deg);
     text-align: center;
     padding-top: 150rpx;
     gap: 30rpx;

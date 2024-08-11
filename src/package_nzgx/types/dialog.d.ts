@@ -8,7 +8,11 @@ export type DmDialog = {
     showCancel?: boolean,
     cancelText?: string,
     confirmText?: string,
-    qa?:Qa
+    qa?:Qa,
+    hideCloseIcon?:boolean
+    userIndex?:number
+    deepclue?:string
+    clue?:string
 }
 
 export type Qa ={

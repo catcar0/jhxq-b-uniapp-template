@@ -1,7 +1,16 @@
 <script setup lang='ts'>
 import DMTabBar from "@/components/DM-TabBar/index.vue"
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+import { onLoad } from "@dcloudio/uni-app";
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
+const getContent = (title:string) => {
+  return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const glContent = getContent('卦灵');
 // 关闭弹窗
 const closeDialog = () => {
     dialogObj.value.dialogVisible = false
@@ -35,38 +44,21 @@ const dialogObj = ref({
 })
 const selectedIndex = ref(0)
 const statusList = ref(['待验证','未提交','正确','错误'])
-const qaList = ref([
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:0
-    },
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:1
-    },
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:2
-    },
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:3
-    },
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:0
-    },
-    {
-        name:'白鹭',
-        content:'一张连环画',
-        status:0
+const qaList = ref()
+onLoad ((Option)=>{
+    const dataKey = Option!.name;
+    // 根据dataKey渲染不同的数据
+    if (dataKey === '还原问卷') {
+        console.log('hy')
+        qaList.value = glContent.value.hy
+        // 渲染glContent.hy的数据
+    } else if (dataKey === '凶案问卷') {
+        console.log('xa')
+        qaList.value = glContent.value.xa
+        // 渲染glContent.xa的数据
     }
-])
+})
+
 </script>
 
 <template>
@@ -75,13 +67,13 @@ const qaList = ref([
         <!-- 问卷 -->
         <view  class="shadow-box questionnaire-box" >
             <view class="flex-row-sb">
-                <view @tap="selectedIndex = index" v-for="(item, index) in 4"
-                    :class="selectedIndex === index ? 'question-selected' : 'question-select'">问题{{ index }}</view>
+                <view @tap="selectedIndex = index" v-for="(item, index) in qaList.qa"
+                    :class="selectedIndex === index ? 'question-selected' : 'question-select'">{{item.name}}</view>
             </view>
-            <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">问题</view>
-            <view class="flex-row-sb" style="margin-top: 20rpx;" v-for="(item, index) in qaList" :key="index">
-                <view> {{ item.name }} ：</view>
-                <view>{{ item.content }}</view>
+            <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">{{qaList.qa[selectedIndex].question}}</view>
+            <view class="flex-row-sb" style="margin-top: 20rpx;" v-for="(item, index) in qaList.qa[selectedIndex].usersAnser" :key="index">
+                <view> {{ memberStore.info.characters[index].name }} ：</view>
+                <view>{{ item.anser }}</view>
                 <view class="status flex-row-center" :class="'status-' + item.status" >{{ statusList[item.status] }}</view>
             </view>
         </view>

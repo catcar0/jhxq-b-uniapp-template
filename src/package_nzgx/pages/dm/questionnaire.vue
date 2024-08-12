@@ -4,18 +4,31 @@ import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { computed, ref } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { allClues } from '@/package_nzgx/services/clues';
 import { onLoad } from "@dcloudio/uni-app";
+import { scoreChange } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-const getContent = (title:string) => {
-  return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
 };
 const glContent = getContent('卦灵');
 // 关闭弹窗
 const closeDialog = () => {
     dialogObj.value.dialogVisible = false
-}
 
+}
+const confirm = () => {
+    if (dialogObj.value.type === 'checkAnswersAndSetStatus') {
+        checkAnswersAndSetStatus(qaList.value.qa)
+    }
+    if (dialogObj.value.type === 'giveReplay') {
+        memberStore.info.teamInfo.replay[memberStore.info.teamInfo.flowIndex][glType.value].push(
+            qaList.value.replay
+        )
+    }
+    dialogObj.value.dialogVisible = false
+}
 const showDialog = () => {
     dialogObj.value.dialogVisible = true
 }
@@ -43,62 +56,148 @@ const dialogObj = ref({
     }
 })
 const selectedIndex = ref(0)
-const statusList = ref(['待验证','未提交','正确','错误'])
-const qaList = ref()
-onLoad ((Option)=>{
-    const dataKey = Option!.name;
-    // 根据dataKey渲染不同的数据
-    if (dataKey === '还原问卷') {
-        console.log('hy')
-        qaList.value = glContent.value.hy
-        // 渲染glContent.hy的数据
-    } else if (dataKey === '凶案问卷') {
-        console.log('xa')
-        qaList.value = glContent.value.xa
-        // 渲染glContent.xa的数据
+const statusList = ref(['未提交', '待验证', '正确', '错误'])
+const replayShow = ref(false)
+const glType = ref('')
+const verifyQa = () => {
+    // if(!qaList.value.qa.every(question =>question.usersAnser.every(userAnswer => userAnswer.anser.length === 0))){
+    //     uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
+    //     return
+    // }
+    dialogObj.value.title = '注意'
+    dialogObj.value.content = '将会验证所有问题'
+    dialogObj.value.type = 'checkAnswersAndSetStatus'
+    showDialog()
+}
+const giveReplay = (qa) => {
+    dialogObj.value.title = '注意'
+    dialogObj.value.content = '确定要发送复盘给所有玩家吗？更推荐主持人口述。'
+    dialogObj.value.type = 'giveReplay'
+    glType.value = qa
+    showDialog()
+}
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
+const checkAnswersAndSetStatus = (qa: any[]) => {
+    qa.forEach(question => {
+        const correctAnswers = question.anser.slice().sort(); // 对正确答案进行排序
+
+        question.usersAnser.forEach((userAnswer, questionIndex) => {
+            const userAnswers = userAnswer.anser.slice().sort(); // 对用户答案进行排序
+
+            // 检查用户答案是否与正确答案相同
+            const isCorrect = correctAnswers.length === userAnswers.length &&
+                correctAnswers.every((answer, index) => answer === userAnswers[index]);
+
+            // 根据检查结果设置 status
+            if (isCorrect) {
+                userAnswer.status = 2;
+                console.log('score', qaList.value.score)
+                scoreChange('user', qaList.value.score, [questionIndex])
+            } else {
+                userAnswer.status = 3;
+                scoreChange('user', (qaList.value.score * -0.5), [questionIndex])
+            }
+        });
+    });
+    qaList.value.canReplay = true
+    // qaList.value.status = 3
+    updateInfo(memberStore.info)
+};
+
+const replayContext = ref()
+const qaList = computed(() => {
+    if (glType.value === 'hy') {
+        return [glContent.value.hy];
+    } else if (glType.value === 'xa') {
+        return [glContent.value.xa];
     }
-})
+    return [glContent.value.hy,glContent.value.xa]; // 默认返回一个空数组，防止未匹配时出错
+});
+
+// 初次加载时设置 glType.value
+onLoad((Option) => {
+    const dataKey = Option!.name;
+    if (dataKey === '还原问卷') {
+        console.log('hy');
+        glType.value = 'hy';
+    } else if (dataKey === '凶案问卷') {
+        console.log('xa');
+        glType.value = 'xa';
+    } else {
+        glType.value = 'all'
+    }
+});
 
 </script>
 
 <template>
     <scroll-view scroll-y>
         <view class="questionnaire">
-        <!-- 问卷 -->
-        <view  class="shadow-box questionnaire-box" >
-            <view class="flex-row-sb">
-                <view @tap="selectedIndex = index" v-for="(item, index) in qaList.qa"
-                    :class="selectedIndex === index ? 'question-selected' : 'question-select'">{{item.name}}</view>
+            <!-- 问卷 -->
+            <view v-show="!replayShow">
+                <view class="shadow-box questionnaire-box" v-if="qaList">
+                    <view class="flex-row-sb">
+                        <view @tap="selectedIndex = index" v-for="(item, index) in qaList.qa"
+                            :class="selectedIndex === index ? 'question-selected' : 'question-select'">{{ item.name }}
+                        </view>
+                    </view>
+                    <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">
+                        {{ qaList.qa[selectedIndex].question }}</view>
+                    <view class="flex-row-sb" style="margin-top: 20rpx;"
+                        v-for="(item, index) in qaList.qa[selectedIndex].usersAnser" :key="index">
+                        <view> {{ memberStore.info.characters[index].name }} ：</view>
+                        <view v-if="allClues[item.anser]">{{ allClues[item.anser].name }}</view>
+                        <view v-if="qaList.usersSubmit[index] === 0" class="status flex-row-center"
+                            :class="'status-' + item.status">{{ statusList[0] }}</view>
+                        <view v-else-if="qaList.usersSubmit[index] !== 0 && item.status === 0"
+                            class="status flex-row-center status-1">{{ statusList[1] }}</view>
+                        <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
+                            statusList[item.status] }}</view>
+                    </view>
+                </view>
+                <view @tap="verifyQa" v-if="qaList.status !== 3 && !qaList.canReplay" style="margin-top: 30rpx;"
+                    class="button">验证全部问题</view>
+                <view @tap="replayShow = true;" v-if="qaList.status !== 3 && qaList.canReplay && !replayShow"
+                    style="margin-top: 30rpx;" class="button">生成整体复盘</view>
+                <view v-if="qaList.status === 3" style="margin-top: 30rpx;" class="button">查看{{ glType ===
+                    'hy' ? '还原' : '凶案' }}复盘</view>
             </view>
-            <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">{{qaList.qa[selectedIndex].question}}</view>
-            <view class="flex-row-sb" style="margin-top: 20rpx;" v-for="(item, index) in qaList.qa[selectedIndex].usersAnser" :key="index">
-                <view> {{ memberStore.info.characters[index].name }} ：</view>
-                <view>{{ item.anser }}</view>
-                <view class="status flex-row-center" :class="'status-' + item.status" >{{ statusList[item.status] }}</view>
+
+
+
+            <!-- 复盘 -->
+            <view v-show="replayShow">
+                <view  class="shadow-box questionnaire-box">
+                    <view style="text-align: center;">问题1-4</view>
+                    <view>1.asdasd</view>
+                    <view>2.asdasd</view>
+                    <view>3.asdasd</view>
+                    <view>4.asdasd</view>
+                </view>
+                <view @tap="giveReplay(qa)" 
+                    style="margin-top: 30rpx;" class="button">分发到玩家</view>
             </view>
         </view>
-        <!-- 复盘 -->
-        <view v-show="false" class="shadow-box questionnaire-box" > 
-            <view style="text-align: center;">问题1-4</view>
-            <view>1.asdasd</view>
-            <view>2.asdasd</view>
-            <view>3.asdasd</view>
-            <view>4.asdasd</view>
-        </view>
-        <view style="margin-top: 30rpx;" class="button">验证全部问题</view>
-    </view>
     </scroll-view>
-    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" />
+    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" />
     <DMTabBar></DMTabBar>
 </template>
 
 <style scoped>
-.questionnaire{
-    padding: 2px 35rpx;box-sizing: border-box;
+.questionnaire {
+    padding: 2px 35rpx;
+    box-sizing: border-box;
 }
-.questionnaire-box{
+
+.questionnaire-box {
     padding: 30rpx;
+    margin-top: 30rpx;
 }
+
 .question-selected {
     padding: 5rpx;
     box-sizing: border-box;
@@ -110,26 +209,30 @@ onLoad ((Option)=>{
     box-sizing: border-box;
     border-bottom: 3rpx solid #FFFFFF;
 }
-.status{
+
+.status {
     width: 70rpx;
     height: 28rpx;
     box-sizing: border-box;
     font-size: 17.5rpx;
 }
 
-.status-0{
+.status-0 {
     background-color: #AAAAAA;
     color: black;
 }
-.status-1{
+
+.status-1 {
     background-color: #EEEEEE;
     color: black;
 }
-.status-2{
+
+.status-2 {
     background-color: #8AEB99;
     color: black;
 }
-.status-3{
+
+.status-3 {
     background-color: #FE0000;
     color: #FFFFFF;
 }

@@ -32,6 +32,7 @@ const close = () => {
     if (props.dialogObj.type === '个人线索发放+个人问题') {
         memberStore.info.characters[props.dialogObj.userIndex].mask.slice(-1)[0].isError = true
         scoreChange('user',0,[props.dialogObj.userIndex])
+        updateInfo(memberStore.info)
     }
 }
 
@@ -51,8 +52,8 @@ const confirm = () => {
 }
 const zst = (userIndex: number, clue: string, index: number) => {
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
-    addNewItem(userIndex,clue, 0, 'clues', '')
     scoreChange('user', 10, [userIndex])
+    addNewItem(userIndex,clue, 0, 'clues', '')
     if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content.every((contentItem: { status: number }) => contentItem.status === 3)) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').status = 3;
         updateInfo(memberStore.info)

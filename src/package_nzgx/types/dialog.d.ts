@@ -13,6 +13,8 @@ export type DmDialog = {
     userIndex?:number
     deepclue?:string
     clue?:string
+    glstatus?: number
+    gltype?:string
 }
 
 export type Qa ={

@@ -76,6 +76,10 @@ const confirm = () => {
         newInfo.characters[userIndex.value].mask.slice(-1)[0].isError = false
         updateInfo(newInfo)
     }
+    if (props.dialogObj.type === 'submit') {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content[props.dialogObj.gltype!].usersSubmit[userIndex.value] = props.dialogObj.glstatus + 1
+        updateInfo(memberStore.info)
+    }
 }
 const zstselectIndex = ref<number>()
 const zstSelectUser = (index: number) => {
@@ -129,7 +133,7 @@ const audioList = computed<AudioItem[]>(() => {
             </view>
             <text class="hyshtj font-player-gradient1 dialog-title">{{ dialogObj.title }}</text>
             <view
-                v-show="dialogObj.type === '个人线索发放+个人问题' || dialogObj.type === 'getClues' || dialogObj.type === 'success' || dialogObj.type === 'matchResult' || dialogObj.type === 'error'"
+                v-show="dialogObj.type === '个人线索发放+个人问题' || dialogObj.type === 'getClues' || dialogObj.type === 'success' || dialogObj.type === 'matchResult' || dialogObj.type === 'error' ||  dialogObj.type === 'submit' "
                 class="dialog-content font-player-gradient1 ">
                 {{ dialogObj.content }}
             </view>

@@ -20,7 +20,12 @@ export const BanPlayer = (role_id: number) => {
         role_id
     });
 }
-
+// 玩家登录
+export const AuthorizationPlayer = (code: string): Promise<{ code: string }> => {
+    return PlayFetcher().post("/authorizations", {
+        code
+    });
+}
 // DM登录
 export const AuthorizationDM = (token: string): Promise<{ token: string }> => {
     return PlayFetcher().post("/authorizations/dm", {

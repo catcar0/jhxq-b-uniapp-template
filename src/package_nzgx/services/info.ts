@@ -19,7 +19,8 @@ export const addNewItem = (userIndex:number,clue: string, type: number, itemType
                 name: clue,
                 isNew: isCurrentRole,
                 deepClue: deepClue,
-                type: type
+                type: type,
+                isRead:false
             }
         );
     }
@@ -34,7 +35,6 @@ export const scoreChange = (type:string,score:number,users:number[]) =>{
     } else {
         memberStore.info.teamInfo.score += score
     }
-    updateInfo(memberStore.info)
 }
 
 

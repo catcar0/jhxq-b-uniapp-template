@@ -14,11 +14,7 @@ onHide(() => {
 <style>
 @import url("./package_nzgx/static/fonts/stylesheet.css");
 @import url("./package_nzgx/styles/common.css");
-page{
-  background-color: #F9F9F9;
-  font-family: 'SiYuan';
-  font-weight: 500;
-}
+
 .almm{
   font-family: 'Alimama ShuHeiTi';
 }

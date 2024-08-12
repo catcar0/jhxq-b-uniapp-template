@@ -9,7 +9,7 @@ const virtualRoleId = memberStore.virtualRoleId
 export const useWebSocketStore = defineStore('webSocket', {
     state: () => ({
         webSocketService: new WebSocketService(`ws://132.232.57.64:8010/?token=${token}`), // 替换为你的 WebSocket URL
-        gameWebSocketService: new WebSocketService(`ws://132.232.57.64:8020/?token=${token}&room_id=${roomId}&virtual_role_id=${virtualRoleId}`), // 替换为你的 WebSocket URL
+        gameWebSocketService: new WebSocketService(`ws://132.232.57.64:8030/?token=${token}&room_id=${roomId}&virtual_role_id=${virtualRoleId}`), // 替换为你的 WebSocket URL
         messages: [],
         info: []
     }),

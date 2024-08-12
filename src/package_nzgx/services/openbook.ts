@@ -9,7 +9,7 @@ type RoomsParams = {
 export const postRoomsnAPI = (data: RoomsParams) => {
     return http({
         method: 'POST',
-        url: '/api/rooms',
+        url: '/api/kaiben',
         data,
     })
 }

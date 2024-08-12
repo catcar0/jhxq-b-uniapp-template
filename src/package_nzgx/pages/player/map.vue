@@ -402,10 +402,9 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
         return
     }
     if (dtStatus.value === 2) {
+        memberStore.info.locationList[id].clue = ''
+        memberStore.info.locationList[id].isShow = false
         addNewItem(userIndex.value,clue,0,'clues','')
-        locationList.value[id].clue = ''
-        locationList.value[id].isShow = false
-        updateInfo(memberStore.info)
     }
 }
 </script>
@@ -440,7 +439,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
     <view class="map">
         <view>{{ zstStatus }}{{ ypStatus }}{{ grStatus }}</view>
         <!-- 地图搜证 -->
-        <view class="map-search" v-for="(item, index) in filterLocations(locationList)" :key="item.name"
+        <view class="map-search" v-for="(item, index) in filterLocations(memberStore.info.locationList)" :key="item.name"
             v-if="(zstStatus === 2 && ypStatus === 0) || (dtStatus === 2 && glStatus === 0)"
             @tap="mapSerch(item.clue, item.id, item.isShow)" :style="{ filter: item.isShow ? '' : 'brightness(50%)' }">
             <view class="location flex-row-center hyshtj" :style="{ top: item.position.top, left: item.position.left }">

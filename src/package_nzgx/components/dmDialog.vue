@@ -13,6 +13,17 @@ const updateInfo = (info: any) => {
         info
     )
 }
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const zfContent = getContent('开启逐风');
+const zstContent = getContent('找尸体');
+const grContent = getContent('个人线索发放+个人问题');
+const ypContent = getContent('音频搜证');
+const dtContent = getContent('地图搜证');
+const glContent = getContent('卦灵');
+const fyContent = getContent('封印动画');
+const fyContent2 = getContent('封印动画2');
 const charactersList = charactersStore().characters
 const props = defineProps<{ dialogObj: any,onConfirm:Function}>()
 
@@ -44,7 +55,7 @@ const confirm = () => {
     if (props.dialogObj.type === '找尸体') {
         zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
     }
-    if (props.dialogObj.type === '个人线索发放+个人问题') {
+    if (props.dialogObj.type === '个人线索发放+个人问题' && props.dialogObj.clue) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].status = 3
         scoreChange('user',50,[props.dialogObj.userIndex])
         addNewItem(props.dialogObj.userIndex, props.dialogObj.clue, 3, 'clues',props.dialogObj.deepClue)
@@ -100,7 +111,7 @@ const zstSelectUser = (index: number) => {
             <view v-if="dialogObj.type === '个人线索发放+个人问题'">
                 <view class="flex-row-center" style="gap: 200rpx;margin-top: 30rpx;">
                     <view class="flex-column-sb-center" style="gap:10rpx"
-                        v-for="(item, index) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content">
+                        v-for="(item, index) in grContent">
                         <img class="qa-avatar"
                             :style="{ backgroundColor: dialogObj.qa_index === index ? '#F09235' : '#C4C4C4' }"
                             :src="memberStore.info.characters[item.userIndex].avatar" alt="">
@@ -108,7 +119,7 @@ const zstSelectUser = (index: number) => {
                     </view>
                 </view>
                 <view
-                    v-for="qaitem in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[2].content[dialogObj.qa_index].qalist">
+                    v-for="qaitem in grContent[dialogObj.qa_index].qalist">
                     <view>Q:{{ qaitem.question }}</view>
                     <text style="text-decoration: underline;">A:{{ qaitem.answer }}</text>
                 </view>

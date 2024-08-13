@@ -9,6 +9,7 @@ import Gualing from './gualing.vue'
 import CueSet from './cue-set.vue'
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import { WebSocketService } from '@/package_nzgx/services/WebSocketService';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const currentPage = ref('RoomNumber')
@@ -20,7 +21,7 @@ const dialogObj = ref({
     cancelText: '取消',
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
-    clue:'clue19',
+    clue: 'clue19',
     hideCloseIcon: false
 })
 const closeDialog = (val: any) => {
@@ -57,7 +58,7 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId - 1].mask, (a,
             dialogObj.value.content = '询问一下同伴吧'
             dialogObj.value.confirmText = '确定'
             dialogObj.value.hideCloseIcon = true
-                        dialogObj.value.type = 'error'
+            dialogObj.value.type = 'error'
         }
         if (newqa.isNew) {
             let newContent = '';
@@ -89,12 +90,31 @@ const teamInfo = computed(() => memberStore.info?.teamInfo)
 const userInfo = computed(() => memberStore.info?.characters[memberStore.virtualRoleId - 1])
 const flow = computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex])
 onMounted(() => {
-    if (memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId) {
-        webSocketStore.gameConnect();
+    // 创建 WebSocket 连接
+    if(!(memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId)) {
+        return
+    }
+    const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+    wsService.connect()
+    // 监听 WebSocket 连接成功事件
+    wsService.onOpen = () => {
+        console.log("WebSocket 连接成功");
+
+        // 连接成功后执行后续操作
+        webSocketStore.gameWebSocketService = wsService;
+        // webSocketStore.gameConnect();
         setTimeout(() => {
             webSocketStore.gameplayerFirstSend()
         }, 500);
-    }
+
+
+    };
+
+    // 监听连接错误或关闭事件
+    wsService.onError = (error) => {
+        console.error("WebSocket 连接失败", error);
+        // 在这里可以添加错误处理逻辑
+    };
 });
 
 onUnmounted(() => {

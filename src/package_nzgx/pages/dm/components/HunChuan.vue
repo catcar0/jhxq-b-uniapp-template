@@ -45,6 +45,8 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
             } else {
                 newInfo.flow[newInfo.teamInfo.flowIndex].status = 3
                 newInfo.teamInfo.flowIndex = index
+                newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
+                newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
                 updateInfo(newInfo)
             }
         }
@@ -52,14 +54,19 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
 }
 
 const onConfirm = ref<Function>();
-    const onChangeDetail = (ev: any, item: any, index: number) => {
+const onChangeDetail = (ev: any, item: any, index: number) => {
     // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
     if (item.status === 2 || item.status === 3) return;
-
     const { flow, teamInfo, characters } = memberStore.info;
     const currentFlow = flow[teamInfo.flowIndex].inner[index];
     const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
-
+    if (currentFlow.title === '开启逐风') {
+        currentFlow.status = 3;
+        currentFlow.isSwitchOn = true;
+        updateInfo(memberStore.info);
+        dialogObj.value.type = currentFlow.title;
+        return
+    }
     const showWarning = () => {
         updateSwitch.value = false;
         setTimeout(() => {
@@ -84,10 +91,11 @@ const onConfirm = ref<Function>();
     dialogObj.value.content = '确认开启下一环节吗，开启后不可返回';
     dialogObj.value.confirmText = '确认';
     dialogObj.value.cancelText = '取消';
+    dialogObj.value.type = '开启下一环节'
     updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
+    setTimeout(() => {
+        updateSwitch.value = true;
+    }, 0);
     showDialog();
 
     onConfirm.value = () => {
@@ -143,7 +151,7 @@ const showZstDialog = (location: string, clue: any, zst_index: number) => {
     dialogObj.value.cancelText = '回答错误'
     showDialog()
 }
-const showQaDialog = (index: number, qa: any, userIndex:number, deepclue:string,clue:string) => {
+const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string) => {
     dialogObj.value.title = '注意'
     dialogObj.value.content = '请DM确认向以下用户提问并核对答案:'
     dialogObj.value.confirmText = '回答正确'
@@ -168,11 +176,11 @@ const dialogObj = ref({
     location: '',
     type: '',
     clue: '',
-    deepClue:'',
+    deepClue: '',
     zst_index: 0,
     qa_index: 0,
-    userIndex:0,
-    qa:[]
+    userIndex: 0,
+    qa: []
 })
 
 const getContent = (title: string) => {
@@ -275,15 +283,29 @@ const closeDialog = () => {
 const showDialog = () => {
     dialogObj.value.dialogVisible = true
 }
-const openhy = () => {
+const openhy = (index: number) => {
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 2
     updateInfo(memberStore.info);
+    uni.navigateTo({
+        url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.hy.name}&index=${index}`
+    })
 }
-const openxa = () => {
-    if (glContent.value.hy.status === 3) {
+const openxa = (index: number) => {
+    if (glContent.value.hy.canReplay) {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 3
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
         updateInfo(memberStore.info);
+        uni.navigateTo({
+            url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.xa.name}&index=${index}`
+        })
+    } else {
+        uni.showToast({ icon: 'none', title: '请先完成还原问卷' })
     }
+}
+const goAllReplay = (index: number) => {
+    uni.navigateTo({
+        url: `/package_nzgx/pages/dm/questionnaire?name=all&index=${index}`
+    })
 }
 </script>
 
@@ -309,7 +331,7 @@ const openxa = () => {
                 <switch v-if="updateSwitch" v-show="item.status === 0 || item.status === 1" class="switch"
                     :checked="item.isSwitchOn" @change="onChangeHunchuan($event, item, index)"
                     :disabled="item.status === 3" />
-                <view v-show="item.status === 3" class="button fupan-button">卦灵复盘</view>
+                <view @tap="goAllReplay(index)" v-show="item.status === 3" class="button fupan-button">卦灵复盘</view>
             </view>
 
             <!-- 魂穿任务 -->
@@ -323,7 +345,8 @@ const openxa = () => {
                     <view class="flex-row-sb task-box">
                         <view> {{ detailIndex + 1 }}.&nbsp;{{ detail.title }}</view>
                         <switch v-if="updateSwitch" class="switch" :checked="detail.status === 3 || detail.status === 2"
-                            :disabled="detail.status === 3 || detail.status === 2" @change="onChangeDetail($event, detail, detailIndex)" />
+                            :disabled="detail.status === 3 || detail.status === 2"
+                            @change="onChangeDetail($event, detail, detailIndex)" />
                     </view>
 
                     <!-- 需要完成的具体任务内容 -->
@@ -346,8 +369,8 @@ const openxa = () => {
                     <view v-if="detail.status === 2 && detail.title === '个人线索发放+个人问题'">
                         <text style="font-size: 24.5rpx;">请DM确认向以下用户提问并核对答案:</text>
                         <view class="flex-row-center qa-box">
-                            <view @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue)" class="flex-column-sb-center gap-10"
-                                v-for="(qa, qa_index) in detail.content">
+                            <view @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue)"
+                                class="flex-column-sb-center gap-10" v-for="(qa, qa_index) in detail.content">
                                 <img class="avatar" :src="memberStore.info.characters[qa.userIndex].avatar" alt="">
                                 <text>{{ memberStore.info.characters[qa.userIndex].name }}</text>
                                 <view v-show="qa.status === 3" class="flex-row-center status" :class="'status-' + 3">
@@ -383,7 +406,7 @@ const openxa = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                }}</text>
+                                    }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -395,24 +418,18 @@ const openxa = () => {
 
                     <!-- 卦灵 -->
                     <view v-if="detail.status === 2 && detail.title === '卦灵'">
-                        <navigator :url="`/package_nzgx/pages/dm/questionnaire?name=${glContent.hy.name}`"
-                            hover-class="none">
-                            <view class="survey-box flex-row-center" @tap="openhy">
-                                <text class="absolute-center survey-title">{{ glContent.hy.name }}</text>
-                                <view class="flex-row-center status survey-status"
-                                    :class="'status-' + glContent.hy.status">{{
-                                        statusText[glContent.hy.status] }}</view>
-                            </view>
-                        </navigator>
-                        <navigator :url="`/package_nzgx/pages/dm/questionnaire?name=${glContent.xa.name}`"
-                            hover-class="none">
-                            <view class="survey-box flex-row-center" @tap="openxa">
-                                <text class="absolute-center survey-title">{{ glContent.xa.name }}</text>
-                                <view class="flex-row-center status survey-status"
-                                    :class="'status-' + glContent.xa.status">{{
-                                        statusText[glContent.xa.status] }}</view>
-                            </view>
-                        </navigator>
+                        <view class="survey-box flex-row-center" @tap="openhy(index)">
+                            <text class="absolute-center survey-title">{{ glContent.hy.name }}</text>
+                            <view class="flex-row-center status survey-status" :class="'status-' + glContent.hy.status">
+                                {{
+                                    statusText[glContent.hy.status] }}</view>
+                        </view>
+                        <view class="survey-box flex-row-center" @tap="openxa(index)">
+                            <text class="absolute-center survey-title">{{ glContent.xa.name }}</text>
+                            <view class="flex-row-center status survey-status" :class="'status-' + glContent.xa.status">
+                                {{
+                                    statusText[glContent.xa.status] }}</view>
+                        </view>
                     </view>
                 </view>
             </view>

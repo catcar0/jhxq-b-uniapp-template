@@ -1,5 +1,18 @@
 const baseUrl = 'http://159.138.147.87/statics/clues/'
-export const allClues = {
+type Clue = {
+    id: number;
+    type: '物品' | '人物' | '场景' | string; // 可以根据实际情况扩展类型的可选值
+    name: string;
+    content1: string;
+    content2: string;
+    url: string;
+};
+
+// 定义包含多个线索的对象类型
+type Clues = {
+    [key: string]: Clue;
+};
+export const allClues: Clues = {
     clue1:{
         id: 1,
         type: '物品',

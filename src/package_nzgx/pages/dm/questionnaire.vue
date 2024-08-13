@@ -5,12 +5,12 @@ import { computed, ref } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
-import { onLoad } from "@dcloudio/uni-app";
+import { onLoad, onShow } from "@dcloudio/uni-app";
 import { scoreChange } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const getContent = (title: string) => {
-    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+    return computed(() => memberStore.info?.flow[flowIndex.value].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
 };
 const glContent = getContent('卦灵');
 // 关闭弹窗
@@ -20,11 +20,12 @@ const closeDialog = () => {
 }
 const confirm = () => {
     if (dialogObj.value.type === 'checkAnswersAndSetStatus') {
-        checkAnswersAndSetStatus(qaList.value.qa)
+        checkAnswersAndSetStatus(qaList.value[0].qa)
     }
     if (dialogObj.value.type === 'giveReplay') {
-        memberStore.info.teamInfo.replay[memberStore.info.teamInfo.flowIndex][glType.value].push(
-            qaList.value.replay
+        console.log(memberStore.info.teamInfo.replay[flowIndex.value],glType.value)
+        memberStore.info.teamInfo.replay[flowIndex.value][glType.value].push(
+            qaList.value[0].replay
         )
     }
     dialogObj.value.dialogVisible = false
@@ -56,6 +57,7 @@ const dialogObj = ref({
     }
 })
 const selectedIndex = ref(0)
+const flowIndex = ref(0)
 const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
@@ -69,11 +71,10 @@ const verifyQa = () => {
     dialogObj.value.type = 'checkAnswersAndSetStatus'
     showDialog()
 }
-const giveReplay = (qa) => {
+const giveReplay = () => {
     dialogObj.value.title = '注意'
     dialogObj.value.content = '确定要发送复盘给所有玩家吗？更推荐主持人口述。'
     dialogObj.value.type = 'giveReplay'
-    glType.value = qa
     showDialog()
 }
 const updateInfo = (info: any) => {
@@ -103,24 +104,31 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
             }
         });
     });
-    qaList.value.canReplay = true
-    // qaList.value.status = 3
+    qaList.value[0].canReplay = true
+    qaList.value[0].status = 3
     updateInfo(memberStore.info)
 };
 
 const replayContext = ref()
 const qaList = computed(() => {
+    glContent.value.hy.selectedIndex = 0
+    glContent.value.xa.selectedIndex = 0
     if (glType.value === 'hy') {
         return [glContent.value.hy];
     } else if (glType.value === 'xa') {
         return [glContent.value.xa];
     }
-    return [glContent.value.hy,glContent.value.xa]; // 默认返回一个空数组，防止未匹配时出错
+    return [glContent.value.hy,glContent.value.xa]; 
 });
-
+const replayTitle = ref('')
+const createReplay = (allitem:any) =>{
+    replayShow.value = true
+    replayContext.value = allitem.replay
+}
 // 初次加载时设置 glType.value
 onLoad((Option) => {
     const dataKey = Option!.name;
+    flowIndex.value =  Option!.index
     if (dataKey === '还原问卷') {
         console.log('hy');
         glType.value = 'hy';
@@ -131,54 +139,60 @@ onLoad((Option) => {
         glType.value = 'all'
     }
 });
-
+onShow(()=>{
+    // replayShow.value = false
+})
 </script>
 
 <template>
     <scroll-view scroll-y>
         <view class="questionnaire">
             <!-- 问卷 -->
-            <view v-show="!replayShow">
-                <view class="shadow-box questionnaire-box" v-if="qaList">
+            <view v-show="!replayShow" v-if="qaList" v-for="(allitem, index) in qaList">
+                <view class="shadow-box questionnaire-box" >
                     <view class="flex-row-sb">
-                        <view @tap="selectedIndex = index" v-for="(item, index) in qaList.qa"
-                            :class="selectedIndex === index ? 'question-selected' : 'question-select'">{{ item.name }}
+                        <view @tap="allitem.selectedIndex = index" v-for="(item, index) in allitem.qa"
+                            :class="allitem.selectedIndex === index ? 'question-selected' : 'question-select'">{{ item.name }}
                         </view>
                     </view>
                     <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">
-                        {{ qaList.qa[selectedIndex].question }}</view>
+                        {{ allitem.qa[allitem.selectedIndex].question }}</view>
                     <view class="flex-row-sb" style="margin-top: 20rpx;"
-                        v-for="(item, index) in qaList.qa[selectedIndex].usersAnser" :key="index">
+                        v-for="(item, index) in allitem.qa[allitem.selectedIndex].usersAnser" :key="index">
                         <view> {{ memberStore.info.characters[index].name }} ：</view>
-                        <view v-if="allClues[item.anser]">{{ allClues[item.anser].name }}</view>
-                        <view v-if="qaList.usersSubmit[index] === 0" class="status flex-row-center"
+                        <view v-if="allitem.usersSubmit[index] !== 0" v-for="(clue,index) in item.anser">
+                            {{ allClues[clue].name}}
+                        </view>
+                        <view v-if="allitem.usersSubmit[index] === 0" class="status flex-row-center"
                             :class="'status-' + item.status">{{ statusList[0] }}</view>
-                        <view v-else-if="qaList.usersSubmit[index] !== 0 && item.status === 0"
+                        <view v-else-if="allitem.usersSubmit[index] !== 0 && item.status === 0"
                             class="status flex-row-center status-1">{{ statusList[1] }}</view>
                         <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
                             statusList[item.status] }}</view>
                     </view>
                 </view>
-                <view @tap="verifyQa" v-if="qaList.status !== 3 && !qaList.canReplay" style="margin-top: 30rpx;"
+                <view @tap="verifyQa" v-if="allitem.status !== 3 && !allitem.canReplay" style="margin-top: 30rpx;"
                     class="button">验证全部问题</view>
-                <view @tap="replayShow = true;" v-if="qaList.status !== 3 && qaList.canReplay && !replayShow"
+
+                <view @tap="createReplay(allitem)" v-if="allitem.status !== 3 && allitem.canReplay && !replayShow"
                     style="margin-top: 30rpx;" class="button">生成整体复盘</view>
-                <view v-if="qaList.status === 3" style="margin-top: 30rpx;" class="button">查看{{ glType ===
-                    'hy' ? '还原' : '凶案' }}复盘</view>
+
+                <view @tap="createReplay(allitem)" v-if="allitem.status === 3" style="margin-top: 30rpx;" class="button">查看{{ allitem.name ===
+                    '还原问卷' ? '还原' : '凶案' }}复盘</view>
             </view>
 
 
 
             <!-- 复盘 -->
-            <view v-show="replayShow">
+            <view v-if="replayShow">
                 <view  class="shadow-box questionnaire-box">
-                    <view style="text-align: center;">问题1-4</view>
-                    <view>1.asdasd</view>
-                    <view>2.asdasd</view>
-                    <view>3.asdasd</view>
-                    <view>4.asdasd</view>
+                    <view style="text-align: center;">{{ `问题${replayContext[0].charAt(0)}-${replayContext.slice(-1)[0].charAt(0)}` }}</view>
+                    <view v-for="(item,index) in replayContext" style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
+                        <view>{{ item.charAt(0) }}.</view>
+                        <view>{{ item.slice(1) }}</view>
+                    </view>
                 </view>
-                <view @tap="giveReplay(qa)" 
+                <view @tap="giveReplay()" 
                     style="margin-top: 30rpx;" class="button">分发到玩家</view>
             </view>
         </view>

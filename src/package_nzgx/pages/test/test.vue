@@ -42,7 +42,8 @@ const loginSuccess = (profile: LoginResult) => {
 }
 const openBook = async () => {
   const res = await postRoomsnAPI({
-    name: '测试房间'
+    name: '测试房间',
+    expire_time:'21600000'
   })
   // console.log(res.message)
   memberStore.setRoomId(res.room.id)
@@ -72,16 +73,39 @@ const joinRoom2 = (_role: string) => {
   })
 }
 const joinGame = (_role: string) => {
-  memberStore.setVirtualRoleId(_role)
-  webSocketStore.gameWebSocketService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`), // 替换为你的 WebSocket URL
-    webSocketStore.gameConnect()
-  setTimeout(() => {
-    uni.navigateTo({
-      url: `/package_nzgx/pages/dm/dm`
-    })
-    initInfo()
-  }, 500);
+  memberStore.setVirtualRoleId(_role);
+
+  // 创建 WebSocket 连接
+  const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+  wsService.connect()
+  // 监听 WebSocket 连接成功事件
+  wsService.onOpen = () => {
+    console.log("WebSocket 连接成功");
+
+    // 连接成功后执行后续操作
+    webSocketStore.gameWebSocketService = wsService;
+    // webSocketStore.gameConnect();
+    
+    setTimeout(() => {
+      // uni.navigateTo({
+      //   url: `/package_nzgx/pages/dm/dm`
+      // });
+      initInfo();
+    }, 500);
+  };
+
+  // 监听连接错误或关闭事件
+  wsService.onError = (error) => {
+    console.error("WebSocket 连接失败", error);
+    // 在这里可以添加错误处理逻辑
+  };
+
+  wsService.onClose = () => {
+    console.log("WebSocket 连接已关闭");
+    // 在这里可以添加连接关闭后的处理逻辑
+  };
 }
+
 const initInfo = () => {
   webSocketStore.gameSend(
     initAllInfo
@@ -102,7 +126,7 @@ onUnmounted(() => {
 <template>
   <view class="flex-column-sb ">
     <button @tap="login">用户登录</button>
-    <button @tap="code='0f3G1220037MES1Y49300mwJWp2G122X';login()">用户浏览器登录</button>
+    <button @tap="code='0c3K0U1w392oj33JAC1w35svO94K0U1o';login()">用户浏览器登录</button>
     <button @tap="openBook">DM创建房间</button>
     <!-- <button @tap="joinRoom('gm')">DM加入房间</button> -->
     <button @tap="joinRoom2('1')">玩家1加入游戏</button>

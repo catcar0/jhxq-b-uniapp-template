@@ -287,7 +287,7 @@ const canJoin = ref(true)
 const userJoinRoom = ref(-1)
 const updateYpUsers = (user: number, newUserIndex: number, index: number, roomUserIndex: number) => {
     if (newUserIndex !== -1 && !canJoin.value) {
-        console.log('无法加入')
+        uni.showToast({ icon: 'none', title: '你无法加入,请先离开其他房间' })
         return
     }
     if (user === -1 || user === userIndex.value) {
@@ -437,7 +437,6 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
     </view>
 
     <view class="map">
-        <view>{{ zstStatus }}{{ ypStatus }}{{ grStatus }}</view>
         <!-- 地图搜证 -->
         <view class="map-search" v-for="(item, index) in filterLocations(memberStore.info.locationList)" :key="item.name"
             v-if="(zstStatus === 2 && ypStatus === 0) || (dtStatus === 2 && glStatus === 0)"
@@ -480,11 +479,12 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
                     </view>
 
                     <view class="flex-row-sb avatar-box">
-                        <view class="avatar flex-row-center" v-for="(item, index) in ypContent" :key="index">
+                        <view class="avatar flex-row-center" v-for="(item, index) in 2" :key="index">
                             <view @tap="updateYpUsers(ypUsers[index], userIndex, voiceIndex, index)"
                                 v-if="ypUsers[index] === -1">+
                             </view>
-                            <img v-else :src="memberStore.info.characters[ypUsers[index]].avatar" alt="">
+                                <img v-if="memberStore.info.characters[ypUsers[index]] && ypUsers[index] !== -1" :src="memberStore.info.characters[ypUsers[index]].avatar" alt="">
+
                             <img v-if="ypUsers[index] === userIndex"
                                 @tap="updateYpUsers(ypUsers[index], -1, voiceIndex, index)" class="out-btn"
                                 src="http://159.138.147.87/statics/img/out_btn_icon.png" alt="">
@@ -509,7 +509,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
         </view>
 
         <!-- 开启逐风 -->
-        <view class="newClue-mask" v-if="zfStatus === 3 && zstStatus === 0">
+        <view class="newClue-mask" v-if="zfStatus === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
             <view class="zhufeng">
             </view>
             <view class="zhufeng-text">我是逐风，我可以帮你梳理信息，
@@ -716,7 +716,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
 
 .dialog-mask {
     position: fixed;
-    z-index: 10000;
+    z-index: 15000;
     top: 0;
     left: 0;
     width: 100%;

@@ -49,19 +49,28 @@ const close = () => {
 
 const confirm = () => {
     emit('confirm');
+    console.log(props.dialogObj.type)
+    console.log(props.dialogObj.clue,'--',props.dialogObj.deepClue)
     if (props.dialogObj.type === '开启下一环节') {
         props.onConfirm();
     }
     if (props.dialogObj.type === '找尸体') {
         zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
     }
-    if (props.dialogObj.type === '个人线索发放+个人问题' && props.dialogObj.clue) {
+    if (props.dialogObj.type === '个人线索发放+个人问题' && props.dialogObj.clue && props.dialogObj.deepClue) {
+        console.log(props.dialogObj.clue,'--',props.dialogObj.deepClue)
+        // if(!props.dialogObj.clue || props.dialogObj.clue === '') return
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].status = 3
         scoreChange('user',50,[props.dialogObj.userIndex])
         addNewItem(props.dialogObj.userIndex, props.dialogObj.clue, 3, 'clues',props.dialogObj.deepClue)
     }
+    if (props.dialogObj.type === 'editTeamName') {
+        memberStore.info.teamInfo.name = inputText
+        updateInfo(memberStore.info)
+    }
 }
 const zst = (userIndex: number, clue: string, index: number) => {
+    if(!clue) return
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
     scoreChange('user', 10, [userIndex])
     addNewItem(userIndex,clue, 0, 'clues', '')
@@ -79,6 +88,7 @@ const zstselectIndex = ref<number>(0)
 const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
 }
+const inputText = props.dialogObj.initInput?? ''
 </script>
 
 <template>
@@ -89,10 +99,12 @@ const zstSelectUser = (index: number) => {
                 <image v-if="dialogObj.showCancel" @tap="close" src="@/static/icons/common_close.png"
                     :mode="'widthFix'" />
             </view>
-            <view class="dialog-content">
-                {{ dialogObj.content }}
+            <view class="dialog-content" v-html="dialogObj.content ">
             </view>
-
+            <view class="input-box flex-row-center" v-show="dialogObj.type==='editTeamName'">
+                <input style="text-align: center;" v-model="inputText" type="text">
+            </view>
+            <view style="height: 200rpx;font-weight: 700;font-size: 34rpx;"class="flex-row-center" v-show="dialogObj.type==='nextHunchuan'">开启后无法返回下一环节</view>
             <!-- 找尸体地点 -->
             <view v-if="dialogObj.type === '找尸体'">
                 <view style="width: 100%;height: 200prx;" class="flex-row-center">
@@ -136,6 +148,9 @@ const zstSelectUser = (index: number) => {
 </template>
 
 <style scoped>
+.input-box{
+    background-color:#EA6A00;border-radius: 30rpx;height: 80rpx;width: 70%;margin-left: 15%;color: white;
+}
 .big-avatar {
     width: 200rpx;
     height: 200rpx;

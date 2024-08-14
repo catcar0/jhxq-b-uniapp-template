@@ -3,12 +3,36 @@ import DMTabBar from "@/components/DM-TabBar/index.vue"
 import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
+import dmDialog from '@/package_nzgx/components/dmDialog.vue';
+import { ref } from "vue";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const charactersList = charactersStore().characters
+const rankList = ['无','人','地','天']
+const dialogObj = ref({
+    title:'修改小队名称',
+    type:'editTeamName',
+    confirmText: '确定',
+    cancelText: '取消',
+    showCancel: true, // 是否显示按钮
+    initInput:memberStore.info.teamInfo.name,
+    dialogVisible:false
+})
+
+const showDialog = () => {
+    dialogObj.value.dialogVisible = true
+}
+const closeDialog = () => {
+    
+    dialogObj.value.dialogVisible = false
+}
+const confirm = () => {
+    dialogObj.value.dialogVisible = false
+}
 </script>
 
 <template>
+        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm"  />
     <view class="team-management">
         <view class="team-info shadow-box flex-column-sb">
             <view class="title flex-row-center info-item almm">队伍信息</view>
@@ -17,17 +41,17 @@ const charactersList = charactersStore().characters
                 <text>名称</text>
                 <view class="flex-row-sb orange-font team-name">
                     <text> {{ memberStore.info.teamInfo.name }} 小分队</text>
-                    <view><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png" alt=""></view>
+                    <view @tap="showDialog"><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png" alt=""></view>
                 </view>
             </view>
             <view class="info-item flex-row-sb">
                 <text>等级</text>
-                <view class="orange-font">无</view>
+                <view class="orange-font">{{ rankList[memberStore.info.teamInfo.score] }}</view>
             </view>
         </view>
         <view class="user-box shadow-box flex-column-sb">
             <view class="title flex-row-center info-item almm">玩家列表</view>
-            <view v-for="item in memberStore.info.characters.slice(1,10)" :key="item.name" class="flex-row-sb user-item" >
+            <view v-for="item in memberStore.info.characters" :key="item.name" class="flex-row-sb user-item" >
                 <view class="user-item-avatar">
                     <img class="user-item-avatar" :src="item.avatar" alt="">
                 </view>
@@ -38,10 +62,15 @@ const charactersList = charactersStore().characters
                             <text class="shi">饰</text>
                             <view class="character-name flex-row-center">{{ item.name }}</view>
                         </view>
-                        <text class="ding almm">丁</text>
+                        <text v-if="item.score>400" class="ding almm">甲</text>
+                        <text v-if="item.score>300 && item.score<400" class="ding almm">乙</text>
+                        <text v-if="item.score>200 && item.score<300" class="ding almm">丙</text>
+                        <text v-if="item.score>100 && item.score<200" class="ding almm">丁</text>
+                        <text v-if="item.score<100" class="ding almm">戊</text>
                     </view>
                     <view class="score-progress">
-                        <text class="score">{{ item.score }}</text>
+                        <text class="score" v-if="item.score>0" >{{ item.score }}</text>
+                        <text class="score" v-if="item.score<0" >0</text>
                         <text class="score-max">500</text>
                         <view class="score-progress-bar" :style="{ width: (item.score / 500) * 464 + 'rpx' }">
                         </view>

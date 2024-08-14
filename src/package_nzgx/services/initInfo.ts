@@ -6,7 +6,7 @@ export const initAllInfo = {
             user: '未知选手',
             score: 0,
             cueset: {
-                clues: [{ name: 'clue10', isNew: false, deepClue: '', type: 0, isRead: false }, { name: 'clue14', isNew: false, deepClue: '', type: 0, isRead: true }, { name: 'clue16', isNew: false, deepClue: '', type: 0, isRead: false }, { name: 'clue17', isNew: false, deepClue: '', type: 0, isRead: false },],
+                clues: [],
                 audio: [],
                 replay: [],
             },
@@ -101,6 +101,16 @@ export const initAllInfo = {
                 name: '第一次魂穿复盘',
                 hy: [],
                 xa: []
+            },
+            {
+                name: '第二次魂穿复盘',
+                hy: [],
+                xa: []
+            },
+            {
+                name: '第三次魂穿复盘',
+                hy: [],
+                xa: []
             }
         ]
     },
@@ -110,7 +120,7 @@ export const initAllInfo = {
                 {
                     title: '开启逐风',
                     content: [{}],
-                    status: 3,
+                    status: 0,
                     isSwitchOn: false
                 },
                 {
@@ -138,7 +148,7 @@ export const initAllInfo = {
                             clue: 'clue4'
                         }
                     ],
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '个人线索发放+个人问题',
@@ -174,14 +184,14 @@ export const initAllInfo = {
                             ]
                         }
                     ],
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '音频搜证',
                     isSwitchOn: false,
                     content: [
                         {
-                            users: [5, 1],
+                            users: [-1, -1],
                             name: '教学楼',
                             position: {
                                 top: '365rpx',
@@ -189,11 +199,11 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue19',
-                            anser: [5, 1],
+                            answer: [5, 1],
                             result: ''
                         },
                         {
-                            users: [-1, 2],
+                            users: [-1, -1],
                             name: '花坛',
                             position: {
                                 top: '300rpx',
@@ -201,11 +211,11 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue20',
-                            anser: [2, 1],
+                            answer: [2, 1],
                             result: ''
                         }
                     ],
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '地图搜证',
@@ -215,7 +225,7 @@ export const initAllInfo = {
                             locations: [0, 5, 3, 11, 13]
                         }
                     ],
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '卦灵',
@@ -237,26 +247,26 @@ export const initAllInfo = {
                                 {
                                     name: '问题1',
                                     question: '在今天以前，我们对春天做了什么？',
-                                    anser: ['clue14'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue14'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题2',
                                     question: '我们为什么要这么做？',
-                                    anser: ['clue16'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue16'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题3',
                                     question: '对于我们的行为，春天有什么反应？',
-                                    anser: ['clue10'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue10'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题4',
                                     question: '为什么何阑会对李梦说“有人比我们更着急”？这和春天的死有没有联系？',
-                                    anser: ['clue17'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue17'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         },
@@ -274,19 +284,19 @@ export const initAllInfo = {
                                 {
                                     name: '问题4',
                                     question: '凶手是谁？',
-                                    anser: ['clue23'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue23'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题5',
                                     question: 'Ta为什么要杀害春天并分尸？',
-                                    anser: ['clue6'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue6'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         }
                     },
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '封印动画',
@@ -352,7 +362,7 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue38',
-                            anser: [3, 4],
+                            answer: [3, 4],
                             result: ''
                         },
                         {
@@ -364,7 +374,7 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue39',
-                            anser: [1, 4],
+                            answer: [1, 4],
                             result: ''
                         },
                         {
@@ -376,7 +386,7 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue40',
-                            anser: [0, 3],
+                            answer: [0, 3],
                             result: ''
                         },
                         {
@@ -388,11 +398,11 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue41',
-                            anser: [0, 4],
+                            answer: [0, 4],
                             result: ''
                         }
                     ],
-                    status: 3
+                    status: 0
                 },
                 {
                     title: '地图搜证',
@@ -422,14 +432,14 @@ export const initAllInfo = {
                                 {
                                     name: '问题1',
                                     question: '除霸凌外，春天还要举报的内容是什么？',
-                                    anser: ['clue33'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue33'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题2',
                                     question: '谁会担心春天举报成功？',
-                                    anser: ['clue27', 'clue26', 'clue25'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue27', 'clue26', 'clue25'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         },
@@ -447,14 +457,14 @@ export const initAllInfo = {
                                 {
                                     name: '问题4',
                                     question: '凶手是谁？',
-                                    anser: ['clue27'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue27'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题5',
                                     question: 'Ta为什么要杀害春天并分尸？',
-                                    anser: ['clue37'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue37'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         }
@@ -540,14 +550,14 @@ export const initAllInfo = {
                                 {
                                     name: '问题1',
                                     question: '基于这个前提，林佳对李梦提起的“春天和我们情况一样”指的是？',
-                                    anser: ['clue36'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue36'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题2',
                                     question: '林佳李梦怀孕，孩子可能是谁的？',
-                                    anser: ['clue21'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue21'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         },
@@ -565,14 +575,14 @@ export const initAllInfo = {
                                 {
                                     name: '问题4',
                                     question: '凶手是谁？',
-                                    anser: ['clue24'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue24'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
                                     name: '问题5',
                                     question: 'Ta为什么要杀害春天并分尸？',
-                                    anser: ['clue50'],
-                                    usersAnser: [{ anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }, { anser: [], status: 0 }]
+                                    answer: ['clue50'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
                         }

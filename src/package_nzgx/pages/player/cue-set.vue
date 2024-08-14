@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
@@ -9,6 +9,11 @@ const webSocketStore = useWebSocketStore();
 const setClass = ['物品', '音频', '记录']
 const classIndex = ref(0)
 const cluesIndex = ref(-1)
+const props = defineProps({
+    dialogObj: Object,
+    userInfo: Object,
+    teamInfo: Object
+});
 interface AudioItem {
     src: string;
     isPlaying: boolean;
@@ -21,32 +26,57 @@ interface AudioItem {
     scrollOffset: number; // 新增
     scrollAnimationFrame: number; // 新增
 }
-const audioList = ref<AudioItem[]>([
-    {
-        roles: '尹萍&陈敏',
-        location: '后山花坛',
-        content: '春天已经准备春天已经准备春天已经准备春天已经准备',
-        src: 'http://159.138.147.87/statics/voice/test.mp3',
+const audioList = computed<AudioItem[]>(() => {
+    return memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.map(audio => ({
+        roles: allClues[audio.name].name,
+        location: allClues[audio.name].content1,
+        content: allClues[audio.name].content2,
+        src: allClues[audio.name].url + '.mp3',
         isPlaying: false,
         context: null,
-        scrollText: '春天已经准备春天已经准备春天已经准备春天已经准备',
+        scrollText: allClues[audio.name].content2,
         scrollPosition: 0,
         scrollOffset: 0,
-        scrollAnimationFrame: 0
-    },
-    {
-        roles: '尹萍&陈敏',
-        location: '后山花坛',
-        content: '春天已经准备春天已经准备春天已经准备春天已经准备',
-        src: 'http://159.138.147.87/statics/voice/test.mp3',
-        isPlaying: false,
-        context: null,
-        scrollText: '春天已经准备春天已经准备春天已经准备春天已经准备',
-        scrollPosition: 0,
-        scrollOffset: 0,
-        scrollAnimationFrame: 0
-    }
-])
+        scrollAnimationFrame: 0,
+    }));
+});
+const replayIndex = ref(-1)
+
+const sortedClues = computed(() => {
+    const clues = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues;
+
+    // 创建新数组并排序
+    return [...clues].sort((a, b) => {
+        if (a.isRead === b.isRead) {
+            return 0; // 保持原有顺序
+        } else if (a.isRead === false && b.isRead === true) {
+            return -1; // a 排在 b 之前
+        } else {
+            return 1; // b 排在 a 之前
+        }
+    });
+});
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
+const readClue = (index: number) => {
+    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[index].isRead = true
+    updateInfo(memberStore.info)
+}
+const firstClue = (index: number) => {
+    if (classIndex.value === index) return
+    classIndex.value = 0
+    const clues = sortedClues.value;
+
+    // 移动选中的元素到数组的第一个位置
+    const selectedClue = clues.splice(index, 1)[0]; // 删除并获取目标元素
+    clues.unshift(selectedClue); // 将目标元素插入到第一个位置
+
+    // 更新原始数组（假设 memberStore.info.characters[userIndex.value].cueset.clues 是响应式的）
+    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues = clues;
+}
 </script>
 
 <template>
@@ -65,17 +95,25 @@ const audioList = ref<AudioItem[]>([
                     <view class="font-player-gradient1">线索集</view>
                 </view>
                 <scroll-view scroll-y style="height: 71vh;">
-                    <img v-if="cluesIndex !== -1" class="clue-big-image" :src="allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url + '.png'"
-                        alt="">
+                    <view class="clue-big-image flex-row-center">
+                        <img v-if="cluesIndex !== -1" mode="heightFix"
+                        :src="allClues[sortedClues[cluesIndex].name].url + '.png'" alt="">
+                    </view>
                     <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
-                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].content1 }}
-                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].name }}
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
+                            1].cueset.clues[cluesIndex].name].content1 }}
+                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
+                            1].cueset.clues[cluesIndex].name].name }}
                     </view>
                     <view class="clues-box flex-row-center">
                         <!-- <view class="make-old2"></view> -->
-                        <view v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues" :key="index">
-                            <view @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = index" class="clues-item"
-                                :class="cluesIndex === index ? 'clue-selected-border1' : ''">
+                        <view v-for="(item, index) in sortedClues" :key="index">
+                            <view
+                                @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = 0; firstClue(index);readClue(index)"
+                                class="clues-item" :class="cluesIndex === index ? 'clue-selected-border1' : ''">
+                                <view v-if="!item.isRead"
+                                    style="width: 20rpx;height: 20rpx;border-radius: 999rpx;background-color: red;position: absolute;margin-left: 100rpx;margin-top: -190rpx;">
+                                </view>
                                 <img class="clue-selected-border2" v-show="cluesIndex === index"
                                     src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
                                 <view class="clue-small-image"
@@ -83,7 +121,8 @@ const audioList = ref<AudioItem[]>([
                                     <!-- <img class="clue-small-image"  :src="`http://159.138.147.87/statics/img/${item}.png`" alt=""> -->
                                 </view>
                             </view>
-                            <view style="padding-top: 15rpx;text-align: center;"><text>{{ allClues[item.name].name }}</text></view>
+                            <view v-if="allClues[item.name]" class="clue-name"><text>{{ allClues[item.name].name
+                                    }}</text></view>
                         </view>
                     </view>
                 </scroll-view>
@@ -106,9 +145,42 @@ const audioList = ref<AudioItem[]>([
                     <view class="font-player-gradient1">调查记录</view>
                 </view>
                 <scroll-view scroll-y style="width: 625rpx;height: 71vh;padding-top: 20rpx;">
-                    <view class="audio-box flex-row-sb" v-for="(item, index) in audioList" :key="index">
-                    第一次魂穿记录
-                </view>
+                    <view @tap="replayIndex = index" v-if="replayIndex === -1" v-show="item.hy.length !== 0"
+                        class="audio-box flex-row-sb" v-for="(item, index) in teamInfo.replay" :key="index">
+                        {{ item.name }}
+                    </view>
+                    <view v-if="replayIndex !== -1"
+                        style="display: flex;flex-direction: column;justify-content: space-between;height: 71vh;">
+                        <view style="display: flex;height: 100%;">
+                            <view style="height: 100%;width: 50rpx;"
+                                v-show="replayIndex !== 0 && teamInfo.replay.length > 1" class="flex-row-center">
+                                <img style="height: 100rpx;width: 50rpx;"
+                                    src="http://159.138.147.87/statics/img/left.png" alt="">
+                            </view>
+                            <view>
+                                <view style="font-weight: 700;height: 100rpx;text-align: center;">{{
+                                    teamInfo.replay[replayIndex].name }}</view>
+                                <view v-for="(item, index) in teamInfo.replay[replayIndex].hy"
+                                    style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
+                                    <view>{{ item.charAt(0) }}.</view>
+                                    <view>{{ item.slice(1) }}</view>
+                                </view>
+                                <view v-for="(item, index) in teamInfo.replay[replayIndex].xa"
+                                    style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
+                                    <view>{{ item.charAt(0) }}.</view>
+                                    <view>{{ item.slice(1) }}</view>
+                                </view>
+                            </view>
+                            <view style="height: 100%;width: 80rpx;"
+                                v-show="replayIndex !== teamInfo.replay.length && teamInfo.replay.length > 1 && teamInfo.replay[replayIndex + 1].hy.length !== 0"
+                                class="flex-row-center">
+                                <img style="height: 80rpx;width: 50rpx;transform: rotate(180deg);"
+                                    src="http://159.138.147.87/statics/img/left.png" alt="">
+                            </view>
+                        </view>
+                        <view @tap="replayIndex = -1" class="theme-button button">返回
+                        </view>
+                    </view>
                 </scroll-view>
             </view>
         </view>
@@ -116,6 +188,27 @@ const audioList = ref<AudioItem[]>([
 </template>
 
 <style scoped>
+.theme-button {
+
+    margin-left: 190rpx;
+    margin-top: 40rpx;
+    width: 245rpx;
+    line-height: 94.5rpx;
+    font-size: 28rpx;
+    border-radius: 16px;
+    font-weight: bold;
+    background: url('http://159.138.147.87/statics/img/player_dialog_btn1.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+}
+
+.clue-name {
+    padding-top: 15rpx;
+    text-align: center;
+    width: 120rpx;
+    height: 30rpx;
+}
+
 .a {
     pointer-events: all;
 }
@@ -227,10 +320,10 @@ const audioList = ref<AudioItem[]>([
 }
 
 .clue-big-image {
-    margin-left: 100rpx;
+    /* margin-left: 100rpx; */
     margin-top: 20rpx;
-    width: 370rpx;
-    height: 500rpx;
+    height: 500rpx; /* 固定高度 */
+    width: 100%; /* 占据父容器的宽度 */
 }
 
 .clues-item {
@@ -238,7 +331,7 @@ const audioList = ref<AudioItem[]>([
     height: 112rpx;
     background-color: #CAA16A;
     text-align: center;
-    mix-blend-mode:multiply;
+    mix-blend-mode: multiply;
 }
 
 .clue-small-image {

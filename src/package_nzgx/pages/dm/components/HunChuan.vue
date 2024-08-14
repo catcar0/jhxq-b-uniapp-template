@@ -32,7 +32,7 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
             newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-            // newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
+            newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
             updateInfo(newInfo)
         } else {
             if (newInfo.flow[index - 1].inner.slice(-1)[0].status === 0) {
@@ -43,16 +43,22 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
                 }, 10);
                 ShowToast('请按照游戏流程逐步开启')
             } else {
-                newInfo.flow[newInfo.teamInfo.flowIndex].status = 3
-                newInfo.teamInfo.flowIndex = index
-                newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-                newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
-                updateInfo(newInfo)
+                dialogObj.value.title = '注意'
+                dialogObj.value.content = `<text style="font-weight: 700;color:#000">${flowName[index - 1]}</text>已完成，是否开启<text style="font-weight: 700;color:#000">${flowName[index]}</text>?`
+                dialogObj.value.type = 'nextHunchuan'
+                dialogObj.value.flowIndex = index
+                dialogObj.value.confirmText = '确认';
+                dialogObj.value.cancelText = '取消';
+                updateSwitch.value = false;
+                setTimeout(() => {
+                    updateSwitch.value = true;
+                }, 0);
+                showDialog();
             }
         }
     }
 }
-
+const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报']
 const onConfirm = ref<Function>();
 const onChangeDetail = (ev: any, item: any, index: number) => {
     // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
@@ -93,10 +99,10 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
     dialogObj.value.cancelText = '取消';
     dialogObj.value.type = '开启下一环节'
     updateSwitch.value = false;
+    showDialog();
     setTimeout(() => {
         updateSwitch.value = true;
     }, 0);
-    showDialog();
 
     onConfirm.value = () => {
         console.log(index);
@@ -106,8 +112,10 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
             currentFlow.status = status;
             currentFlow.isSwitchOn = isSwitchOn;
+            setTimeout(() => {
+                dialogObj.value.type = currentFlow.title;
+            }, 500);
             updateInfo(memberStore.info);
-            dialogObj.value.type = currentFlow.title;
         };
 
         const addCluesAndMasks = () => {
@@ -142,8 +150,11 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 
 
 const showZstDialog = (location: string, clue: any, zst_index: number) => {
+    if(clue === '') return
+    console.log(clue,'aa')
     dialogObj.value.title = '请确认答案'
     dialogObj.value.content = '请DM确认选择该地点的用户回答'
+    dialogObj.value.type = '找尸体'
     dialogObj.value.location = location
     dialogObj.value.clue = clue
     dialogObj.value.zst_index = zst_index
@@ -180,6 +191,7 @@ const dialogObj = ref({
     zst_index: 0,
     qa_index: 0,
     userIndex: 0,
+    flowIndex: 0,
     qa: []
 })
 
@@ -225,22 +237,22 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     }
 
     const currentUsers = [...currentContent.users].sort((a, b) => a - b);
-    const currentAnser = [...currentContent.anser].sort((a, b) => a - b);
+    const currentAnswer = [...currentContent.answer].sort((a, b) => a - b);
 
     let foundPartialMatch = false;
     let missingUser = null;
     let foundInOtherLocation = false;
 
     // 检查 currentContent 内部的完全匹配和部分匹配
-    if (JSON.stringify(currentUsers) === JSON.stringify(currentAnser)) {
+    if (JSON.stringify(currentUsers) === JSON.stringify(currentAnswer)) {
         matchResult("验证成功");
         return;
     } else {
-        const partialMatch = currentUsers.filter(user => currentAnser.includes(user));
+        const partialMatch = currentUsers.filter(user => currentAnswer.includes(user));
         if (partialMatch.length > 0) {
             foundPartialMatch = true;
 
-            const missing = currentUsers.filter(user => !currentAnser.includes(user));
+            const missing = currentUsers.filter(user => !currentAnswer.includes(user));
             if (missing.length === 1) {
                 missingUser = missing[0];
             }
@@ -253,8 +265,8 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
             continue;
         }
 
-        const locationAnser = [...location.anser].sort((a, b) => a - b);
-        const commonUsers = currentUsers.filter(user => locationAnser.includes(user));
+        const locationAnswer = [...location.answer].sort((a, b) => a - b);
+        const commonUsers = currentUsers.filter(user => locationAnswer.includes(user));
 
         if (commonUsers.length > 0) {
             foundInOtherLocation = true;
@@ -279,7 +291,17 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
 const closeDialog = () => {
     dialogObj.value.dialogVisible = false
 }
-
+const confirm = () => {
+    dialogObj.value.dialogVisible = false
+    if (dialogObj.value.type === 'nextHunchuan') {
+        const newInfo = memberStore.info
+        newInfo.flow[newInfo.teamInfo.flowIndex].status = 3
+        newInfo.teamInfo.flowIndex = dialogObj.value.flowIndex
+        newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
+        newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
+        updateInfo(newInfo)
+    }
+}
 const showDialog = () => {
     dialogObj.value.dialogVisible = true
 }
@@ -315,7 +337,7 @@ const goAllReplay = (index: number) => {
         <view class="toast flex-row-center">{{ toastContent }}</view>
     </view>
 
-    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="closeDialog" :onConfirm='onConfirm' />
+    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" :onConfirm='onConfirm' />
 
     <!-- 三次魂穿+海报分享 -->
     <view style="padding-bottom: 300rpx;" @tap="aa">

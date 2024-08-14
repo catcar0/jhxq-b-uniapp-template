@@ -1,25 +1,17 @@
 <script setup lang='ts'>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { defineProps, defineEmits } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-const updateInfo = (info: any) => {
-  webSocketStore.gameSend(
-    info
-  )
-}
-const fun = (content: any) => {
-  const newInfo = memberStore.info
-  newInfo.aa.bb = content
-  updateInfo(newInfo)
-}
+
+
 
 const props = defineProps({
     dialogObj: Object,
     userInfo: Object,
-    teamInfo:Object
+    teamInfo: Object
 });
 
 const emit = defineEmits(['updateDialogObj']);
@@ -28,29 +20,31 @@ const modifyDialog = () => {
     dialogObj.value.dialogVisible = true
     emit('updateDialogObj', dialogObj);
 };
-const rankList = [
-    {
-        name: '小分队1',
-        rank: 1,
-        status: 1,
-        time: '2024.09.09',
-        level: 350
-    },
-    {
-        name: '小分队2',
-        rank: 9,
-        status: 1,
-        time: '2024.09.09',
-        level: 250
-    },
-    {
-        name: props.teamInfo!.name + '小分队',
-        rank: 10,
-        status: 0,
-        time: '2024.09.09',
-        level: props.teamInfo!.score
-    }
-]
+const rankList = computed(() => {
+    return [
+        {
+            name: '小分队1',
+            rank: 1,
+            status: 1,
+            time: '2024.09.09',
+            level: 2
+        },
+        {
+            name: '小分队2',
+            rank: 9,
+            status: 1,
+            time: '2024.09.09',
+            level: 3
+        },
+        {
+            name: props.teamInfo!.name + '小分队',
+            rank: 10,
+            status: 0,
+            time: '2024.09.09',
+            level: props.teamInfo!.score
+        }
+    ]
+})
 const dialogObj = ref({
     dialogVisible: false,
     title: '请输入您的昵称',
@@ -61,7 +55,30 @@ const dialogObj = ref({
     type: 'changeTeamName',
 })
 
-
+const changeAvatar = () => {
+    uni.chooseImage({
+        count: 1, // 只允许选择一张图片
+        sizeType: ['original', 'compressed'], // 可以指定是原图还是压缩图
+        sourceType: ['album', 'camera'], // 可以指定来源是相册还是相机
+        success: function (res) {
+            const tempFilePath = res.tempFilePaths[0];
+            // 将图片转换为Base64格式
+            uni.getFileSystemManager().readFile({
+                filePath: tempFilePath,
+                encoding: 'base64',
+                success: function (fileRes) {
+                    // 保存到 memberStore.avatar
+                    const base64Image = 'data:image/png;base64,' + fileRes.data;
+                    memberStore.avatar = base64Image;
+                },
+                fail: function (err) {
+                    console.error('图片转换Base64失败', err);
+                }
+            });
+        }
+    });
+};
+const avatarList = ['clue22', 'clue25', 'clue23', 'clue24', 'clue26', 'clue27',]
 const showDialog = (e: any) => {
     console.log(e)
     dialogObj.value.dialogVisible = true
@@ -70,12 +87,27 @@ const showDialog = (e: any) => {
 
 <template>
     <view class="team-info">
-        <view class="user-avatar">
+        <view class="user-avatar" @click="changeAvatar">
             <img class="user-avatar-img" src="http://159.138.147.87/statics/img/avatar_frame.png" alt="">
+            <view
+                style="background-color: black;position: absolute;margin-left: 15rpx;z-index: 1;height: 300rpx;width: 260rpx;margin-top: -360rpx;">
+                <img style="height: 100%;width: 100%;" :src="memberStore.avatar" alt="">
+            </view>
         </view>
+        <!-- `http://159.138.147.87/statics/clues/${avatarList[memberStore.virtualRoleId - 1]}.png` -->
+        <!-- ${avatarList[memberStore.virtualRoleId - 1]} -->
         <view class="character-avatar">
-            <img class="character-avatar-img" src="http://159.138.147.87/statics/img/avatar1.png" alt="">
+            <img class="character-avatar-img" src="http://159.138.147.87/statics/img/avatar_frame.png" alt="">
+            <view
+                style="background-color: black;position: absolute;margin-left: 15rpx;z-index: 1;height: 240rpx;width: 200rpx;margin-top: -260rpx;">
+                <img style="height: 100%;width: 100%;"
+                    :src="`http://159.138.147.87/statics/clues/${avatarList[memberStore.virtualRoleId - 1]}.png`"
+                    alt="">
+            </view>
         </view>
+        <!-- <view class="character-avatar">
+            <img class="character-avatar-img" src="http://159.138.147.87/statics/img/avatar1.png" alt="">
+        </view> -->
 
         <view class="team-info-box">
             <view class="staff-info flex-column-sb ">
@@ -92,12 +124,26 @@ const showDialog = (e: any) => {
                 </view>
                 <view class="team-level font-player-gradient1">
                     队伍等级:
-                    <img class="level-icon" src="http://159.138.147.87/statics/img/wu.png" alt="">
+                    <img v-if="teamInfo!.score === 0" class="level-icon" src="http://159.138.147.87/statics/img/wu.png" alt="">
+                    <img v-if="teamInfo!.score === 1" class="level-icon" src="http://159.138.147.87/statics/img/ren.png" alt="">
+                    <img v-if="teamInfo!.score === 2" class="level-icon" src="http://159.138.147.87/statics/img/di.png" alt="">
+                    <img v-if="teamInfo!.score === 3" class="level-icon" src="http://159.138.147.87/statics/img/tian.png" alt="">
                 </view>
                 <view class="exp font-player-gradient1">
                     个人经验:
                     <view class="exp-icon"></view>
-                    <img class="ding-icon" src="http://159.138.147.87/statics/img/ding.png" alt="">
+                    <view class="exp-border flex-row-center">
+                        <img v-if="userInfo!.score > 400" class="ding-icon"
+                            src="http://159.138.147.87/statics/img/jia.png" alt="">
+                        <img v-if="userInfo!.score < 400 && userInfo!.score > 300" class="ding-icon"
+                            src="http://159.138.147.87/statics/img/yi.png" alt="">
+                        <img v-if="userInfo!.score < 300 && userInfo!.score > 200" class="ding-icon"
+                            src="http://159.138.147.87/statics/img/bing.png" alt="">
+                        <img v-if="userInfo!.score < 200 && userInfo!.score > 100" class="ding-icon"
+                            src="http://159.138.147.87/statics/img/ding.png" alt="">
+                        <img v-if="userInfo!.score < 100" class="ding-icon"
+                            src="http://159.138.147.87/statics/img/wu2.png" alt="">
+                    </view>
                 </view>
             </view>
 
@@ -127,18 +173,12 @@ const showDialog = (e: any) => {
                                     </view>
                                 </view>
                             </view>
-                            <view v-if="item.level < 100" class="team-rank-level "
+                            <view  class="team-rank-level "
                                 :class="item.status === 1 ? 'team-rank-level-bg0' : 'team-rank-level-bg1'">
-                                <img class="team-rank-level-icon" src="http://159.138.147.87/statics/img/wu.png" alt="">
-                            </view>
-                            <view v-if="item.level < 300 && item.level > 200" class="team-rank-level "
-                                :class="item.status === 1 ? 'team-rank-level-bg0' : 'team-rank-level-bg1'">
-                                <img class="team-rank-level-icon" src="http://159.138.147.87/statics/img/di.png" alt="">
-                            </view>
-                            <view v-if="item.level < 400 && item.level > 300" class="team-rank-level "
-                                :class="item.status === 1 ? 'team-rank-level-bg0' : 'team-rank-level-bg1'">
-                                <img class="team-rank-level-icon" src="http://159.138.147.87/statics/img/tian.png"
-                                    alt="">
+                                <img v-if="item.level === 0" class="team-rank-level-icon" src="http://159.138.147.87/statics/img/wu.png" alt="">
+                                <img v-if="item.level === 1" class="team-rank-level-icon" src="http://159.138.147.87/statics/img/ren.png" alt="">
+                                <img v-if="item.level === 2" class="team-rank-level-icon" src="http://159.138.147.87/statics/img/di.png" alt="">
+                                <img v-if="item.level === 3" class="team-rank-level-icon" src="http://159.138.147.87/statics/img/tian.png" alt="">
                             </view>
                         </view>
                         <view class="flex-row-center" style="height: 20rpx;" v-if="index === 0">...</view>
@@ -150,6 +190,15 @@ const showDialog = (e: any) => {
 </template>
 
 <style scoped>
+.exp-border {
+    margin-left: -30rpx;
+    width: 66.5rpx;
+    height: 66.5rpx;
+    background: url('http://159.138.147.87/statics/img/exp_border.png') no-repeat;
+    background-size: 100% 100%;
+    background-position: center;
+}
+
 .make-old {
     position: absolute;
     z-index: 11;
@@ -256,9 +305,6 @@ const showDialog = (e: any) => {
     z-index: 1;
     width: 300rpx;
     height: 360rpx;
-    background: url('http://159.138.147.87/statics/img/jcw.jpg') no-repeat;
-    background-size: 86% 72%;
-    background-position: 22rpx 31rpx;
     z-index: 2;
     box-sizing: border-box;
 }
@@ -266,6 +312,8 @@ const showDialog = (e: any) => {
 .user-avatar-img {
     width: 300rpx;
     height: 360rpx;
+    position: relative;
+    z-index: 2;
 }
 
 .character-avatar {
@@ -273,9 +321,12 @@ const showDialog = (e: any) => {
     right: 40rpx;
     top: 270rpx;
     z-index: 2;
+    transform: scale(0.8) rotate(10deg);
 }
 
 .character-avatar-img {
+    position: relative;
+    z-index: 2;
     width: 224rpx;
     height: 266rpx;
 }
@@ -328,9 +379,8 @@ const showDialog = (e: any) => {
 }
 
 .ding-icon {
-    width: 65.5rpx;
-    height: 60.5rpx;
-    margin-left: -30rpx;
+    width: 45.5rpx;
+    height: 40.5rpx;
 }
 
 .rank-status-icon {

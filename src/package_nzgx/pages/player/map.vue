@@ -1,6 +1,5 @@
 <script setup lang='ts'>
 import { computed, ref, watch } from 'vue';
-import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
@@ -21,191 +20,7 @@ const modifyDialog = () => {
     dialogObj.value.dialogVisible = true
     emit('updateDialogObj', dialogObj);
 };
-// 第一次魂穿 0 3 11 13 5
-const locationList = ref(
-    [
-        {
-            name: '医务室',
-            position: {
-                top: '30rpx',
-                left: '320rpx',
-                iconTop: '110rpx',
-                iconLeft: '330rpx'
-            },
-            isShow: true,
-            clue: 'clue17',
-            id: 0
-        },
-        {
-            name: '后山',
-            position: {
-                top: '70rpx',
-                left: '530rpx',
-                iconTop: '170rpx',
-                iconLeft: '540rpx'
-            },
-            isShow: true,
-            clue: 'clue2',
-            id: 1
-        },
-        {
-            name: '操场',
-            position: {
-                top: '180rpx',
-                left: '340rpx',
-                iconTop: '260rpx',
-                iconLeft: '350rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 2
-        },
-        {
-            name: '厕所',
-            position: {
-                top: '220rpx',
-                left: '130rpx',
-                iconTop: '240rpx',
-                iconLeft: '110rpx'
-            },
-            isShow: true,
-            clue: 'clue14',
-            id: 3
-        },
-        {
-            name: '花坛',
-            position: {
-                top: '300rpx',
-                left: '520rpx',
-                iconTop: '320rpx',
-                iconLeft: '500rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 4
-        },
-        {
-            name: '教学楼',
-            position: {
-                top: '365rpx',
-                left: '210rpx',
-                iconTop: '450rpx',
-                iconLeft: '220rpx'
-            },
-            isShow: true,
-            clue: 'clue18',
-            id: 5
-        },
-        {
-            name: '保安室',
-            position: {
-                top: '455rpx',
-                left: '20rpx',
-                iconTop: '410rpx',
-                iconLeft: '30rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 6
-        },
-        {
-            name: '校公告栏',
-            position: {
-                top: '520rpx',
-                left: '490rpx',
-                iconTop: '540rpx',
-                iconLeft: '460rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 7
-        },
-        {
-            name: '食堂',
-            position: {
-                top: '535rpx',
-                left: '250rpx',
-                iconTop: '630rpx',
-                iconLeft: '260rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 8
-        },
-        {
-            name: '洗衣房',
-            position: {
-                top: '670rpx',
-                left: '540rpx',
-                iconTop: '750rpx',
-                iconLeft: '690rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 9
-        },
-        {
-            name: '图书馆',
-            position: {
-                top: '760rpx',
-                left: '340rpx',
-                iconTop: '850rpx',
-                iconLeft: '410rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 10
-        },
-        {
-            name: '活动楼',
-            position: {
-                top: '790rpx',
-                left: '40rpx',
-                iconTop: '870rpx',
-                iconLeft: '50rpx'
-            },
-            isShow: true,
-            clue: 'clue16',
-            id: 11
-        },
-        {
-            name: '宿舍',
-            position: {
-                top: '980rpx',
-                left: '490rpx',
-                iconTop: '930rpx',
-                iconLeft: '630rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 12
-        },
-        {
-            name: '教务处',
-            position: {
-                top: '1050rpx',
-                left: '60rpx',
-                iconTop: '1070rpx',
-                iconLeft: '40rpx'
-            },
-            isShow: true,
-            clue: 'clue15',
-            id: 13
-        },
-        {
-            name: '独栋小楼',
-            position: {
-                top: '1150rpx',
-                left: '290rpx',
-                iconTop: '1230rpx',
-                iconLeft: '310rpx'
-            },
-            isShow: true,
-            clue: 'clue1',
-            id: 14
-        },
-    ]
-)
+
 const audioIndex = ref(0)
 
 const dialogObj = ref({
@@ -217,7 +32,7 @@ const dialogObj = ref({
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
     hideCloseIcon: false,
-    clue:''
+    clue: ''
 })
 const isRotate = ref(false)
 const isScale = ref(false)
@@ -297,11 +112,10 @@ const updateYpUsers = (user: number, newUserIndex: number, index: number, roomUs
         }
         else canJoin.value = false; userJoinRoom.value = index
     }
-    console.log('----------', newUserIndex, canJoin.value, index)
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[voiceIndex.value].users[roomUserIndex] = user
     updateInfo(memberStore.info)
 }
-
+// wx4d801e9058fb874c
 const isNewClueShow = ref(false)
 const isDeepClue = ref(false)
 const voiceIndex = ref(-1)
@@ -315,7 +129,7 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
     if (!a || !a.result || a.result === '' || (a !== undefined && b === undefined) || (a.users[0] === -1 || a.users[1] === -1)) {
         return
     }
-    if(a.result === '已验证成功') return
+    if (a.result === '已验证成功') return
     if (a.result === '验证成功') {
         dialogObj.value.title = '推理成功'
         dialogObj.value.content = '收获一条音频线索'
@@ -324,14 +138,14 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
         dialogObj.value.hideCloseIcon = true
         dialogObj.value.clue = a.clue
         voiceIndex.value = -1
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result='已验证成功'
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result = '已验证成功'
         updateInfo(memberStore.info)
         // addNewItem(userIndex.value, a.clue, 0 ,'audio','')
         modifyDialog()
     } else {
         canJoin.value = true
         voiceIndex.value = -1
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].users = [-1,-1]
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].users = [-1, -1]
         dialogObj.value.title = '推理失败'
         dialogObj.value.content = a.result
         dialogObj.value.type = 'matchResult'
@@ -343,10 +157,26 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
     }
 },
     { deep: true })
+const requiredClues = ['clue1', 'clue2', 'clue3', 'clue4'];
+const hasAddedClue5 = ref(false); // 用于跟踪是否已经添加过 clue5
 watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
     const newclue = memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0];
     if (!newclue) {
         return
+    }
+    const clues = memberStore.info.characters[userIndex.value].cueset.clues;
+
+    // 检查 cueset.clues 是否包含 name 为 clue1 到 clue4 的所有线索
+    const hasAllClues = requiredClues.every(clueName =>
+        clues.some(clue => clue.name === clueName)
+    );
+
+    // 检查 cueset.clues 是否已经包含 clue5
+    const hasClue5 = clues.some(clue => clue.name === 'clue5');
+
+    if (hasAllClues && !hasClue5) {
+        addNewItem(-1, 'clue5', 0, 'clues', '');
+        console.log('cueset.clues 包含了 clue1 到 clue4 并且没有 clue5，已添加 clue5');
     }
     if (newclue.isNew) {
         switch (newclue.type) {
@@ -404,7 +234,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
     if (dtStatus.value === 2) {
         memberStore.info.locationList[id].clue = ''
         memberStore.info.locationList[id].isShow = false
-        addNewItem(userIndex.value,clue,0,'clues','')
+        addNewItem(userIndex.value, clue, 0, 'clues', '')
     }
 }
 </script>
@@ -427,7 +257,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
             <view class="newClue-title hyshtj">
                 {{ isDeepClue ? " 获得一条深入线索" : " 获得一条新线索" }}
             </view>
-            <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt="">
+            <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt="" mode="heightFix">
             <view style="">这里看起来似乎有些不同寻常</view>
             <view class="theme-button2 button" @tap="isNewClueShow = false; updateClues()">
                 <view class="theme-button-clear"></view>
@@ -438,8 +268,8 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
 
     <view class="map">
         <!-- 地图搜证 -->
-        <view class="map-search" v-for="(item, index) in filterLocations(memberStore.info.locationList)" :key="item.name"
-            v-if="(zstStatus === 2 && ypStatus === 0) || (dtStatus === 2 && glStatus === 0)"
+        <view class="map-search" v-for="(item, index) in filterLocations(memberStore.info.locationList)"
+            :key="item.name" v-if="(zstStatus === 2 && ypStatus === 0) || (dtStatus === 2 && glStatus === 0)"
             @tap="mapSerch(item.clue, item.id, item.isShow)" :style="{ filter: item.isShow ? '' : 'brightness(50%)' }">
             <view class="location flex-row-center hyshtj" :style="{ top: item.position.top, left: item.position.left }">
                 {{ item.name }}
@@ -483,7 +313,8 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
                             <view @tap="updateYpUsers(ypUsers[index], userIndex, voiceIndex, index)"
                                 v-if="ypUsers[index] === -1">+
                             </view>
-                                <img v-if="memberStore.info.characters[ypUsers[index]] && ypUsers[index] !== -1" :src="memberStore.info.characters[ypUsers[index]].avatar" alt="">
+                            <img v-if="memberStore.info.characters[ypUsers[index]] && ypUsers[index] !== -1"
+                                :src="memberStore.info.characters[ypUsers[index]].avatar" alt="">
 
                             <img v-if="ypUsers[index] === userIndex"
                                 @tap="updateYpUsers(ypUsers[index], -1, voiceIndex, index)" class="out-btn"
@@ -509,7 +340,8 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
         </view>
 
         <!-- 开启逐风 -->
-        <view class="newClue-mask" v-if="zfStatus === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
+        <view class="newClue-mask"
+            v-if="zfStatus === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
             <view class="zhufeng">
             </view>
             <view class="zhufeng-text">我是逐风，我可以帮你梳理信息，

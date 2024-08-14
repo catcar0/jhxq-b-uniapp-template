@@ -10,7 +10,9 @@ export const useMemberStore = defineStore(
     const profile = ref<any>()
     const roomId = ref<any>()
     const virtualRoleId = ref<any>()
+    const avatar = ref<any>()
     const info = ref<any>()
+    const playerInfo = ref<any>()
     // 保存会员信息，登录时使用
     const setProfile = (val: any) => {
       profile.value = val
@@ -26,7 +28,13 @@ export const useMemberStore = defineStore(
     }
     // 保存会员信息，登录时使用
     const setVirtualRoleId = (val: any) => {
-          virtualRoleId.value = val
+      virtualRoleId.value = val
+    }
+    const setAvatar = (val: any) => {
+      avatar.value = val
+    }
+    const setPlayerInfo = (val: any) => {
+      playerInfo.value = val
     }
     const setInfo = (val: any) => {
       info.value = val
@@ -37,10 +45,14 @@ export const useMemberStore = defineStore(
       profile,
       virtualRoleId,
       roomId,
+      avatar,
+      playerInfo,
       setInfo,
+      setPlayerInfo,
       setRoomId,
       setProfile,
       setVirtualRoleId,
+      setAvatar,
       clearProfile,
     }
   },

@@ -11,8 +11,11 @@ const start_time = ref<number>(0);
 const current_time = ref<number>(0);
 const time_str = computed(() => secondsToMinutesSeconds(current_time.value - start_time.value));
 
+
 onMounted(async () => {
-    await PlayStore.GetRoomInfo();
+    // await PlayStore.GetRoomInfo();
+    console.log('------')
+    console.log(uni.getStorageSync('member'))
 })
 
 onUnmounted(() => {

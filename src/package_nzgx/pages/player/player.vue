@@ -86,12 +86,23 @@ watch(() => memberStore.info.characters[memberStore.virtualRoleId - 1].mask, (a,
 
 },
     { deep: true })
+const getContent = (title: string) => {
+    return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
+};
+const glContent = getContent('卦灵');
+watch(() => glContent.value.status, (a, b) => {
+    if(glContent.value.status === 2){
+        currentPage.value = 'Gualing'
+    }
+
+},
+    { deep: true })
 const teamInfo = computed(() => memberStore.info?.teamInfo)
 const userInfo = computed(() => memberStore.info?.characters[memberStore.virtualRoleId - 1])
 const flow = computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex])
 onMounted(() => {
     // 创建 WebSocket 连接
-    if(!(memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId)) {
+    if (!(memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId)) {
         return
     }
     const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
@@ -115,6 +126,7 @@ onMounted(() => {
         console.error("WebSocket 连接失败", error);
         // 在这里可以添加错误处理逻辑
     };
+
 });
 
 onUnmounted(() => {
@@ -135,7 +147,7 @@ onUnmounted(() => {
         <ZfMap v-show="currentPage === 'ZfMap'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" :flow="flow"
             :userInfo="userInfo" />
         <Gualing v-show="currentPage === 'Gualing'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
-        <CueSet v-show="currentPage === 'CueSet'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
+        <CueSet v-show="currentPage === 'CueSet'" :dialog-obj="dialogObj" :teamInfo="teamInfo" :userInfo="userInfo" @updateDialogObj="updateDialogObj" />
     </view>
 </template>
 

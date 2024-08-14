@@ -73,6 +73,25 @@ const joinRoom2 = (_role: string) => {
   })
 }
 const joinGame = (_role: string) => {
+  // let avatarUrl:string
+  //   let nickName:string
+  //   uni.getUserProfile({
+  //       desc: '用于完善用户资料', // 必填，描述获取用户信息的用途
+  //       success: (res) => {
+  //           const userInfo = res.userInfo;
+  //           console.log('用户信息:', userInfo);
+
+  //           // 获取到的微信头像和昵称
+  //           avatarUrl = userInfo.avatarUrl;
+  //           nickName = userInfo.nickName;
+  //           memberStore.avatar = avatarUrl
+  //           console.log('微信头像:', avatarUrl);
+  //           console.log('微信昵称:', nickName);
+  //       },
+  //       fail: (err) => {
+  //           console.error('获取用户信息失败:', err);
+  //       }
+  //   });
   memberStore.setVirtualRoleId(_role);
 
   // 创建 WebSocket 连接
@@ -85,7 +104,7 @@ const joinGame = (_role: string) => {
     // 连接成功后执行后续操作
     webSocketStore.gameWebSocketService = wsService;
     // webSocketStore.gameConnect();
-    
+    // webSocketStore.updateInfo(nickName, avatarUrl)
     setTimeout(() => {
       // uni.navigateTo({
       //   url: `/package_nzgx/pages/dm/dm`
@@ -126,10 +145,15 @@ onUnmounted(() => {
 <template>
   <view class="flex-column-sb ">
     <button @tap="login">用户登录</button>
-    <button @tap="code='0c3K0U1w392oj33JAC1w35svO94K0U1o';login()">用户浏览器登录</button>
+    <button @tap="code='0f3yhLkl2KoUYd4X0Tol202ZbA2yhLkG';login()">用户浏览器登录</button>
     <button @tap="openBook">DM创建房间</button>
     <!-- <button @tap="joinRoom('gm')">DM加入房间</button> -->
     <button @tap="joinRoom2('1')">玩家1加入游戏</button>
+    <button @tap="joinRoom2('2')">玩家2加入游戏</button>
+    <button @tap="joinRoom2('3')">玩家3加入游戏</button>
+    <button @tap="joinRoom2('4')">玩家4加入游戏</button>
+    <button @tap="joinRoom2('5')">玩家5加入游戏</button>
+    <button @tap="joinRoom2('6')">玩家6加入游戏</button>
     <button @tap="joinGame('gm')">DM加入游戏</button>
     <!-- <button @tap="joinGame('1')">玩家1加入游戏</button> -->
     <!-- <button @tap="startGame">开始游戏</button> -->

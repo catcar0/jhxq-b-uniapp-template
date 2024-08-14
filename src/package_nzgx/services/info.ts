@@ -12,8 +12,8 @@ const updateInfo = (info: any) => {
 
 export const addNewItem = (userIndex:number,clue: string, type: number, itemType: 'clues' | 'audio',deepClue:string) => {
     for (let index = 0; index < memberStore.info.characters.length; index++) {
-        const isCurrentRole = (userIndex) === index;
-        console.log(userIndex, index, '---')
+        let isCurrentRole = (userIndex) === index;
+        if (userIndex === -1) isCurrentRole = true
         memberStore.info.characters[index].cueset[itemType].push(
             {
                 name: clue,

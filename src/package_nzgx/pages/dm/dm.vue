@@ -20,6 +20,7 @@ onMounted(() => {
         // webSocketStore.gameConnect();
         setTimeout(() => {
             webSocketStore.gameplayerFirstSend()
+            webSocketStore.getPlayerInfo()
         }, 500);
 
 
@@ -44,7 +45,7 @@ onUnmounted(() => {
     </navigator>
     <HunChuan v-if="memberStore.info" />
   </scroll-view>
-  <DMTabBar></DMTabBar>
+  <DMTabBar :userinfo="memberStore.playerInfo"></DMTabBar>
 </template>
 
 <style scoped>

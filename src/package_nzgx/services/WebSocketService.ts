@@ -47,10 +47,12 @@ export class WebSocketService {
       // 处理消息
       const websocketStore = useWebSocketStore();
       const parsedData = JSON.parse(event.data);
-      
+      console.log(parsedData)
       if (parsedData.type === 'scores') {
         websocketStore.gameAddMessage(parsedData.data.statuses.allinfo.info);
-      } else {
+      } else if(parsedData.players)  {
+        websocketStore.addMessage(parsedData);
+      } else if (parsedData.type === 'error') {
         websocketStore.addMessage(parsedData);
       }
     });
@@ -70,7 +72,7 @@ export class WebSocketService {
       if (this.onClose) {
         this.onClose();
       }
-      setTimeout(() => this.connect(), this.reconnectInterval);
+      // setTimeout(() => this.connect(), this.reconnectInterval);
     });
   }
 

@@ -27,17 +27,50 @@ const joinRoom = (roomId: string) => {
     )
 }
 const play = () => {
+    let avatarUrl: string
+    let nickName: string
+    uni.getUserProfile({
+        desc: '用于完善用户资料', // 必填，描述获取用户信息的用途
+        success: (res) => {
+            const userInfo = res.userInfo;
+            console.log('用户信息:', userInfo);
+
+            // 获取到的微信头像和昵称
+            avatarUrl = userInfo.avatarUrl;
+            nickName = userInfo.nickName;
+            memberStore.avatar = avatarUrl
+            console.log('微信头像:', avatarUrl);
+            console.log('微信昵称:', nickName);
+        },
+        fail: (err) => {
+            console.error('获取用户信息失败:', err);
+        }
+    });
     const _roomId = roomId.value
     console.log(_roomId)
-    // joinRoom(_roomId)
-    // uni.showToast({ icon: 'success', title: '房间号不存在' })
     memberStore.setRoomId(_roomId)
-    webSocketStore.gameWebSocketService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${_roomId}&virtual_role_id=${memberStore.virtualRoleId}`), // 替换为你的 WebSocket URL
-        webSocketStore.gameConnect()
+    // 创建 WebSocket 连接
+    if (!(memberStore.profile.token && memberStore.roomId && memberStore.virtualRoleId)) {
+        return
+    }
+    //显示加载框
+    uni.showLoading({
+        title: '加载中'
+    });
+    const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+    wsService.connect()
     setTimeout(() => {
-        webSocketStore.gameplayerFirstSend()
-        uni.showToast({ icon: 'success', title: '加入成功' })
-        emit('page', 'TeamInfo')
+        if (webSocketStore.messages.slice(-1)[0].type !== 'error') {
+            setTimeout(() => {
+                webSocketStore.gameplayerFirstSend()
+                webSocketStore.updateInfo(nickName, avatarUrl)
+                uni.showToast({ icon: 'success', title: '加入成功' })
+                emit('page', 'TeamInfo')
+            }, 1000);
+        } else {
+            uni.showToast({ icon: 'error', title: webSocketStore.messages.slice(-1)[0].message })
+        }
+        uni.hideLoading();
     }, 1000);
 }
 </script>

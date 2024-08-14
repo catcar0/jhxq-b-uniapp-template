@@ -37,11 +37,31 @@ export const useWebSocketStore = defineStore('webSocket', {
                 virtual_role_id: 'first'
             }));
         },
+        updateInfo (nickname:string,avatar:string) {
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'update_player_info',
+                updated_data: {
+                    nickname: nickname,
+                    avatar: avatar
+                    },
+                virtual_role_id: memberStore.virtualRoleId
+            }));
+        },
+        getPlayerInfo () {
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'get_all_players_info'
+            }));
+        },
         gameClose() {
             this.gameWebSocketService.close();
         },
         addMessage(message: any) {
-            this.messages.push(message);
+            memberStore.setPlayerInfo(message)
+            memberStore.playerInfo = message
+            if (message.type && message.type === 'error') {
+                this.messages.push(message);
+                return
+            }
         },
         connect() {
             this.webSocketService.connect();

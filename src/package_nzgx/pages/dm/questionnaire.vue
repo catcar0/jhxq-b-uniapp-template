@@ -62,7 +62,7 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    // if(!qaList.value.qa.every(question =>question.usersAnser.every(userAnswer => userAnswer.anser.length === 0))){
+    // if(!qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
     //     uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
     //     return
     // }
@@ -84,30 +84,74 @@ const updateInfo = (info: any) => {
 }
 const checkAnswersAndSetStatus = (qa: any[]) => {
     qa.forEach(question => {
-        const correctAnswers = question.anser.slice().sort(); // 对正确答案进行排序
+        const correctAnswers = question.answer.slice().sort(); // 对正确答案进行排序
 
-        question.usersAnser.forEach((userAnswer, questionIndex) => {
-            const userAnswers = userAnswer.anser.slice().sort(); // 对用户答案进行排序
+        // 特殊问题处理：判断问题是否是“凶手是谁”
+        if (question.question === '凶手是谁') {
+            let correctUserCount = 0;
 
-            // 检查用户答案是否与正确答案相同
-            const isCorrect = correctAnswers.length === userAnswers.length &&
-                correctAnswers.every((answer, index) => answer === userAnswers[index]);
+            // 统计回答正确的用户数量
+            question.usersAnswer.forEach(userAnswer => {
+                const userAnswers = userAnswer.answer.slice().sort(); // 对用户答案进行排序
+                const isCorrect = correctAnswers.length === userAnswers.length &&
+                    correctAnswers.every((answer, index) => answer === userAnswers[index]);
 
-            // 根据检查结果设置 status
-            if (isCorrect) {
-                userAnswer.status = 2;
-                console.log('score', qaList.value.score)
-                scoreChange('user', qaList.value.score, [questionIndex])
+                if (isCorrect) {
+                    correctUserCount++;
+                }
+            });
+
+            // 如果正确的用户人数大于等于 3，所有用户都算回答正确
+            if (correctUserCount >= 3) {
+                question.usersAnswer.forEach(userAnswer => {
+                    userAnswer.status = 2;
+                    scoreChange('user', qaList.value.score, [questionIndex]);
+                    scoreChange('team', 1, []);
+                });
             } else {
-                userAnswer.status = 3;
-                scoreChange('user', (qaList.value.score * -0.5), [questionIndex])
+                // 如果不满足条件，则按原逻辑处理
+                question.usersAnswer.forEach((userAnswer, questionIndex) => {
+                    const userAnswers = userAnswer.answer.slice().sort(); // 对用户答案进行排序
+                    const isCorrect = correctAnswers.length === userAnswers.length &&
+                        correctAnswers.every((answer, index) => answer === userAnswers[index]);
+
+                    if (isCorrect) {
+                        userAnswer.status = 2;
+                        console.log('score', qaList.value.score);
+                        scoreChange('user', qaList.value.score, [questionIndex]);
+                    } else {
+                        userAnswer.status = 3;
+                        scoreChange('user', (qaList.value.score * -0.5), [questionIndex]);
+                    }
+                });
             }
-        });
+        } else {
+            // 对于其他问题，按原逻辑处理
+            question.usersAnswer.forEach((userAnswer, questionIndex) => {
+                const userAnswers = userAnswer.answer.slice().sort(); // 对用户答案进行排序
+                const isCorrect = correctAnswers.length === userAnswers.length &&
+                    correctAnswers.every((answer, index) => answer === userAnswers[index]);
+
+                if (isCorrect) {
+                    userAnswer.status = 2;
+                    console.log('score', qaList.value.score);
+                    scoreChange('user', qaList.value.score, [questionIndex]);
+                } else {
+                    userAnswer.status = 3;
+                    scoreChange('user', (qaList.value.score * -0.5), [questionIndex]);
+                }
+            });
+        }
     });
-    qaList.value[0].canReplay = true
-    qaList.value[0].status = 3
-    updateInfo(memberStore.info)
+
+    if (qaList && qaList.value.length > 0) {
+        qaList.value[0].canReplay = true;
+        // qaList.value[0].status = 3;
+    }
+
+    updateInfo(memberStore.info);
 };
+
 
 const replayContext = ref()
 const qaList = computed(() => {
@@ -124,6 +168,9 @@ const replayTitle = ref('')
 const createReplay = (allitem:any) =>{
     replayShow.value = true
     replayContext.value = allitem.replay
+    // qaList.value[0].status = 3
+    memberStore.info.flow[flowIndex.value].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].status = 3
+    updateInfo(memberStore.info)
 }
 // 初次加载时设置 glType.value
 onLoad((Option) => {
@@ -158,9 +205,9 @@ onShow(()=>{
                     <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">
                         {{ allitem.qa[allitem.selectedIndex].question }}</view>
                     <view class="flex-row-sb" style="margin-top: 20rpx;"
-                        v-for="(item, index) in allitem.qa[allitem.selectedIndex].usersAnser" :key="index">
+                        v-for="(item, index) in allitem.qa[allitem.selectedIndex].usersAnswer" :key="index">
                         <view> {{ memberStore.info.characters[index].name }} ：</view>
-                        <view v-if="allitem.usersSubmit[index] !== 0" v-for="(clue,index) in item.anser">
+                        <view v-if="allitem.usersSubmit[index] !== 0" v-for="(clue,index) in item.answer">
                             {{ allClues[clue].name}}
                         </view>
                         <view v-if="allitem.usersSubmit[index] === 0" class="status flex-row-center"

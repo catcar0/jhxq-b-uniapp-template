@@ -38,7 +38,7 @@ const glContent = getContent('卦灵');
 const glType = ref('')
 const qaList = computed(() => {
     if(!glContent.value) return null
-    if (glContent.value.xa.status === 1) {
+    if (glContent.value.xa.status === 1 && glContent.value.hy.status  !== 1) {
         glType.value = 'hy'
         return glContent.value.hy;
     } else if (glContent.value.xa.status === 2) {
@@ -55,15 +55,15 @@ const glIndex = ref(-1)
 const addOrUpdate = ref('add')
 const updateClueIndex = ref(0)
 const avatarIndex = ref(0)
-const avatarList = ['clue22', 'clue23', 'clue24', 'clue25', 'clue26', 'clue27',]
+const avatarList = ['clue21','clue22', 'clue23', 'clue24', 'clue25', 'clue26', 'clue27',]
 const updateClue = (clue: string) => {
     console.log(glType.value, glIndex.value)
     if (addOrUpdate.value === 'add') {
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].qa[glIndex.value].usersAnser[memberStore.virtualRoleId - 1].anser.push(
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].qa[glIndex.value].usersAnswer[memberStore.virtualRoleId - 1].answer.push(
             clue
         )
     } else {
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].qa[glIndex.value].usersAnser[memberStore.virtualRoleId - 1].anser[updateClueIndex.value] = clue
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].qa[glIndex.value].usersAnswer[memberStore.virtualRoleId - 1].answer[updateClueIndex.value] = clue
     }
     glIndex.value = -1
     updateInfo(memberStore.info)
@@ -74,7 +74,7 @@ const updateInfo = (info: any) => {
     )
 }
 const submit = (status: number) => {
-    if (qaList.value.qa.every((question) => question.usersAnser[memberStore.virtualRoleId - 1].anser.length === 0)) {
+    if (qaList.value.qa.every((question) => question.usersAnswer[memberStore.virtualRoleId - 1].answer.length === 0)) {
         uni.showToast({ icon: 'none', title: '还有问题未作答' })
         return
     }
@@ -112,42 +112,42 @@ const submit = (status: number) => {
                 <view class="qa-box" v-if="glIndex === -1">
                     <view v-for="(item, index) in qaList.qa" :key="index">
                         <view class="question">{{ item.question }}</view>
-                        <view class="anser">
+                        <view class="answer">
 
-                            <view v-if="item.usersAnser[memberStore.virtualRoleId - 1].anser.length !== 0"
-                                v-for="(anser, anser_index) in item.usersAnser[memberStore.virtualRoleId - 1].anser"
-                                :key="anser_index">
+                            <view v-if="item.usersAnswer[memberStore.virtualRoleId - 1].answer.length !== 0"
+                                v-for="(answer, answer_index) in item.usersAnswer[memberStore.virtualRoleId - 1].answer"
+                                :key="answer_index">
                                 <view class="clues-item"
-                                    @tap="addOrUpdate = 'update'; glIndex = index; updateClueIndex = anser_index">
+                                    @tap="addOrUpdate = 'update'; glIndex = index; updateClueIndex = answer_index">
 
-                                    <img v-if="anser.length < 10" class="clue-selected-border2"
+                                    <img v-if="answer.length < 10" class="clue-selected-border2"
                                         src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
 
                                     <img v-else class="clue-selected-border5"
                                         src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
 
-                                    <view v-if="anser.length < 10" class="clue-small-image clue-selected-border1"
-                                        :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${anser}.png)` }">
+                                    <view v-if="answer.length < 10" class="clue-small-image clue-selected-border1"
+                                        :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${answer}.png)` }">
                                     </view>
                                     <img v-else class="clue-small-image"
-                                        :src="`url(http://159.138.147.87/statics/clues/${anser}.png)`" alt="">
+                                        :src="`url(http://159.138.147.87/statics/clues/${answer}.png)`" alt="">
 
-                                </view>
-                                <view v-show="item.usersAnser[memberStore.virtualRoleId - 1].status !== 0"
-                                    class="verify-icon-box">
-                                    <img class="verify-icon" v-show="item.question !== '凶手是谁'"
-                                        :src="`http://159.138.147.87/statics/img/${item.usersAnser[memberStore.virtualRoleId - 1].status === 2 ? 'gl_correct_icon' : 'gl_wrong_icon'}.png`"
-                                        alt="">
-                                    <img class="verify-icon" v-show="item.question === '凶手是谁'"
-                                        :src="`http://159.138.147.87/statics/img/${item.usersAnser[memberStore.virtualRoleId - 1].status === 2 ? 'gl_mission_success_icon' : 'gl_mission_fail_icon'}.png`"
-                                        alt="">
                                 </view>
 
                             </view>
-                            <!-- {{ item.anser.length }}{{ item.usersAnser[memberStore.virtualRoleId - 1].anser.length }} -->
+                            <view v-show="item.usersAnswer[memberStore.virtualRoleId - 1].status !== 0"
+                                    class="verify-icon-box">
+                                    <img class="verify-icon" v-show="item.question !== '凶手是谁？'"
+                                        :src="`http://159.138.147.87/statics/img/${item.usersAnswer[memberStore.virtualRoleId - 1].status === 2 ? 'gl_correct_icon' : 'gl_wrong_icon'}.png`"
+                                        alt="">
+                                    <img class="verify-icon" v-show="item.question === '凶手是谁？'"
+                                        :src="`http://159.138.147.87/statics/img/${item.usersAnswer[memberStore.virtualRoleId - 1].status === 2 ? 'gl_mission_success_icon' : 'gl_mission_fail_icon'}.png`"
+                                        alt="">
+                                </view>
+                            <!-- {{ item.answer.length }}{{ item.usersAnswer[memberStore.virtualRoleId - 1].answer.length }} -->
                             <img @tap="addOrUpdate = 'add'; glIndex = index"
-                                v-if="item.usersAnser[memberStore.virtualRoleId - 1].anser.length < item.anser.length"
-                                class="anser-select-icon" src="http://159.138.147.87/statics/img/gl_select_icon.png"
+                                v-if="item.usersAnswer[memberStore.virtualRoleId - 1].answer.length < item.answer.length"
+                                class="answer-select-icon" src="http://159.138.147.87/statics/img/gl_select_icon.png"
                                 alt="">
                         </view>
                     </view>
@@ -160,10 +160,10 @@ const submit = (status: number) => {
                 <view class="select-clue" v-if="glIndex !== -1 && qaList.qa[glIndex].question !== '凶手是谁？' && qaList.qa[glIndex].question !== '谁会担心春天举报成功？'">
                     <view>{{ qaList.qa[glIndex].question }}</view>
                     <scroll-view scroll-y style="height: 60vh;">
-                        <img v-if="cluesIndex !== -1" class="clue-big-image"
+                        <img mode="heightFix" v-if="cluesIndex !== -1 && allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url" class="clue-big-image"
                             :src="allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url + '.png'"
                             alt="">
-                        <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
+                        <view v-if="cluesIndex !== -1 && allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url" class="flex-row-center clue-text">
                             {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
                                 1].cueset.clues[cluesIndex].name].content1 }}
                             {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
@@ -182,8 +182,8 @@ const submit = (status: number) => {
                                         :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${item.name}.png)` }">
                                     </view>
                                 </view>
-                                <view style="padding-top: 15rpx;text-align: center;width: 120rpx;height: 30rpx;">
-                                    <text>{{ allClues[item.name].name }}</text>
+                                <view class="clue-name">
+                                    <text v-if="allClues[item.name]" >{{ allClues[item.name].name }}</text>
                                 </view>
                             </view>
                         </view>
@@ -215,8 +215,8 @@ const submit = (status: number) => {
                                         :style="{ backgroundImage: `url(http://159.138.147.87/statics/clues/${item}.png)` }">
                                     </view>
                                 </view>
-                                <view style="padding-top: 15rpx;text-align: center;width: 120rpx;height: 30rpx;">
-                                    <text>{{ allClues[item].name }}</text>
+                                <view class="clue-name">
+                                    <text v-if="allClues[item]" >{{ allClues[item].name }}</text>
                                 </view>
                             </view>
                         </view>
@@ -231,9 +231,12 @@ const submit = (status: number) => {
 </template>
 
 <style scoped>
+.clue-name{
+    padding-top: 15rpx;text-align: center;width: 120rpx;height: 50rpx;
+}
 .verify-icon-box {
     position: absolute;
-    margin-top: -120rpx;
+    margin-top: -20rpx;
     margin-left: 80rpx;
 }
 
@@ -322,7 +325,7 @@ const submit = (status: number) => {
     padding-bottom: 20rpx;
     display: flex;
     flex-wrap: wrap;
-    gap: 30rpx;
+    gap: 10rpx;
     background: url('http://159.138.147.87/statics/img/paper6.jpg') repeat;
     background-size: 100% 100%;
 }
@@ -438,7 +441,7 @@ const submit = (status: number) => {
     margin-top: 20rpx;
 }
 
-.anser {
+.answer {
     background: url('http://159.138.147.87/statics/img/paper3.png') no-repeat;
     background-size: 100% 100%;
     background-position: center;
@@ -451,7 +454,7 @@ const submit = (status: number) => {
     box-sizing: border-box;
 }
 
-.anser-select-icon {
+.answer-select-icon {
     width: 110rpx;
     height: 110rpx;
     transform: rotate(-2deg);

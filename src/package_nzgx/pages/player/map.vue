@@ -152,6 +152,9 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
         dialogObj.value.confirmText = '确定'
         dialogObj.value.hideCloseIcon = true
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result = ''
+        voiceIndex.value = -1
+        userJoinRoom.value = -1
+        canJoin.value = true
         updateInfo(memberStore.info)
         modifyDialog()
     }

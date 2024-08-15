@@ -98,7 +98,7 @@ const audioList = computed<AudioItem[]>(() => {
             roles: clueData.name,
             location: clueData.content1,
             content: clueData.content2,
-            src: clueData.content1.url + '.mp3',
+            src: clueData.url + '.mp3',
             isPlaying: false,
             context: null,
             scrollText: clueData.content2,

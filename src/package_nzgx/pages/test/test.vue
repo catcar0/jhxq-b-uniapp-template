@@ -137,7 +137,7 @@ onUnmounted(() => {
 <template>
   <view class="flex-column-sb ">
     <button @tap="login">用户登录</button>
-    <button @tap="code='0a3Tlhll2ooHZd4BMznl2axqkh3TlhlO';login()">用户浏览器登录</button>
+    <button @tap="code='0b3Guqml24nqYd4Ex3nl2rm2fn1Guqmk';login()">用户浏览器登录</button>
     <button @tap="openBook">DM创建房间并加入游戏</button>
     <button @tap="joinGame('gm')">DM加入游戏</button>
     <!-- <button @tap="joinRoom('gm')">DM加入房间</button> -->

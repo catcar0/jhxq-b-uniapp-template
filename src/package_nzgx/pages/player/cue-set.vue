@@ -5,6 +5,7 @@ import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
 import { onShow } from '@dcloudio/uni-app';
+import { addNewItem } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const setClass = ['物品', '音频', '记录']
@@ -28,19 +29,10 @@ interface AudioItem {
     scrollOffset: number; // 新增
     scrollAnimationFrame: number; // 新增
 }
-const newAudio = computed(() => {
 
-    // 检查是否有新的音频
-    return memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio
-});
-// 检查是否有新的音频
-watch(() => newAudio, (a, b) => {
-    updateAudioList()
-},
-    { deep: true })
-const audioList = ref<AudioItem[]>([]);
-const updateAudioList = () => {
-    audioList.value = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.map(audio => ({
+
+const audioList = computed<AudioItem[]>(() => {
+    return memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.map(audio => ({
         roles: allClues[audio.name].name,
         location: allClues[audio.name].content1,
         content: allClues[audio.name].content2,
@@ -51,9 +43,7 @@ const updateAudioList = () => {
         scrollPosition: 0,
         scrollOffset: 0,
         scrollAnimationFrame: 0,
-    }));
-    console.log('audioList', audioList.value)
-};
+    }));});
 const replayIndex = ref(-1)
 
 const sortedClues = ref();
@@ -109,6 +99,9 @@ const firstClue = (index: number, name: string) => {
     cluesIndex.value === index ? cluesIndex.value = -1 : cluesIndex.value = 0;
     updateInfo(memberStore.info)
 }
+const a = () =>{
+    addNewItem(0,'clue19',0,'audio','')
+}
 </script>
 
 <template>
@@ -124,7 +117,7 @@ const firstClue = (index: number, name: string) => {
             <!-- 物品 -->
             <view class="class-inner" v-show="classIndex === 0">
                 <view class="player-title hyshtj ">
-                    <view class="font-player-gradient1">线索集</view>
+                    <view class="font-player-gradient1" @tap="a">线索集</view>
                 </view>
                 <scroll-view scroll-y style="height: 71vh;">
                     <view v-if="cluesIndex !== -1" class="clue-big-image flex-row-center">
@@ -180,7 +173,7 @@ const firstClue = (index: number, name: string) => {
                 </view>
                 <scroll-view scroll-y style="width: 625rpx;height: 71vh;padding-top: 20rpx;">
                     <view @tap="replayIndex = index" v-if="replayIndex === -1" v-show="item.hy.length !== 0"
-                        class="audio-box flex-row-sb" v-for="(item, index) in teamInfo.replay" :key="index">
+                        class="audio-box flex-row-sb" v-for="(item, index) in memberStore.info?.teamInfo.replay" :key="index">
                         {{ item.name }}
                     </view>
                     <view v-if="replayIndex !== -1"
@@ -188,27 +181,27 @@ const firstClue = (index: number, name: string) => {
                         <view style="display: flex;height: 50%;">
                             <view style="height: 100%;width: 100rpx;" class="flex-row-center">
                                 <img style="height: 100rpx;width: 50rpx;"
-                                    v-show="replayIndex !== 0 && teamInfo.replay.length > 1"
+                                    v-show="replayIndex !== 0 && memberStore.info?.teamInfo.replay.length > 1"
                                     src="http://159.138.147.87/statics/img/left.png" alt="">
                             </view>
                             <view>
                                 <view style="font-weight: 700;height: 100rpx;text-align: center;">{{
-                                    teamInfo.replay[replayIndex].name }}</view>
-                                <view v-for="(item, index) in teamInfo.replay[replayIndex].hy"
-                                    v-if="teamInfo.replay[replayIndex].hy.length !== 0"
+                                    memberStore.info?.teamInfo.replay[replayIndex].name }}</view>
+                                <view v-for="(item, index) in memberStore.info?.teamInfo.replay[replayIndex].hy"
+                                    v-if="memberStore.info?.teamInfo.replay[replayIndex].hy.length !== 0"
                                     style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
                                     <view>{{ item.charAt(0) }}.</view>
                                     <view>{{ item.slice(1) }}</view>
                                 </view>
-                                <view v-for="(item, index) in teamInfo.replay[replayIndex].xa"
-                                    v-if="teamInfo.replay[replayIndex].xa.length !== 0"
+                                <view v-for="(item, index) in memberStore.info?.teamInfo.replay[replayIndex].xa"
+                                    v-if="memberStore.info?.teamInfo.replay[replayIndex].xa.length !== 0"
                                     style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
                                     <view>{{ item.charAt(0) }}.</view>
                                     <view>{{ item.slice(1) }}</view>
                                 </view>
                             </view>
                             <view style="height: 100%;width: 100rpx;" class="flex-row-center">
-                                <img v-show="replayIndex !== teamInfo.replay.length && teamInfo.replay.length > 1 && teamInfo.replay[replayIndex + 1].hy.length !== 0"
+                                <img v-show="replayIndex !== memberStore.info?.teamInfo.replay.length && memberStore.info?.teamInfo.replay.length > 1 && memberStore.info?.teamInfo.replay[replayIndex + 1].hy.length !== 0"
                                     style="height: 80rpx;width: 50rpx;transform: rotate(180deg);"
                                     src="http://159.138.147.87/statics/img/left.png" alt="">
                             </view>

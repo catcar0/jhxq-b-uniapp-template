@@ -46,7 +46,7 @@ const confirm = () => {
             </view>
             <view class="info-item flex-row-sb">
                 <text>等级</text>
-                <view class="orange-font">{{ rankList[memberStore.info.teamInfo.score] }}</view>
+                <view class="orange-font">{{ rankList[memberStore.info.teamInfo.score / 6] }}</view>
             </view>
         </view>
         <view class="user-box shadow-box flex-column-sb">

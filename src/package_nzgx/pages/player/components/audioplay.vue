@@ -1,5 +1,6 @@
 <script setup lang='ts'>
-import { defineProps, onBeforeUnmount, onMounted } from 'vue';
+import { onShow } from '@dcloudio/uni-app';
+import { defineProps, onBeforeUnmount, onMounted, watch } from 'vue';
 
 interface AudioItem {
     src: string;
@@ -14,7 +15,7 @@ interface AudioItem {
     scrollAnimationFrame?: number; // 修改为 `number` 类型
 }
 
-const props = defineProps<{ audioList: AudioItem[],isDialog:boolean }>();
+const props = defineProps<{ audioList: AudioItem[], isDialog: boolean }>();
 
 const updatePlayingState = (index: number, isPlaying: boolean) => {
     if (props.audioList[index]) {
@@ -76,7 +77,9 @@ const startScrollAnimation = (index: number) => {
     audio.scrollAnimationFrame = setTimeout(step, 16);
 };
 
-onMounted(() => {
+watch(() => props.audioList.length, (newLength, oldLength) => {
+    console.log('11');
+
     props.audioList.forEach((audio, index) => {
         const context = uni.createInnerAudioContext();
         context.src = audio.src;
@@ -102,7 +105,9 @@ onMounted(() => {
         audio.context = context;
         audio.scrollOffset = 0; // 初始化滚动偏移量
     });
-});
+}, { immediate: true }); // 如果需要立即运行一次
+
+
 
 onBeforeUnmount(() => {
     props.audioList.forEach(audio => {
@@ -114,7 +119,8 @@ onBeforeUnmount(() => {
 
 
 <template>
-    <view class="flex-row-sb" :class="isDialog? 'audio-box2':'audio-box'" v-for="(item, index) in audioList" :key="index">
+    <view class="flex-row-sb" :class="isDialog ? 'audio-box2' : 'audio-box'" v-for="(item, index) in audioList"
+        :key="index">
         <view class="audio-icon1 flex-row-center" @tap="togglePlayPause(index)">
             <img class="audio-icon1-img"
                 :src="`http://159.138.147.87/statics/img/${item.isPlaying ? 'pause' : 'play'}.png`" alt="">
@@ -124,8 +130,8 @@ onBeforeUnmount(() => {
             <text class="audio-location">{{ item.location }}</text>
         </view>
         <view>
-            <view v-show="item.isPlaying" class="audio-content" > 
-                <view :style="{ transform: `translateX(-${item.scrollOffset}px)` }"> {{ item.scrollText }}  </view>
+            <view v-show="item.isPlaying" class="audio-content">
+                <view :style="{ transform: `translateX(-${item.scrollOffset}px)` }"> {{ item.scrollText }} </view>
             </view>
             <img v-show="!item.isPlaying" class="audio-icon2" src="http://159.138.147.87/statics/img/voice_icon.png"
                 alt="">
@@ -134,7 +140,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.audio-box2{
+.audio-box2 {
     background: url('http://159.138.147.87/statics/img/paper3.png') no-repeat;
     background-size: 100% 100%;
     background-position: center;
@@ -146,6 +152,7 @@ onBeforeUnmount(() => {
     padding: 20rpx;
     box-sizing: border-box;
 }
+
 .audio-box {
     background-color: #D3B58B;
     height: 121rpx;

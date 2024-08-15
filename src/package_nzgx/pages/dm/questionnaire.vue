@@ -88,7 +88,7 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
         const correctAnswers = question.answer.slice().sort(); // 对正确答案进行排序
 
         // 特殊问题处理：判断问题是否是“凶手是谁”
-        if (question.question === '凶手是谁') {
+        if (question.question === '凶手是谁？') {
             let correctUserCount = 0;
 
             // 统计回答正确的用户数量
@@ -104,9 +104,9 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
 
             // 如果正确的用户人数大于等于 3，所有用户都算回答正确
             if (correctUserCount >= 3) {
-                question.usersAnswer.forEach(userAnswer => {
+                question.usersAnswer.forEach((userAnswer, questionIndex) => {
                     userAnswer.status = 2;
-                    scoreChange('user', qaList.value.score, [questionIndex]);
+                    scoreChange('user', qaList.value[0].score, [questionIndex]);
                     scoreChange('team', 1, []);
                 });
             } else {
@@ -118,11 +118,11 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
 
                     if (isCorrect) {
                         userAnswer.status = 2;
-                        console.log('score', qaList.value.score);
-                        scoreChange('user', qaList.value.score, [questionIndex]);
+                        console.log('score', qaList.value[0].score);
+                        scoreChange('user', qaList.value[0].score, [questionIndex]);
                     } else {
                         userAnswer.status = 3;
-                        scoreChange('user', (qaList.value.score * -0.5), [questionIndex]);
+                        scoreChange('user', (qaList.value[0].score * -0.5), [questionIndex]);
                     }
                 });
             }

@@ -1,216 +1,32 @@
 <script setup lang='ts'>
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { computed, ref } from 'vue';
-import { useMemberStore } from '@/package_nzgx/stores'
-import { useWebSocketStore } from '@/package_nzgx/stores'
+import { useMemberStore } from '@/package_nzgx/stores';
+import { useWebSocketStore } from '@/package_nzgx/stores';
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
-const memberStore = useMemberStore()
+
+const memberStore = useMemberStore();
 const webSocketStore = useWebSocketStore();
-const isShowToast = ref(false)
-const toastContent = ref('')
-const ShowToast = (content: string) => {
-    isShowToast.value = true
-    toastContent.value = content
-    setTimeout(() => {
-        isShowToast.value = false
-    }, 1000);
-}
-const updateInfo = (info: any) => {
-    webSocketStore.gameSend(
-        info
-    )
-}
-const fun = (content: any) => {
-    const newInfo = memberStore.info
-    newInfo.aa.bb = content
-    updateInfo(newInfo)
-}
-const updateSwitch = ref(true)
-const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    if (Object.keys(memberStore.playerInfo.players).length < 7) {
-        uni.showToast({ icon: 'none', title: '玩家人数不足' })
-        updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
-        return
-    }
-    if (ev.detail.value) {
-        const newInfo = memberStore.info
-        if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
-            newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-            newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
-            updateInfo(newInfo)
-        } else {
-            if (newInfo.flow[index - 1].inner.slice(-1)[0].status === 0) {
-                // newInfo.flow[newInfo.teamInfo.flowIndex].isSwitchOn = false
-                updateSwitch.value = false
-                setTimeout(() => {
-                    updateSwitch.value = true
-                }, 10);
-                ShowToast('请按照游戏流程逐步开启')
-            } else {
-                dialogObj.value.title = '注意'
-                dialogObj.value.content = `<text style="font-weight: 700;color:#000">${flowName[index - 1]}</text>已完成，是否开启<text style="font-weight: 700;color:#000">${flowName[index]}</text>?`
-                dialogObj.value.type = 'nextHunchuan'
-                dialogObj.value.flowIndex = index
-                dialogObj.value.confirmText = '确认';
-                dialogObj.value.cancelText = '取消';
-                updateSwitch.value = false;
-                setTimeout(() => {
-                    updateSwitch.value = true;
-                }, 0);
-                showDialog();
-            }
-        }
-    }
-}
-const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报分享']
 
+// 状态管理
+const isShowToast = ref(false);
+const toastContent = ref('');
+const updateSwitch = ref(true);
 const onConfirm = ref<Function>();
-const onChangeDetail = (ev: any, item: any, index: number) => {
-    // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
-    if (item.status === 2 || item.status === 3) return;
-    const { flow, teamInfo, characters } = memberStore.info;
-    const currentFlow = flow[teamInfo.flowIndex].inner[index];
-    const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
+const matchIndex = ref(0);
 
-    if (currentFlow.title === '开启逐风') {
-        currentFlow.status = 3;
-        currentFlow.isSwitchOn = true;
-        updateInfo(memberStore.info);
-        dialogObj.value.type = currentFlow.title;
-        return;
-    }
+// 流程名称
+const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报分享'];
+const statusText = ref(['待开启', '待开启', '进行中', '已完成']);
 
-    const showWarning = () => {
-        updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
-        ShowToast('请按照游戏流程逐步开启');
-    };
-    let personalCluesStatus
-    let personalCluesFlow
-    // 提前执行逻辑判断
-    if (currentFlow.title === '个人线索发放+个人问题') {
-        if (!(previousFlow.status === 3 && currentFlow.status === 0)) {
-            showWarning();
-            return; // 如果不满足条件，阻止弹窗的显示
-        }
-    } else if (currentFlow.title === '卦灵') {
-        // 查找 "个人线索发放+个人问题" 环节的状态
-        personalCluesFlow = flow.find(f => f.inner.some(inner => inner.title === '个人线索发放+个人问题'));
-        personalCluesStatus = personalCluesFlow?.inner.find(inner => inner.title === '个人线索发放+个人问题')?.status;
-
-        if (personalCluesStatus !== 3) {
-            showWarning();
-            return; // 如果 "个人线索发放+个人问题" 的状态不是 3，阻止弹窗的显示
-        }
-    } else if (!(previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3)) {
-        showWarning();
-        return; // 如果不满足条件，阻止弹窗的显示
-    }
-
-    // 如果前面的判断通过，显示确认弹窗
-    dialogObj.value.title = '注意';
-    dialogObj.value.content = '确认开启下一环节吗，开启后不可返回';
-    dialogObj.value.confirmText = '确认';
-    dialogObj.value.cancelText = '取消';
-    dialogObj.value.type = '开启下一环节';
-    updateSwitch.value = false;
-    showDialog();
-    setTimeout(() => {
-        updateSwitch.value = true;
-    }, 0);
-
-    onConfirm.value = () => {
-        if (!ev.detail.value) return;
-
-        const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
-            currentFlow.status = status;
-            currentFlow.isSwitchOn = isSwitchOn;
-            setTimeout(() => {
-                dialogObj.value.type = currentFlow.title;
-            }, 500);
-            updateInfo(memberStore.info);
-        };
-
-        const addCluesAndMasks = () => {
-            currentFlow.clues.forEach(element => {
-                addNewItem(-1, element, 1, 'clues', '');
-            });
-            currentFlow.content.forEach(element => {
-                characters[element.userIndex].mask.push({
-                    qa: element.qalist,
-                    isRead: false,
-                    isNew: true,
-                    isError: false,
-                    type: -1,
-                });
-            });
-        };
-
-        if (currentFlow.title === '个人线索发放+个人问题') {
-            if (previousFlow.status === 3 && currentFlow.status === 0) {
-                addCluesAndMasks();
-                updateFlowStatus(2, true);
-            }
-        } else if (currentFlow.title === '开启逐风') {
-            updateFlowStatus(3, true);
-        } else if (currentFlow.title === '卦灵') {
-            if (personalCluesStatus === 3) {
-                updateFlowStatus(2, true);
-            } else {
-                showWarning();
-                return;
-            }
-        } else {
-            if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
-                updateFlowStatus(2, true);
-            }
-        }
-    };
-};
-
-
-
-const showZstDialog = (location: string, clue: any, zst_index: number) => {
-    if (clue === '') return
-    console.log(clue, 'aa')
-    dialogObj.value.title = '请确认答案'
-    dialogObj.value.content = '请DM确认选择该地点的用户回答'
-    dialogObj.value.type = '找尸体'
-    dialogObj.value.location = location
-    dialogObj.value.clue = clue
-    dialogObj.value.zst_index = zst_index
-    dialogObj.value.confirmText = '回答正确'
-    dialogObj.value.cancelText = '回答错误'
-    showDialog()
-}
-const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string, status: number) => {
-    if (status === 3) return
-    dialogObj.value.title = '注意'
-    dialogObj.value.content = '请DM确认向以下用户提问并核对答案:'
-    dialogObj.value.confirmText = '回答正确'
-    dialogObj.value.cancelText = '回答错误'
-    dialogObj.value.qa_index = index
-    dialogObj.value.type = '个人线索发放+个人问题'
-    dialogObj.value.userIndex = userIndex
-    dialogObj.value.qa = qa
-    dialogObj.value.deepClue = deepclue
-    dialogObj.value.clue = clue
-    showDialog()
-}
-const statusText = ref(['待开启', '待开启', '进行中', '已完成'])
-const matchIndex = ref(0)
+// 弹窗对象
 const dialogObj = ref({
     dialogVisible: false,
     title: '注意',
     content: 'aa',
     confirmText: '确定',
     cancelText: '取消',
-    showCancel: true, // 是否显示按钮
+    showCancel: true,
     location: '',
     type: '',
     clue: '',
@@ -220,11 +36,231 @@ const dialogObj = ref({
     userIndex: 0,
     flowIndex: 0,
     qa: []
-})
+});
 
+// 显示提示
+const showToast = (content: string) => {
+    isShowToast.value = true;
+    toastContent.value = content;
+    setTimeout(() => {
+        isShowToast.value = false;
+    }, 1000);
+};
+
+// 更新信息
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(info);
+};
+
+// 处理魂穿开关切换
+const onChangeHunchuan = (ev: any, item: any, index: number) => {
+    const { flow, teamInfo, playerInfo } = memberStore.info;
+
+    if (Object.keys(playerInfo.players).length < 7) {
+        uni.showToast({ icon: 'none', title: '玩家人数不足' });
+        resetSwitch();
+        return;
+    }
+
+    if (ev.detail.value) {
+        if (teamInfo.flowIndex === 0 && index === 0) {
+            updateFlowStatus(flow, teamInfo.flowIndex, 2, teamInfo.flowIndex + 1, 1);
+        } else {
+            if (flow[index - 1].inner.slice(-1)[0].status === 0) {
+                resetSwitch();
+                showToast('请按照游戏流程逐步开启');
+            } else {
+                prepareNextHunchuanDialog(index);
+            }
+        }
+    }
+};
+
+// 处理详细步骤开关切换
+const onChangeDetail = (ev: any, item: any, index: number) => {
+    if (item.status === 2 || item.status === 3) return;
+
+    const { flow, teamInfo } = memberStore.info;
+    const currentFlow = flow[teamInfo.flowIndex].inner[index];
+    const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
+
+    if (handleSpecialCases(currentFlow, previousFlow)) return;
+
+    prepareNextStepDialog(currentFlow, previousFlow);
+};
+
+// 处理特殊情况
+const handleSpecialCases = (currentFlow: any, previousFlow: any) => {
+    if (currentFlow.title === '开启逐风') {
+        currentFlow.status = 3;
+        currentFlow.isSwitchOn = true;
+        updateInfo(memberStore.info);
+        dialogObj.value.type = currentFlow.title;
+        return true;
+    }
+
+    if (currentFlow.title === '个人线索发放+个人问题' && !(previousFlow.status === 3 && currentFlow.status === 0)) {
+        showWarning();
+        return true;
+    }
+
+    if (currentFlow.title === '卦灵') {
+        const personalCluesFlow = findPersonalCluesFlow();
+        const personalCluesStatus = personalCluesFlow?.inner.find(inner => inner.title === '个人线索发放+个人问题')?.status;
+
+        if (personalCluesStatus !== 3) {
+            showWarning();
+            return true;
+        }
+    }
+
+    return false;
+};
+
+// 查找 "个人线索发放+个人问题" 流程
+const findPersonalCluesFlow = () => {
+    return memberStore.info.flow.find(f => f.inner.some(inner => inner.title === '个人线索发放+个人问题'));
+};
+
+// 显示警告
+const showWarning = () => {
+    resetSwitch();
+    showToast('请按照游戏流程逐步开启');
+};
+
+// 准备开启下一步的弹窗
+const prepareNextStepDialog = (currentFlow: any, previousFlow: any) => {
+    dialogObj.value.title = '注意';
+    dialogObj.value.content = '确认开启下一环节吗，开启后不可返回';
+    dialogObj.value.confirmText = '确认';
+    dialogObj.value.cancelText = '取消';
+    dialogObj.value.type = '开启下一环节';
+    resetSwitch();
+    showDialog();
+
+    onConfirm.value = () => {
+        if (!ev.detail.value) return;
+        handleNextStep(currentFlow, previousFlow);
+    };
+};
+
+// 处理下一步骤的逻辑
+const handleNextStep = (currentFlow: any, previousFlow: any) => {
+    const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
+        currentFlow.status = status;
+        currentFlow.isSwitchOn = isSwitchOn;
+        updateInfo(memberStore.info);
+    };
+
+    const addCluesAndMasks = () => {
+        currentFlow.clues.forEach(element => addNewItem(-1, element, 1, 'clues', ''));
+        currentFlow.content.forEach(element => {
+            memberStore.info.characters[element.userIndex].mask.push({
+                qa: element.qalist,
+                isRead: false,
+                isNew: true,
+                isError: false,
+                type: -1,
+            });
+        });
+    };
+
+    if (currentFlow.title === '个人线索发放+个人问题' && previousFlow.status === 3 && currentFlow.status === 0) {
+        addCluesAndMasks();
+        updateFlowStatus(2, true);
+    } else if (currentFlow.title === '开启逐风') {
+        updateFlowStatus(3, true);
+    } else if (currentFlow.title === '卦灵' && findPersonalCluesFlow()?.status === 3) {
+        updateFlowStatus(2, true);
+    } else if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
+        updateFlowStatus(2, true);
+    }
+};
+
+// 重置开关状态
+const resetSwitch = () => {
+    updateSwitch.value = false;
+    setTimeout(() => {
+        updateSwitch.value = true;
+    }, 0);
+};
+
+// 更新流程状态
+const updateFlowStatus = (flow: any, currentIndex: number, currentStatus: number, nextIndex: number, nextStatus: number) => {
+    flow[currentIndex].status = currentStatus;
+    flow[nextIndex].status = nextStatus;
+    updateInfo(memberStore.info);
+};
+
+// 准备下一次魂穿的弹窗
+const prepareNextHunchuanDialog = (index: number) => {
+    dialogObj.value.title = '注意';
+    dialogObj.value.content = `<text style="font-weight: 700;color:#000">${flowName[index - 1]}</text>已完成，是否开启<text style="font-weight: 700;color:#000">${flowName[index]}</text>?`;
+    dialogObj.value.type = 'nextHunchuan';
+    dialogObj.value.flowIndex = index;
+    dialogObj.value.confirmText = '确认';
+    dialogObj.value.cancelText = '取消';
+    resetSwitch();
+    showDialog();
+};
+
+// 显示弹窗
+const showDialog = () => {
+    dialogObj.value.dialogVisible = true;
+};
+
+// 关闭弹窗
+const closeDialog = () => {
+    dialogObj.value.dialogVisible = false;
+};
+
+// 确认弹窗
+const confirm = () => {
+    closeDialog();
+    if (dialogObj.value.type === 'nextHunchuan') {
+        const { flow, teamInfo } = memberStore.info;
+        updateFlowStatus(flow, teamInfo.flowIndex, 3, dialogObj.value.flowIndex, 2);
+        if (dialogObj.value.flowIndex + 1 !== 4) {
+            flow[dialogObj.value.flowIndex + 1].status = 1;
+        }
+    }
+};
+
+// 显示找尸体的弹窗
+const showZstDialog = (location: string, clue: any, zst_index: number) => {
+    if (!clue) return;
+    dialogObj.value.title = '请确认答案';
+    dialogObj.value.content = '请DM确认选择该地点的用户回答';
+    dialogObj.value.type = '找尸体';
+    dialogObj.value.location = location;
+    dialogObj.value.clue = clue;
+    dialogObj.value.zst_index = zst_index;
+    dialogObj.value.confirmText = '回答正确';
+    dialogObj.value.cancelText = '回答错误';
+    showDialog();
+};
+
+// 显示个人线索发放+个人问题的弹窗
+const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string, status: number) => {
+    if (status === 3) return;
+    dialogObj.value.title = '注意';
+    dialogObj.value.content = '请DM确认向以下用户提问并核对答案:';
+    dialogObj.value.confirmText = '回答正确';
+    dialogObj.value.cancelText = '回答错误';
+    dialogObj.value.qa_index = index;
+    dialogObj.value.type = '个人线索发放+个人问题';
+    dialogObj.value.userIndex = userIndex;
+    dialogObj.value.qa = qa;
+    dialogObj.value.deepClue = deepclue;
+    dialogObj.value.clue = clue;
+    showDialog();
+};
+
+// 获取流程内容
 const getContent = (title: string) => {
     return computed(() => memberStore.info?.flow[memberStore.info.teamInfo.flowIndex].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
 };
+
 const zfContent = getContent('开启逐风');
 const zstContent = getContent('找尸体');
 const grContent = getContent('个人线索发放+个人问题');
@@ -233,76 +269,52 @@ const dtContent = getContent('地图搜证');
 const glContent = getContent('卦灵');
 const fyContent = getContent('封印动画');
 const fyContent2 = getContent('封印动画2');
+
 const aa = () => {
-    console.log(ypContent)
-}
+    console.log(ypContent);
+};
+
+// 匹配结果处理
 const matchResult = (result: string) => {
-    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].result = result
+    const audioContent = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value];
+    audioContent.result = result;
     if (result === '验证成功') {
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].status = 3
-        for (let index = 0; index < 6; index++) {
-            memberStore.info.characters[index].cueset.audio.push({
-                name: ypContent.value[matchIndex.value].clue,
-                isNew: ypContent.value[matchIndex.value].users.includes(index),
-                deepClue: '',
-                type: 0
-            })
-        }
+        audioContent.status = 3;
+        updateCharacterAudio(audioContent);
     }
+
     const allStatusAreThree = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content.every(item => item.status === 3);
-    console.log(allStatusAreThree)
-    // 如果所有 status 都为 3，则将最外层的 status 设置为 3
     if (allStatusAreThree) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').status = 3;
     }
+
     updateInfo(memberStore.info);
-}
+};
+
+// 更新角色音频信息
+const updateCharacterAudio = (audioContent: any) => {
+    for (let index = 0; index < 6; index++) {
+        memberStore.info.characters[index].cueset.audio.push({
+            name: ypContent.value[matchIndex.value].clue,
+            isNew: ypContent.value[matchIndex.value].users.includes(index),
+            deepClue: '',
+            type: 0
+        });
+    }
+};
+
+// 匹配音频
 const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     if (!canMatch || currentContent.status === 3) {
         console.log("匹配失败");
         return;
     }
 
-    const currentUsers = [...currentContent.users].sort((a, b) => a - b);
-    const currentAnswer = [...currentContent.answer].sort((a, b) => a - b);
+    const { currentUsers, currentAnswer, partialMatch, missingUser } = checkPartialMatch(currentContent);
 
-    let foundPartialMatch = false;
-    let missingUser = null;
-    let foundInOtherLocation = false;
+    const foundInOtherLocation = checkOtherLocations(currentUsers, allContent, currentContent.name);
 
-    // 检查 currentContent 内部的完全匹配和部分匹配
-    if (JSON.stringify(currentUsers) === JSON.stringify(currentAnswer)) {
-        matchResult("验证成功");
-        return;
-    } else {
-        const partialMatch = currentUsers.filter(user => currentAnswer.includes(user));
-        if (partialMatch.length > 0) {
-            foundPartialMatch = true;
-
-            const missing = currentUsers.filter(user => !currentAnswer.includes(user));
-            if (missing.length === 1) {
-                missingUser = missing[0];
-            }
-        }
-    }
-
-    // 检查在其他地点是否有匹配
-    for (const location of allContent) {
-        if (location.name === currentContent.name) {
-            continue;
-        }
-
-        const locationAnswer = [...location.answer].sort((a, b) => a - b);
-        const commonUsers = currentUsers.filter(user => locationAnswer.includes(user));
-
-        if (commonUsers.length > 0) {
-            foundInOtherLocation = true;
-            break;
-        }
-    }
-
-    // 根据检查结果输出消息
-    if (foundPartialMatch) {
+    if (partialMatch) {
         if (missingUser !== null) {
             matchResult(`这里似乎没有${memberStore.info.characters[missingUser].name}的声音。`);
         } else {
@@ -313,54 +325,88 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     } else {
         matchResult("TA们似乎没有在此处对话过。");
     }
-}
-// 关闭弹窗
-const closeDialog = () => {
-    dialogObj.value.dialogVisible = false
-}
-const confirm = () => {
-    dialogObj.value.dialogVisible = false
-    if (dialogObj.value.type === 'nextHunchuan') {
-        const newInfo = memberStore.info
-        newInfo.flow[newInfo.teamInfo.flowIndex].status = 3
-        newInfo.teamInfo.flowIndex = dialogObj.value.flowIndex
-        newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-        if (newInfo.teamInfo.flowIndex + 1 !== 4) newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
-        updateInfo(newInfo)
+};
+
+// 检查部分匹配
+const checkPartialMatch = (currentContent: any) => {
+    const currentUsers = [...currentContent.users].sort((a, b) => a - b);
+    const currentAnswer = [...currentContent.answer].sort((a, b) => a - b);
+
+    let partialMatch = false;
+    let missingUser = null;
+
+    if (JSON.stringify(currentUsers) === JSON.stringify(currentAnswer)) {
+        matchResult("验证成功");
+    } else {
+        const partialMatchUsers = currentUsers.filter(user => currentAnswer.includes(user));
+        if (partialMatchUsers.length > 0) {
+            partialMatch = true;
+
+            const missing = currentUsers.filter(user => !currentAnswer.includes(user));
+            if (missing.length === 1) {
+                missingUser = missing[0];
+            }
+        }
     }
-}
-const showDialog = () => {
-    dialogObj.value.dialogVisible = true
-}
+
+    return { currentUsers, currentAnswer, partialMatch, missingUser };
+};
+
+// 检查其他地点
+const checkOtherLocations = (currentUsers: any[], allContent: any[], currentName: string) => {
+    for (const location of allContent) {
+        if (location.name === currentName) continue;
+
+        const locationAnswer = [...location.answer].sort((a, b) => a - b);
+        const commonUsers = currentUsers.filter(user => locationAnswer.includes(user));
+
+        if (commonUsers.length > 0) {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+// 跳转到问卷页面
 const openhy = (index: number) => {
-    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 2
+    const hyContent = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy;
+    hyContent.status = 2;
     updateInfo(memberStore.info);
     uni.navigateTo({
         url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.hy.name}&index=${index}`
-    })
-}
+    });
+};
+
+// 打开凶案问卷
 const openxa = (index: number) => {
     if (glContent.value.hy.canReplay) {
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 3
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
+        const glContentObj = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content;
+        glContentObj.hy.status = 3;
+        glContentObj.xa.status = 2;
         updateInfo(memberStore.info);
         uni.navigateTo({
             url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.xa.name}&index=${index}`
-        })
+        });
     } else {
-        uni.showToast({ icon: 'none', title: '请先完成还原问卷' })
+        uni.showToast({ icon: 'none', title: '请先完成还原问卷' });
     }
-}
+};
+
+// 跳转到复盘页面
 const goAllReplay = (index: number) => {
     uni.navigateTo({
         url: `/package_nzgx/pages/dm/questionnaire?name=all&index=${index}`
-    })
-}
+    });
+};
+
+// 发送海报
 const sendPoster = () => {
-    memberStore.info.flow[3].send++
+    memberStore.info.flow[3].send++;
     updateInfo(memberStore.info);
-}
+};
 </script>
+
 
 <template>
 
@@ -377,7 +423,7 @@ const sendPoster = () => {
             <!-- 魂穿名称和状态 -->
             <view class="flex-row-sb hunchuan-title ">
                 <view class="hunchuan-info">
-                    <text @tap="ShowToast('你好')" class="name almm">{{ item.title }}</text>
+                    <text class="name almm">{{ item.title }}</text>
                     <view class="flex-row-center status" :class="'status-' + item.status">{{
                         statusText[item.status] }}</view>
                 </view>

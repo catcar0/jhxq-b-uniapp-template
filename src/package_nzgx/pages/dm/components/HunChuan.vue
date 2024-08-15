@@ -1,7 +1,6 @@
 <script setup lang='ts'>
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { computed, ref } from 'vue';
-import { charactersStore } from '@/package_nzgx/stores';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
@@ -28,14 +27,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    // if (Object.keys(memberStore.playerInfo.players).length < 7) {
-    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
-    //     updateSwitch.value = false;
-    //     setTimeout(() => {
-    //         updateSwitch.value = true;
-    //     }, 0);
-    //     return
-    // }
+    if (Object.keys(memberStore.playerInfo.players).length < 7) {
+        uni.showToast({ icon: 'none', title: '玩家人数不足' })
+        updateSwitch.value = false;
+        setTimeout(() => {
+            updateSwitch.value = true;
+        }, 0);
+        return
+    }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {

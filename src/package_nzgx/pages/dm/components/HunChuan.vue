@@ -28,6 +28,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
+    // if (Object.keys(memberStore.playerInfo.players).length < 7) {
+    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
+    //     updateSwitch.value = false;
+    //     setTimeout(() => {
+    //         updateSwitch.value = true;
+    //     }, 0);
+    //     return
+    // }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -58,7 +66,8 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
         }
     }
 }
-const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报']
+const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报分享']
+
 const onConfirm = ref<Function>();
 const onChangeDetail = (ev: any, item: any, index: number) => {
     // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
@@ -66,13 +75,15 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
     const { flow, teamInfo, characters } = memberStore.info;
     const currentFlow = flow[teamInfo.flowIndex].inner[index];
     const previousFlow = flow[teamInfo.flowIndex].inner[index - 1];
+
     if (currentFlow.title === '开启逐风') {
         currentFlow.status = 3;
         currentFlow.isSwitchOn = true;
         updateInfo(memberStore.info);
         dialogObj.value.type = currentFlow.title;
-        return
+        return;
     }
+
     const showWarning = () => {
         updateSwitch.value = false;
         setTimeout(() => {
@@ -80,12 +91,22 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         }, 0);
         ShowToast('请按照游戏流程逐步开启');
     };
-
+    let personalCluesStatus
+    let personalCluesFlow
     // 提前执行逻辑判断
     if (currentFlow.title === '个人线索发放+个人问题') {
         if (!(previousFlow.status === 3 && currentFlow.status === 0)) {
             showWarning();
             return; // 如果不满足条件，阻止弹窗的显示
+        }
+    } else if (currentFlow.title === '卦灵') {
+        // 查找 "个人线索发放+个人问题" 环节的状态
+        personalCluesFlow = flow.find(f => f.inner.some(inner => inner.title === '个人线索发放+个人问题'));
+        personalCluesStatus = personalCluesFlow?.inner.find(inner => inner.title === '个人线索发放+个人问题')?.status;
+
+        if (personalCluesStatus !== 3) {
+            showWarning();
+            return; // 如果 "个人线索发放+个人问题" 的状态不是 3，阻止弹窗的显示
         }
     } else if (!(previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3)) {
         showWarning();
@@ -97,7 +118,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
     dialogObj.value.content = '确认开启下一环节吗，开启后不可返回';
     dialogObj.value.confirmText = '确认';
     dialogObj.value.cancelText = '取消';
-    dialogObj.value.type = '开启下一环节'
+    dialogObj.value.type = '开启下一环节';
     updateSwitch.value = false;
     showDialog();
     setTimeout(() => {
@@ -105,8 +126,6 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
     }, 0);
 
     onConfirm.value = () => {
-        console.log(index);
-
         if (!ev.detail.value) return;
 
         const updateFlowStatus = (status: number, isSwitchOn: boolean) => {
@@ -120,7 +139,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 
         const addCluesAndMasks = () => {
             currentFlow.clues.forEach(element => {
-                addNewItem(0, element, 1, 'clues', '')
+                addNewItem(-1, element, 1, 'clues', '');
             });
             currentFlow.content.forEach(element => {
                 characters[element.userIndex].mask.push({
@@ -140,6 +159,13 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
             }
         } else if (currentFlow.title === '开启逐风') {
             updateFlowStatus(3, true);
+        } else if (currentFlow.title === '卦灵') {
+            if (personalCluesStatus === 3) {
+                updateFlowStatus(2, true);
+            } else {
+                showWarning();
+                return;
+            }
         } else {
             if (previousFlow.title === '个人线索发放+个人问题' || previousFlow.status === 3) {
                 updateFlowStatus(2, true);
@@ -149,9 +175,10 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 };
 
 
+
 const showZstDialog = (location: string, clue: any, zst_index: number) => {
-    if(clue === '') return
-    console.log(clue,'aa')
+    if (clue === '') return
+    console.log(clue, 'aa')
     dialogObj.value.title = '请确认答案'
     dialogObj.value.content = '请DM确认选择该地点的用户回答'
     dialogObj.value.type = '找尸体'
@@ -162,7 +189,8 @@ const showZstDialog = (location: string, clue: any, zst_index: number) => {
     dialogObj.value.cancelText = '回答错误'
     showDialog()
 }
-const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string) => {
+const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string, status: number) => {
+    if (status === 3) return
     dialogObj.value.title = '注意'
     dialogObj.value.content = '请DM确认向以下用户提问并核对答案:'
     dialogObj.value.confirmText = '回答正确'
@@ -231,7 +259,7 @@ const matchResult = (result: string) => {
     updateInfo(memberStore.info);
 }
 const match = (canMatch: boolean, currentContent: any, allContent: any) => {
-    if (!canMatch) {
+    if (!canMatch || currentContent.status === 3) {
         console.log("匹配失败");
         return;
     }
@@ -298,7 +326,7 @@ const confirm = () => {
         newInfo.flow[newInfo.teamInfo.flowIndex].status = 3
         newInfo.teamInfo.flowIndex = dialogObj.value.flowIndex
         newInfo.flow[newInfo.teamInfo.flowIndex].status = 2
-        newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
+        if (newInfo.teamInfo.flowIndex + 1 !== 4) newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
         updateInfo(newInfo)
     }
 }
@@ -329,6 +357,10 @@ const goAllReplay = (index: number) => {
         url: `/package_nzgx/pages/dm/questionnaire?name=all&index=${index}`
     })
 }
+const sendPoster = () => {
+    memberStore.info.flow[3].send++
+    updateInfo(memberStore.info);
+}
 </script>
 
 <template>
@@ -353,7 +385,8 @@ const goAllReplay = (index: number) => {
                 <switch v-if="updateSwitch" v-show="item.status === 0 || item.status === 1" class="switch"
                     :checked="item.isSwitchOn" @change="onChangeHunchuan($event, item, index)"
                     :disabled="item.status === 3" />
-                <view @tap="goAllReplay(index)" v-show="item.status === 3" class="button fupan-button">卦灵复盘</view>
+                <view @tap="goAllReplay(index)" v-show="item.status === 3 && item.title !== '海报分享'"
+                    class="button fupan-button">卦灵复盘</view>
             </view>
 
             <!-- 魂穿任务 -->
@@ -391,7 +424,8 @@ const goAllReplay = (index: number) => {
                     <view v-if="detail.status === 2 && detail.title === '个人线索发放+个人问题'">
                         <text style="font-size: 24.5rpx;">请DM确认向以下用户提问并核对答案:</text>
                         <view class="flex-row-center qa-box">
-                            <view @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue)"
+                            <view
+                                @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue, qa.status)"
                                 class="flex-column-sb-center gap-10" v-for="(qa, qa_index) in detail.content">
                                 <img class="avatar" :src="memberStore.info.characters[qa.userIndex].avatar" alt="">
                                 <text>{{ memberStore.info.characters[qa.userIndex].name }}</text>
@@ -428,7 +462,7 @@ const goAllReplay = (index: number) => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                    }}</text>
+                                }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -480,7 +514,7 @@ const goAllReplay = (index: number) => {
                         </view>
                     </view>
                 </view>
-                <view style="width: 90%;margin-bottom: 20rpx;" class="button">生成并发送</view>
+                <view style="width: 90%;margin-bottom: 20rpx;" class="button" @tap="sendPoster">生成并发送</view>
             </view>
         </view>
     </view>

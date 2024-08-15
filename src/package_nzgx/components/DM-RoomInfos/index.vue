@@ -1,8 +1,11 @@
 <script setup lang='ts'>
-import LemDialog from "@/components/LemDialog/LemDialog.vue";
+import LemDialog from "@/package_nzgx/components/LemDialog/LemDialog.vue";
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { usePlayStore } from "@/stores/play";
-
+import { useMemberStore } from '@/package_nzgx/stores'
+import { useWebSocketStore } from '@/package_nzgx/stores'
+const memberStore = useMemberStore()
+const webSocketStore = useWebSocketStore();
 const PlayStore = usePlayStore();
 const infos = computed(() => PlayStore.PlayInfos);
 const closeRoomVisible = ref<boolean>(false);
@@ -13,7 +16,8 @@ const time_str = computed(() => secondsToMinutesSeconds(current_time.value - sta
 
 
 onMounted(async () => {
-    await PlayStore.GetRoomInfo();
+    // await PlayStore.GetRoomInfo();
+    webSocketStore.getPlayerInfo()
 })
 
 onUnmounted(() => {
@@ -28,9 +32,10 @@ const showCloseRoomVisible = () => {
 
 // 关闭房间
 const toCloseRoom = () => {
-    stopTime();
     closeRoomVisible.value = false;
-    PlayStore.CloseRoom();
+    webSocketStore.closeRoom()
+    // stopTime();
+    // PlayStore.CloseRoom();
 }
 
 const loopTime = () => {
@@ -69,7 +74,7 @@ function secondsToMinutesSeconds(seconds: number): string {
 
     <view class="top-bar">
         <view class="header-item text-14">
-            <text class="room-status">{{ infos?.running_room ? '进行中' : '已结束' }}</text>
+            <text class="room-status">{{ memberStore.info.flow[3].status !==3  ? '进行中' : '已结束' }}</text>
             <view class="controls">
                 <button @tap="showCloseRoomVisible">
                     提前结束
@@ -78,11 +83,11 @@ function secondsToMinutesSeconds(seconds: number): string {
         </view>
         <view class="header-item text-14">
             <text class="script-name">{{ infos?.script_name }}</text>
-            <text class="room-number">房间号：{{ infos?.room_number }}</text>
+            <text class="room-number">房间号：{{ memberStore.roomId }}</text>
         </view>
         <view class="header-item text-12">
             <text>DM - {{ infos?.DM }}</text>
-            <text>房间人数：{{ infos?.people_number }}</text>
+            <text>房间人数：{{ Object.keys(memberStore.playerInfo.players).length}}</text>
         </view>
         <view class="end-time">
             <text>预计结束时间：{{ infos?.room_end_time.split(" ")[1] }}</text>

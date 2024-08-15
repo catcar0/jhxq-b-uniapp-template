@@ -37,6 +37,13 @@ export const useWebSocketStore = defineStore('webSocket', {
                 virtual_role_id: 'first'
             }));
         },
+        kickplayer(id:any){
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'kick_player',
+                user_id:19691,
+                virtual_role_id: id
+            }));
+        },
         updateInfo (nickname:string,avatar:string) {
             this.gameWebSocketService.send(JSON.stringify({
                 type: 'update_player_info',
@@ -50,6 +57,11 @@ export const useWebSocketStore = defineStore('webSocket', {
         getPlayerInfo () {
             this.gameWebSocketService.send(JSON.stringify({
                 type: 'get_all_players_info'
+            }));
+        },
+        closeRoom(){
+            this.gameWebSocketService.send(JSON.stringify({
+                type: 'close_room'
             }));
         },
         gameClose() {

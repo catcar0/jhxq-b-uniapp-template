@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import DMTabBar from "@/components/DM-TabBar/index.vue"
+import DMTabBar from "@/package_nzgx/components/DM-TabBar/index.vue"
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { computed, ref } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'
@@ -24,9 +24,10 @@ const confirm = () => {
     }
     if (dialogObj.value.type === 'giveReplay') {
         console.log(memberStore.info.teamInfo.replay[flowIndex.value],glType.value)
-        memberStore.info.teamInfo.replay[flowIndex.value][glType.value].push(
-            qaList.value[0].replay
-        )
+        if (glType.value === 'all'){
+            if (replayName.value === '还原问卷') memberStore.info.teamInfo.replay[flowIndex.value].hy = qaList.value[0].replay 
+            else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay 
+        }else memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay 
     }
     dialogObj.value.dialogVisible = false
 }
@@ -134,11 +135,11 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
 
                 if (isCorrect) {
                     userAnswer.status = 2;
-                    console.log('score', qaList.value.score);
-                    scoreChange('user', qaList.value.score, [questionIndex]);
+                    console.log('score', qaList.value[0].score);
+                    scoreChange('user', qaList.value[0].score, [questionIndex]);
                 } else {
                     userAnswer.status = 3;
-                    scoreChange('user', (qaList.value.score * -0.5), [questionIndex]);
+                    scoreChange('user', (qaList.value[0].score * -0.5), [questionIndex]);
                 }
             });
         }
@@ -164,12 +165,16 @@ const qaList = computed(() => {
     }
     return [glContent.value.hy,glContent.value.xa]; 
 });
-const replayTitle = ref('')
+const replayName = ref('')
 const createReplay = (allitem:any) =>{
+    replayName.value = allitem.name
     replayShow.value = true
     replayContext.value = allitem.replay
     // qaList.value[0].status = 3
     memberStore.info.flow[flowIndex.value].inner.find((item: { title: string; }) => item.title === '卦灵').content[glType.value].status = 3
+    if (glType.value === 'xa') {
+        memberStore.info.flow[flowIndex.value].inner.find((item: { title: string; }) => item.title === '卦灵').status = 3
+    }
     updateInfo(memberStore.info)
 }
 // 初次加载时设置 glType.value

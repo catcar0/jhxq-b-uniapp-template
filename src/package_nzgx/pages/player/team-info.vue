@@ -54,7 +54,11 @@ const dialogObj = ref({
     showCancel: false, // 是否显示按钮
     type: 'changeTeamName',
 })
-
+const updateInfo = (info: any) => {
+    webSocketStore.gameSend(
+        info
+    )
+}
 const changeAvatar = () => {
     uni.chooseImage({
         count: 1, // 只允许选择一张图片
@@ -70,6 +74,8 @@ const changeAvatar = () => {
                     // 保存到 memberStore.avatar
                     const base64Image = 'data:image/png;base64,' + fileRes.data;
                     memberStore.avatar = base64Image;
+                    memberStore.info.characters[memberStore.virtualRoleId - 1].playerAvatar = base64Image
+                    updateInfo(memberStore.info)
                 },
                 fail: function (err) {
                     console.error('图片转换Base64失败', err);
@@ -91,7 +97,7 @@ const showDialog = (e: any) => {
             <img class="user-avatar-img" src="http://159.138.147.87/statics/img/avatar_frame.png" alt="">
             <view
                 style="background-color: black;position: absolute;margin-left: 15rpx;z-index: 1;height: 300rpx;width: 260rpx;margin-top: -360rpx;">
-                <img style="height: 100%;width: 100%;" :src="memberStore.avatar" alt="">
+                <img style="height: 100%;width: 100%;" :src="memberStore.info.characters[memberStore.virtualRoleId - 1].playerAvatar" alt="">
             </view>
         </view>
         <!-- `http://159.138.147.87/statics/clues/${avatarList[memberStore.virtualRoleId - 1]}.png` -->

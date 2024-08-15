@@ -74,6 +74,7 @@ const updateInfo = (info: any) => {
     )
 }
 const submit = (status: number) => {
+    if(qaList.value.canReplay) return
     if (qaList.value.qa.every((question) => question.usersAnswer[memberStore.virtualRoleId - 1].answer.length === 0)) {
         uni.showToast({ icon: 'none', title: '还有问题未作答' })
         return
@@ -198,7 +199,7 @@ const submit = (status: number) => {
                     <view>{{ qaList.qa[glIndex].question }}</view>
                     <scroll-view scroll-y style="height: 60vh;">
                         <img class="clue-selected-border3" src="http://159.138.147.87/statics/img/cue_seleted2.png" alt="">
-                        <img v-if="cluesIndex !== -1" class="clue-big-image"
+                        <img v-if="cluesIndex !== -1 && allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url" class="clue-big-image"
                             :src="allClues[avatarList[cluesIndex]].url + '.png'" alt="">
                         <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
                             {{ allClues[avatarList[cluesIndex]].content1 }}

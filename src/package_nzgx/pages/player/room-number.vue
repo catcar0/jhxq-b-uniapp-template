@@ -60,17 +60,20 @@ const play = () => {
     const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
     wsService.connect()
     setTimeout(() => {
-        if (webSocketStore.messages.slice(-1)[0].type !== 'error') {
+        if (webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'error') {
+            uni.showToast({ icon: 'error', title: webSocketStore.messages.slice(-1)[0].message })
+            webSocketStore.messages = []
+        } else {
+            webSocketStore.gameWebSocketService = wsService;
+            webSocketStore.gameplayerFirstSend()
+            webSocketStore.updateInfo(nickName, avatarUrl)
             setTimeout(() => {
-                webSocketStore.gameplayerFirstSend()
-                webSocketStore.updateInfo(nickName, avatarUrl)
+                uni.hideLoading();
+                if (memberStore.info) memberStore.info.characters[memberStore.virtualRoleId - 1].playerAvatar = avatarUrl
                 uni.showToast({ icon: 'success', title: '加入成功' })
                 emit('page', 'TeamInfo')
-            }, 1000);
-        } else {
-            uni.showToast({ icon: 'error', title: webSocketStore.messages.slice(-1)[0].message })
+            }, 3000);
         }
-        uni.hideLoading();
     }, 1000);
 }
 </script>

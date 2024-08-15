@@ -3,6 +3,7 @@ export const initAllInfo = {
         {
             name: '陈敏',
             avatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -18,6 +19,7 @@ export const initAllInfo = {
         {
             name: '白鹭',
             avatar: 'http://159.138.147.87/statics/avatar/bailu.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -33,6 +35,7 @@ export const initAllInfo = {
         {
             name: '尹萍',
             avatar: 'http://159.138.147.87/statics/avatar/yinpin.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -48,6 +51,7 @@ export const initAllInfo = {
         {
             name: '林佳',
             avatar: 'http://159.138.147.87/statics/avatar/linjia.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -62,6 +66,7 @@ export const initAllInfo = {
         }, {
             name: '李梦',
             avatar: 'http://159.138.147.87/statics/avatar/limeng.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -77,6 +82,7 @@ export const initAllInfo = {
         {
             name: '何阑',
             avatar: 'http://159.138.147.87/statics/avatar/helan.svg',
+            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -211,7 +217,7 @@ export const initAllInfo = {
                             },
                             status: 0,
                             clue: 'clue20',
-                            answer: [2, 1],
+                            answer: [2, 0],
                             result: ''
                         }
                     ],
@@ -370,7 +376,7 @@ export const initAllInfo = {
                             name: '宿舍',
                             position: {
                                 top: '980rpx',
-                                left: '400rpx',
+                                left: '350rpx',
                             },
                             status: 0,
                             clue: 'clue39',
@@ -603,6 +609,7 @@ export const initAllInfo = {
         {
             inner: [
             ],
+            send:0,
             status: 0,
             title: '海报分享',
             isSwitchOn: false

@@ -25,7 +25,7 @@ const glContent = getContent('卦灵');
 const fyContent = getContent('封印动画');
 const fyContent2 = getContent('封印动画2');
 const charactersList = charactersStore().characters
-const props = defineProps<{ dialogObj: any,onConfirm:Function}>()
+const props = defineProps<{ dialogObj: any, onConfirm: Function }>()
 
 const emit = defineEmits(["update:show", "confirm", "cancel"]);
 
@@ -42,7 +42,7 @@ const close = () => {
     emit('cancel');
     if (props.dialogObj.type === '个人线索发放+个人问题') {
         memberStore.info.characters[props.dialogObj.userIndex].mask.slice(-1)[0].isError = true
-        scoreChange('user',0,[props.dialogObj.userIndex])
+        // scoreChange('user', 0, [props.dialogObj.userIndex])
         updateInfo(memberStore.info)
     }
 }
@@ -50,30 +50,40 @@ const close = () => {
 const confirm = () => {
     emit('confirm');
     console.log(props.dialogObj.type)
-    console.log(props.dialogObj.clue,'--',props.dialogObj.deepClue)
+    console.log(props.dialogObj.clue, '--', props.dialogObj.deepClue)
     if (props.dialogObj.type === '开启下一环节') {
-        props.onConfirm();
+        props.onConfirm;
     }
     if (props.dialogObj.type === '找尸体') {
         zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
     }
     if (props.dialogObj.type === '个人线索发放+个人问题' && props.dialogObj.clue && props.dialogObj.deepClue) {
-        console.log(props.dialogObj.clue,'--',props.dialogObj.deepClue)
-        // if(!props.dialogObj.clue || props.dialogObj.clue === '') return
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题').content[props.dialogObj.qa_index].status = 3
-        scoreChange('user',50,[props.dialogObj.userIndex])
-        addNewItem(props.dialogObj.userIndex, props.dialogObj.clue, 3, 'clues',props.dialogObj.deepClue)
+        const flowItem = memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '个人线索发放+个人问题');
+
+        if (flowItem) {
+            flowItem.content[props.dialogObj.qa_index].status = 3;
+
+            // 检查 content 数组中的每个元素的 status 是否都为 3
+            const allStatusesAreThree = flowItem.content.every((element: { status: number }) => element.status === 3);
+
+            if (allStatusesAreThree) {
+                flowItem.status = 3
+            }
+            scoreChange('user', 50, [props.dialogObj.userIndex]);
+            addNewItem(props.dialogObj.userIndex, props.dialogObj.clue, 3, 'clues', props.dialogObj.deepClue);
+        }
     }
+
     if (props.dialogObj.type === 'editTeamName') {
         memberStore.info.teamInfo.name = inputText
         updateInfo(memberStore.info)
     }
 }
 const zst = (userIndex: number, clue: string, index: number) => {
-    if(!clue) return
+    if (!clue) return
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
     scoreChange('user', 10, [userIndex])
-    addNewItem(userIndex,clue, 0, 'clues', '')
+    addNewItem(userIndex, clue, 0, 'clues', '')
     if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content.every((contentItem: { status: number }) => contentItem.status === 3)) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').status = 3;
         updateInfo(memberStore.info)
@@ -88,7 +98,7 @@ const zstselectIndex = ref<number>(0)
 const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
 }
-const inputText = props.dialogObj.initInput?? ''
+const inputText = props.dialogObj.initInput ?? ''
 </script>
 
 <template>
@@ -99,12 +109,13 @@ const inputText = props.dialogObj.initInput?? ''
                 <image v-if="dialogObj.showCancel" @tap="close" src="@/static/icons/common_close.png"
                     :mode="'widthFix'" />
             </view>
-            <view class="dialog-content" v-html="dialogObj.content ">
+            <view class="dialog-content" v-html="dialogObj.content">
             </view>
-            <view class="input-box flex-row-center" v-show="dialogObj.type==='editTeamName'">
+            <view class="input-box flex-row-center" v-show="dialogObj.type === 'editTeamName'">
                 <input style="text-align: center;" v-model="inputText" type="text">
             </view>
-            <view style="height: 200rpx;font-weight: 700;font-size: 34rpx;"class="flex-row-center" v-show="dialogObj.type==='nextHunchuan'">开启后无法返回下一环节</view>
+            <view style="height: 200rpx;font-weight: 700;font-size: 34rpx;" class="flex-row-center"
+                v-show="dialogObj.type === 'nextHunchuan'">开启后无法返回下一环节</view>
             <!-- 找尸体地点 -->
             <view v-if="dialogObj.type === '找尸体'">
                 <view style="width: 100%;height: 200prx;" class="flex-row-center">
@@ -122,16 +133,14 @@ const inputText = props.dialogObj.initInput?? ''
             <!-- 个人线索发放＋个人问题 -->
             <view v-if="dialogObj.type === '个人线索发放+个人问题'">
                 <view class="flex-row-center" style="gap: 200rpx;margin-top: 30rpx;">
-                    <view class="flex-column-sb-center" style="gap:10rpx"
-                        v-for="(item, index) in grContent">
+                    <view class="flex-column-sb-center" style="gap:10rpx" v-for="(item, index) in grContent">
                         <img class="qa-avatar"
                             :style="{ backgroundColor: dialogObj.qa_index === index ? '#F09235' : '#C4C4C4' }"
                             :src="memberStore.info.characters[item.userIndex].avatar" alt="">
                         <text>{{ memberStore.info.characters[item.userIndex].name }}</text>
                     </view>
                 </view>
-                <view
-                    v-for="qaitem in grContent[dialogObj.qa_index].qalist">
+                <view v-for="qaitem in grContent[dialogObj.qa_index].qalist">
                     <view>Q:{{ qaitem.question }}</view>
                     <text style="text-decoration: underline;">A:{{ qaitem.answer }}</text>
                 </view>
@@ -141,16 +150,22 @@ const inputText = props.dialogObj.initInput?? ''
                 <button @tap="confirm" class="theme-button button">{{ dialogObj.confirmText || '确认' }}</button>
                 <button v-if="dialogObj.showCancel" @tap="close" class="theme-button cancel-button">{{
                     dialogObj.cancelText || '取消'
-                }}</button>
+                    }}</button>
             </view>
         </view>
     </view>
 </template>
 
 <style scoped>
-.input-box{
-    background-color:#EA6A00;border-radius: 30rpx;height: 80rpx;width: 70%;margin-left: 15%;color: white;
+.input-box {
+    background-color: #EA6A00;
+    border-radius: 30rpx;
+    height: 80rpx;
+    width: 70%;
+    margin-left: 15%;
+    color: white;
 }
+
 .big-avatar {
     width: 200rpx;
     height: 200rpx;

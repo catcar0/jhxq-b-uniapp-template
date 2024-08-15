@@ -137,14 +137,14 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
         dialogObj.value.confirmText = '收入线索集'
         dialogObj.value.hideCloseIcon = true
         dialogObj.value.clue = a.clue
-        voiceIndex.value = -1
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].result = '已验证成功'
+        voiceIndex.value = -1
+        userJoinRoom.value = -1
+        canJoin.value = true
         updateInfo(memberStore.info)
-        // addNewItem(userIndex.value, a.clue, 0 ,'audio','')
+        // addNewItem(userIndex.value, a.clue, 0, 'audio', '')
         modifyDialog()
     } else {
-        canJoin.value = true
-        voiceIndex.value = -1
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[userJoinRoom.value].users = [-1, -1]
         dialogObj.value.title = '推理失败'
         dialogObj.value.content = a.result
@@ -158,7 +158,7 @@ watch(() => memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.fin
 },
     { deep: true })
 const requiredClues = ['clue1', 'clue2', 'clue3', 'clue4'];
-const hasAddedClue5 = ref(false); // 用于跟踪是否已经添加过 clue5
+const clue5 = ref(false)
 watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
     const newclue = memberStore.info.characters[userIndex.value].cueset.clues.slice(-1)[0];
     if (!newclue) {
@@ -174,9 +174,17 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
     // 检查 cueset.clues 是否已经包含 clue5
     const hasClue5 = clues.some(clue => clue.name === 'clue5');
 
-    if (hasAllClues && !hasClue5) {
-        addNewItem(-1, 'clue5', 0, 'clues', '');
-        console.log('cueset.clues 包含了 clue1 到 clue4 并且没有 clue5，已添加 clue5');
+    if (hasAllClues && !hasClue5 && !clue5.value && newclue.name !== 'clue5') {
+        clue5.value = true
+        setTimeout(() => {
+            // addNewItem(-1, 'clue5', 0, 'clues', '');
+            memberStore.info.characters[userIndex.value].cueset.clues.push({
+                name: 'clue5',
+                isNew: true,
+                isRead: false,
+                type: 0
+            })
+        }, 3000);
     }
     if (newclue.isNew) {
         switch (newclue.type) {
@@ -193,6 +201,9 @@ watch(() => memberStore.info.characters[userIndex.value].cueset.clues, () => {
                 modifyDialog();
                 break;
             case 2:
+                console.log('2')
+                isRotate.value = false
+                isScale.value = false
                 isNewClueShow.value = true;
                 isDeepClue.value = true;
                 newClueSrc.value = allClues[newclue.name].url + '.png';
@@ -237,19 +248,22 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
         addNewItem(userIndex.value, clue, 0, 'clues', '')
     }
 }
+const audio = () =>{
+    addNewItem(0, 'clue19', 0, 'clues', '')
+}
 </script>
 
 <template>
 
     <!-- 新线索+深入线索动画弹窗 -->
-    <view class="newClue-mask flex-row-center" v-show="isNewClueShow">
+    <view class="newClue-mask flex-row-center" v-if="isNewClueShow">
         <view :class="isScale ? 'notScale' : 'isScale'" v-if="isDeepClue"
             style="transition: all 2s;;position: absolute;z-index: 13000;width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;padding-bottom: 120rpx;">
             <img mode='aspectFit' class="newClue-img-A" :class="isRotate ? 'newClue-img-A-rotate' : ''" @tap="ani()"
                 :src="oldClueSrc" alt="">
             <view
                 style="transform: rotateY(180deg);width: 100%;height: 100%;display: flex;align-items: center;justify-content: center;">
-                <img mode='aspectFit' class="newClue-img-B" :class="isRotate ? 'newClue-img-B-rotate' : ''"
+                <img mode='aspectFit' class="newClue-img-B" :class="isRotate ? 'newClue-img-B-rotate' : 'hide'"
                     :src="newClueSrc" alt="">
             </view>
         </view>
@@ -257,7 +271,8 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
             <view class="newClue-title hyshtj">
                 {{ isDeepClue ? " 获得一条深入线索" : " 获得一条新线索" }}
             </view>
-            <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt="" mode="heightFix">
+            <img class="newClue-img" :style="{ opacity: isDeepClue ? '0' : '1' }" :src="newClueSrc" alt=""
+                mode="heightFix">
             <view style="">这里看起来似乎有些不同寻常</view>
             <view class="theme-button2 button" @tap="isNewClueShow = false; updateClues()">
                 <view class="theme-button-clear"></view>
@@ -303,7 +318,8 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
                 <view class="dialog-inner">
                     <view class="dialog-header">
                     </view>
-                    <text class="hyshtj font-player-gradient1 dialog-title">图书馆传来一些声音</text>
+                    <text class="hyshtj font-player-gradient1 dialog-title">{{ ypContent[voiceIndex].name
+                        }}传来一些声音</text>
                     <view class="dialog-content">
                         这里似乎有人交流过，请找出在此处交流的二人。
                     </view>
@@ -340,7 +356,7 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
         </view>
 
         <!-- 开启逐风 -->
-        <view class="newClue-mask"
+        <view class="newClue-mask" @tap="audio()"
             v-if="zfStatus === 3 && memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner[1].status === 0">
             <view class="zhufeng">
             </view>
@@ -400,11 +416,16 @@ const mapSerch = (clue: string, id: number, isShow: boolean) => {
 
 .newClue-img-A-rotate {
     transform: rotateY(180deg);
+    opacity: 0;
 }
 
 .newClue-img-B-rotate {
     transform: rotateY(180deg);
-    /* opacity: 0.5; */
+    opacity: 1;
+}
+
+.hide {
+    opacity: 0;
 }
 
 .newClue-img-A {

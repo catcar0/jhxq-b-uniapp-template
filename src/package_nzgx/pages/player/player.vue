@@ -91,7 +91,7 @@ const getContent = (title: string) => {
 };
 const glContent = getContent('卦灵');
 watch(() => glContent.value.status, (a, b) => {
-    if(glContent.value.status === 2){
+    if (glContent.value.status === 2) {
         currentPage.value = 'Gualing'
     }
 
@@ -127,6 +127,15 @@ onMounted(() => {
         // 在这里可以添加错误处理逻辑
     };
 
+    // 监听 WebSocket 连接断开事件
+    wsService.onClose = (event) => {
+        console.warn("WebSocket 连接已断开", event);
+        uni.showToast({ icon: 'none', title: '你已被踢出房间' })
+        currentPage.value = 'RoomNumber'
+        memberStore.roomId = ''
+        // 在这里添加断开连接后的处理逻辑，例如重新连接或通知用户
+    };
+
 });
 
 onUnmounted(() => {
@@ -136,19 +145,39 @@ onUnmounted(() => {
 
 <template>
     <view>
-        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" @page="pageJump"
-            :userInfo="userInfo" />
-        <jump v-if="memberStore.info" :hide-index="currentPage" @page="pageJump" :flow="flow" :userInfo="userInfo" />
+        <dmDialog v-if="memberStore.info" :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm"
+            @page="pageJump" :userInfo="userInfo" />
+        <jump v-if="memberStore.info.flow[0].status !== 1" :hide-index="currentPage" @page="pageJump" :flow="flow" :userInfo="userInfo" />
 
         <RoomNumber v-show="currentPage === 'RoomNumber'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj"
             @page="pageJump" />
         <TeamInfo v-if="memberStore.info" v-show="currentPage === 'TeamInfo'" :dialog-obj="dialogObj"
             :teamInfo="teamInfo" :userInfo="userInfo" @updateDialogObj="updateDialogObj" />
-        <ZfMap v-show="currentPage === 'ZfMap'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" :flow="flow"
-            :userInfo="userInfo" />
-        <Gualing v-show="currentPage === 'Gualing'" :dialog-obj="dialogObj" @updateDialogObj="updateDialogObj" />
-        <CueSet v-show="currentPage === 'CueSet'" :dialog-obj="dialogObj" :teamInfo="teamInfo" :userInfo="userInfo" @updateDialogObj="updateDialogObj" />
+        <ZfMap v-if="memberStore.info" v-show="currentPage === 'ZfMap'" :dialog-obj="dialogObj"
+            @updateDialogObj="updateDialogObj" :flow="flow" :userInfo="userInfo" />
+        <Gualing v-if="memberStore.info" v-show="currentPage === 'Gualing'" :dialog-obj="dialogObj"
+            @updateDialogObj="updateDialogObj" />
+        <CueSet v-if="memberStore.info" v-show="currentPage === 'CueSet'" :dialog-obj="dialogObj" :teamInfo="teamInfo" :currentPage="currentPage"
+            :userInfo="userInfo" @updateDialogObj="updateDialogObj" />
+        <view v-show="memberStore.info.flow[3].send !== 0" class="poster">
+            <image src="http://159.138.147.87/statics/img/haibao.png" mode="fill" />
+        </view>
     </view>
 </template>
 
-<style scoped></style>
+<style scoped>
+.poster {
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 99999;
+    background-color: aliceblue;
+}
+
+.poster image {
+    width: 100%;
+    height: 100%;
+}
+</style>

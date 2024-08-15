@@ -11,11 +11,13 @@ import { initAllInfo } from '@/package_nzgx/services/initInfo'
 import { Authorization, BindWechat, QuickLogin } from '@/services/auth'
 import { AuthorizationPlayer } from '@/services/play'
 
+
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 
 const code = ref('')
 const login = async () => {
+  memberStore.setInfo(initAllInfo)
   const res = await AuthorizationPlayer(code.value)
   console.log(res.token)
   loginSuccess(res)
@@ -41,31 +43,21 @@ const loginSuccess = (profile: LoginResult) => {
 
 }
 const openBook = async () => {
+  uni.showLoading({
+        title: '加载中'
+    });
   const res = await postRoomsnAPI({
     name: '测试房间',
     expire_time:'21600000'
   })
-  // console.log(res.message)
   memberStore.setRoomId(res.room.id)
+  // console.log(res.rooom.expire_time.$date.$numberLong)
+  // memberStore.setTime(res.rooom.created_at.$date.$numberLong,res.rooom.expire_time.$date.$numberLong)
+  setTimeout(() => {
+    joinGame('gm')
+    uni.hideLoading()
+  }, 2000);
 }
-// const joinRoom = (_role: string) => {
-//   webSocketStore.send(
-//     JSON.stringify({
-//       type: 'join_room',
-//       room_id: memberStore.roomId,
-//       role: _role
-//     })
-//   )
-//   setTimeout(() => {
-//     joinGame('gm')
-//   }, 500);
-//   setTimeout(() => {
-//     initInfo()
-//     uni.navigateTo({
-//       url: `/package_nzgx/pages/dm/dm`
-//     })
-//   }, 2000);
-// }
 const joinRoom2 = (_role: string) => {
   memberStore.setVirtualRoleId(_role)
   uni.navigateTo({
@@ -145,8 +137,9 @@ onUnmounted(() => {
 <template>
   <view class="flex-column-sb ">
     <button @tap="login">用户登录</button>
-    <button @tap="code='0f3yhLkl2KoUYd4X0Tol202ZbA2yhLkG';login()">用户浏览器登录</button>
-    <button @tap="openBook">DM创建房间</button>
+    <button @tap="code='0a3Tlhll2ooHZd4BMznl2axqkh3TlhlO';login()">用户浏览器登录</button>
+    <button @tap="openBook">DM创建房间并加入游戏</button>
+    <button @tap="joinGame('gm')">DM加入游戏</button>
     <!-- <button @tap="joinRoom('gm')">DM加入房间</button> -->
     <button @tap="joinRoom2('1')">玩家1加入游戏</button>
     <button @tap="joinRoom2('2')">玩家2加入游戏</button>
@@ -154,10 +147,9 @@ onUnmounted(() => {
     <button @tap="joinRoom2('4')">玩家4加入游戏</button>
     <button @tap="joinRoom2('5')">玩家5加入游戏</button>
     <button @tap="joinRoom2('6')">玩家6加入游戏</button>
-    <button @tap="joinGame('gm')">DM加入游戏</button>
     <!-- <button @tap="joinGame('1')">玩家1加入游戏</button> -->
     <!-- <button @tap="startGame">开始游戏</button> -->
-    <button @tap="initInfo">初始化info</button>
+    <button @tap="initInfo">初始化游戏数据</button>
     <!-- <button @tap="code">
       获取code
     </button>

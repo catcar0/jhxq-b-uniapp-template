@@ -1,9 +1,10 @@
 <script setup lang='ts'>
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import audioplay from '@/package_nzgx/pages/player/components/audioplay.vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
+import { onShow } from '@dcloudio/uni-app';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const setClass = ['物品', '音频', '记录']
@@ -12,7 +13,8 @@ const cluesIndex = ref(-1)
 const props = defineProps({
     dialogObj: Object,
     userInfo: Object,
-    teamInfo: Object
+    teamInfo: Object,
+    currentPage:Object
 });
 interface AudioItem {
     src: string;
@@ -26,8 +28,19 @@ interface AudioItem {
     scrollOffset: number; // 新增
     scrollAnimationFrame: number; // 新增
 }
-const audioList = computed<AudioItem[]>(() => {
-    return memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.map(audio => ({
+const newAudio = computed(() => {
+
+    // 检查是否有新的音频
+    return memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio
+});
+// 检查是否有新的音频
+watch(() => newAudio, (a, b) => {
+    updateAudioList()
+},
+    { deep: true })
+const audioList = ref<AudioItem[]>([]);
+const updateAudioList = () => {
+    audioList.value = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.map(audio => ({
         roles: allClues[audio.name].name,
         location: allClues[audio.name].content1,
         content: allClues[audio.name].content2,
@@ -39,14 +52,22 @@ const audioList = computed<AudioItem[]>(() => {
         scrollOffset: 0,
         scrollAnimationFrame: 0,
     }));
-});
+    console.log('audioList', audioList.value)
+};
 const replayIndex = ref(-1)
 
-const sortedClues = computed(() => {
+const sortedClues = ref();
+
+watch(() => props.currentPage, (a,b) => {
+    sortClues()
+    console.log(props.currentPage,'ccc')
+},
+{ deep: true })
+const sortClues = () => {
     const clues = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues;
 
     // 创建新数组并排序
-    return [...clues].sort((a, b) => {
+    sortedClues.value = [...clues].sort((a, b) => {
         if (a.isRead === b.isRead) {
             return 0; // 保持原有顺序
         } else if (a.isRead === false && b.isRead === true) {
@@ -55,27 +76,38 @@ const sortedClues = computed(() => {
             return 1; // b 排在 a 之前
         }
     });
-});
+    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues = sortedClues.value
+};
 const updateInfo = (info: any) => {
     webSocketStore.gameSend(
         info
     )
 }
-const readClue = (index: number) => {
-    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[index].isRead = true
+const readClue = (name: string) => {
+
+    console.log(name, memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues.find(clue => clue.name === name))
+    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues.find(clue => clue.name === name).isRead = true;
+
+
+};
+
+const firstClue = (index: number, name: string) => {
+    readClue(name)
+    // if (classIndex.value === index) return
+    // classIndex.value = 0
+    console.log('indexindex', index)
+    if (index !== 0) {
+        const clues = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues;
+
+        // 移动选中的元素到数组的第一个位置
+        const selectedClue = clues.splice(index, 1)[0]; // 删除并获取目标元素
+        clues.unshift(selectedClue); // 将目标元素插入到第一个位置
+
+        // 更新原始数组（假设 memberStore.info.characters[userIndex.value].cueset.clues 是响应式的）
+        memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues = clues;
+    }
+    cluesIndex.value === index ? cluesIndex.value = -1 : cluesIndex.value = 0;
     updateInfo(memberStore.info)
-}
-const firstClue = (index: number) => {
-    if (classIndex.value === index) return
-    classIndex.value = 0
-    const clues = sortedClues.value;
-
-    // 移动选中的元素到数组的第一个位置
-    const selectedClue = clues.splice(index, 1)[0]; // 删除并获取目标元素
-    clues.unshift(selectedClue); // 将目标元素插入到第一个位置
-
-    // 更新原始数组（假设 memberStore.info.characters[userIndex.value].cueset.clues 是响应式的）
-    memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues = clues;
 }
 </script>
 
@@ -95,24 +127,26 @@ const firstClue = (index: number) => {
                     <view class="font-player-gradient1">线索集</view>
                 </view>
                 <scroll-view scroll-y style="height: 71vh;">
-                    <view class="clue-big-image flex-row-center">
-                        <img v-if="cluesIndex !== -1" mode="heightFix"
-                        :src="allClues[sortedClues[cluesIndex].name].url + '.png'" alt="">
+                    <view v-if="cluesIndex !== -1" class="clue-big-image flex-row-center">
+                        <img mode="heightFix"
+                            :src="allClues[memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues[cluesIndex].name].url + '.png'"
+                            alt="">
                     </view>
                     <view v-if="cluesIndex !== -1" class="flex-row-center clue-text">
                         {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
-                            1].cueset.clues[cluesIndex].name].content1 }}
-                        {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
-                            1].cueset.clues[cluesIndex].name].name }}
+                            1].cueset.clues[cluesIndex].name].content2 }}
+                        <!-- {{ allClues[memberStore.info.characters[memberStore.virtualRoleId -
+                            1].cueset.clues[cluesIndex].name].name }} -->
                     </view>
                     <view class="clues-box flex-row-center">
                         <!-- <view class="make-old2"></view> -->
-                        <view v-for="(item, index) in sortedClues" :key="index">
-                            <view
-                                @tap="cluesIndex === index ? cluesIndex = -1 : cluesIndex = 0; firstClue(index);readClue(index)"
-                                class="clues-item" :class="cluesIndex === index ? 'clue-selected-border1' : ''">
+                        <view
+                            v-for="(item, index) in memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.clues"
+                            :key="index">
+                            <view @tap="firstClue(index, item.name);" class="clues-item"
+                                :class="cluesIndex === index ? 'clue-selected-border1' : ''">
                                 <view v-if="!item.isRead"
-                                    style="width: 20rpx;height: 20rpx;border-radius: 999rpx;background-color: red;position: absolute;margin-left: 100rpx;margin-top: -190rpx;">
+                                    style="width: 20rpx;height: 20rpx;border-radius: 999rpx;background-color: red;position: absolute;margin-left: 100rpx;margin-top: -5rpx;">
                                 </view>
                                 <img class="clue-selected-border2" v-show="cluesIndex === index"
                                     src="http://159.138.147.87/statics/img/cue_seleted.png" alt="">
@@ -150,31 +184,32 @@ const firstClue = (index: number) => {
                         {{ item.name }}
                     </view>
                     <view v-if="replayIndex !== -1"
-                        style="display: flex;flex-direction: column;justify-content: space-between;height: 71vh;">
-                        <view style="display: flex;height: 100%;">
-                            <view style="height: 100%;width: 50rpx;"
-                                v-show="replayIndex !== 0 && teamInfo.replay.length > 1" class="flex-row-center">
+                        style="display: flex;flex-direction: column;justify-content: space-between;">
+                        <view style="display: flex;height: 50%;">
+                            <view style="height: 100%;width: 100rpx;" class="flex-row-center">
                                 <img style="height: 100rpx;width: 50rpx;"
+                                    v-show="replayIndex !== 0 && teamInfo.replay.length > 1"
                                     src="http://159.138.147.87/statics/img/left.png" alt="">
                             </view>
                             <view>
                                 <view style="font-weight: 700;height: 100rpx;text-align: center;">{{
                                     teamInfo.replay[replayIndex].name }}</view>
                                 <view v-for="(item, index) in teamInfo.replay[replayIndex].hy"
+                                    v-if="teamInfo.replay[replayIndex].hy.length !== 0"
                                     style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
                                     <view>{{ item.charAt(0) }}.</view>
                                     <view>{{ item.slice(1) }}</view>
                                 </view>
                                 <view v-for="(item, index) in teamInfo.replay[replayIndex].xa"
+                                    v-if="teamInfo.replay[replayIndex].xa.length !== 0"
                                     style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
                                     <view>{{ item.charAt(0) }}.</view>
                                     <view>{{ item.slice(1) }}</view>
                                 </view>
                             </view>
-                            <view style="height: 100%;width: 80rpx;"
-                                v-show="replayIndex !== teamInfo.replay.length && teamInfo.replay.length > 1 && teamInfo.replay[replayIndex + 1].hy.length !== 0"
-                                class="flex-row-center">
-                                <img style="height: 80rpx;width: 50rpx;transform: rotate(180deg);"
+                            <view style="height: 100%;width: 100rpx;" class="flex-row-center">
+                                <img v-show="replayIndex !== teamInfo.replay.length && teamInfo.replay.length > 1 && teamInfo.replay[replayIndex + 1].hy.length !== 0"
+                                    style="height: 80rpx;width: 50rpx;transform: rotate(180deg);"
                                     src="http://159.138.147.87/statics/img/left.png" alt="">
                             </view>
                         </view>
@@ -322,8 +357,10 @@ const firstClue = (index: number) => {
 .clue-big-image {
     /* margin-left: 100rpx; */
     margin-top: 20rpx;
-    height: 500rpx; /* 固定高度 */
-    width: 100%; /* 占据父容器的宽度 */
+    height: 500rpx;
+    /* 固定高度 */
+    width: 100%;
+    /* 占据父容器的宽度 */
 }
 
 .clues-item {
@@ -361,7 +398,7 @@ const firstClue = (index: number) => {
     width: 90%;
     font-size: 28rpx;
     font-weight: 600;
-    height: 100rpx;
+    min-height: 100rpx;
     line-height: 150%;
     text-align: center;
     margin-top: 0rpx;

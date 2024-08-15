@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 const memberStore = useMemberStore()
@@ -26,6 +26,14 @@ const pages = computed(() => {
     ];
 });
 const canJump = ref([false,false,false])
+const flowIndex = computed(() => {
+    console.log(memberStore.info.teamInfo.flowIndex,'flowindex');
+  return memberStore.info.teamInfo.flowIndex;
+});
+watch(() => flowIndex, (a,b) => {
+    emit('page', 'TeamInfo');
+},
+{ deep: true })
 const jump = (url: string, status: string,index:number) => {
     if (!canJump.value[index]) {
         canJump.value[index] = true

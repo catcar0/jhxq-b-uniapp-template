@@ -76,7 +76,12 @@ const startScrollAnimation = (index: number) => {
     };
     audio.scrollAnimationFrame = setTimeout(step, 16);
 };
-
+onMounted(() => {
+    console.log('mounted')
+});
+onShow(() => {
+    console.log('show')
+});
 watch(() => props.audioList.length, (newLength, oldLength) => {
     console.log('11');
 

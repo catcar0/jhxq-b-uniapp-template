@@ -147,7 +147,9 @@ const audioList = computed<AudioItem[]>(() => {
                     <input type="text" style="text-align: center;" v-model="userName">
                 </view>
             </view>
-            <audioplay v-if="dialogObj.type === 'voice'" :audioList="audioList" :isDialog="true" />
+            <view class="flex-row-center" style="height: 200rpx;">
+                <audioplay v-if="dialogObj.type === 'voice'" :audioList="audioList" :isDialog="true" />
+            </view>
             <view class="dialog-control">
                 <view @tap="confirm" class="theme-button button">
                     <view class="theme-button-clear"></view>
@@ -232,6 +234,7 @@ const audioList = computed<AudioItem[]>(() => {
 }
 
 .dialog-title {
+    margin-top: 40rpx;
     font-size: 40rpx;
 }
 

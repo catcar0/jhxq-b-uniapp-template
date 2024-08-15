@@ -40,11 +40,11 @@ const loginSuccess = (profile: LoginResult) => {
 }
 const openBook = async () => {
   uni.showLoading({
-        title: '加载中'
-    });
+    title: '加载中'
+  });
   const res = await postRoomsnAPI({
     name: '测试房间',
-    expire_time:'21600000'
+    expire_time: '21600000'
   })
   memberStore.setRoomId(res.room.id)
 
@@ -111,7 +111,7 @@ onUnmounted(() => {
 <template>
   <view class="flex-column-sb ">
     <button @tap="login">用户登录</button>
-    <button @tap="code='0b3Guqml24nqYd4Ex3nl2rm2fn1Guqmk';login()">用户浏览器登录</button>
+    <!-- <button @tap="code='0b3Guqml24nqYd4Ex3nl2rm2fn1Guqmk';login()">用户浏览器登录</button> -->
     <button @tap="openBook">DM创建房间并加入游戏</button>
     <button @tap="joinGame('gm')">DM加入游戏</button>
 
@@ -125,10 +125,6 @@ onUnmounted(() => {
     <button @tap="initInfo">初始化游戏数据</button>
 
   </view>
-  <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.messages }}</view>
-  <view>{{ memberStore.roomId }}</view>
-  <!-- <view style="font-size: 20rpx;width: 100%;">{{ webSocketStore.info }}</view> -->
-  <view style="font-size: 20rpx;width: 100%;">{{ memberStore.info }}</view>
 </template>
 
 <style scoped></style>

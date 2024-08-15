@@ -1,11 +1,10 @@
 <script setup lang='ts'>
 import DMTabBar from "@/components/DM-TabBar/index.vue"
+import dm from "@/package_nzgx/pages/dm/dm.vue";
 </script>
 
 <template>
-    <view>
-        女子高校DM控制中心
-    </view>
+    <dm></dm>
     <DMTabBar></DMTabBar>
 </template>
 

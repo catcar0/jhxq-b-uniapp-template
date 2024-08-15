@@ -38,54 +38,6 @@
 					}
 				},
 				{
-					"path": "pages/player/player",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
-					"path": "pages/player/room-number",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
-					"path": "pages/player/team-info",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
-					"path": "pages/player/map",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
-					"path": "pages/player/cue-set",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
-					"path": "pages/player/gualing",
-					"style": {
-						"disableScroll": true,
-						"navigationBarTitleText": "",
-						"enablePullDownRefresh": false
-					}
-				},
-				{
 					"path": "pages/dm/dm",
 					"style": {
 						"navigationBarTitleText": "",

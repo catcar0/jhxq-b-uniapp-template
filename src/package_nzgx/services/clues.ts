@@ -1,3 +1,5 @@
+import { getInfoById } from "./updateInfo";
+
 const baseUrl = 'http://159.138.147.87/statics/clues/'
 type Clue = {
     id: number;
@@ -12,7 +14,7 @@ type Clue = {
 type Clues = {
     [key: string]: Clue;
 };
-export const allClues: Clues = {
+export let allClues: Clues = {
     clue1:{
         id: 1,
         type: '物品',
@@ -414,4 +416,9 @@ export const allClues: Clues = {
         url: baseUrl + 'clue50',
     }
 };
+export const updateOriClueInfo = async () => {
+    const res_flow = await getInfoById(2)
+    allClues = res_flow.data.description
+}
+
 

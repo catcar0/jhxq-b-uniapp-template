@@ -7,6 +7,8 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { WebSocketService } from '@/package_nzgx/services/WebSocketService'
 import { initAllInfo } from '@/package_nzgx/services/initInfo'
 import { AuthorizationPlayer } from '@/services/play'
+import { getInfoById, updateInfoById } from '@/package_nzgx/services/updateInfo'
+import { allClues } from '@/package_nzgx/services/clues'
 
 
 const memberStore = useMemberStore()
@@ -64,7 +66,7 @@ const joinGame = (_role: string) => {
   memberStore.setVirtualRoleId(_role);
 
   // 创建 WebSocket 连接
-  const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
   wsService.connect()
   // 监听 WebSocket 连接成功事件
   wsService.onOpen = () => {
@@ -91,13 +93,18 @@ const joinGame = (_role: string) => {
   };
 }
 
-const initInfo = () => {
+const initInfo = async() => {
   webSocketStore.gameSend(
     initAllInfo
   )
+
 }
 
-
+//更新原始流程/线索集信息
+const updateOriInfo = () => {
+  updateInfoById(1,'flowInfo',initAllInfo)
+  updateInfoById(2,'clue',allClues)
+}
 onMounted(() => {
   if (code.value === '') {
     getCode()
@@ -121,8 +128,8 @@ onUnmounted(() => {
     <button @tap="joinRoom2('4')">玩家4加入游戏</button>
     <button @tap="joinRoom2('5')">玩家5加入游戏</button>
     <button @tap="joinRoom2('6')">玩家6加入游戏</button>
-
     <button @tap="initInfo">初始化游戏数据</button>
+    <button @tap="updateOriInfo">向数据库更新原始流程信息和线索</button>
 
   </view>
 </template>

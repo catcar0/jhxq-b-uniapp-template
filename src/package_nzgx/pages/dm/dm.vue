@@ -5,38 +5,51 @@ import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { onMounted, onUnmounted } from "vue";
 import { WebSocketService } from "@/package_nzgx/services/WebSocketService";
-import { initAllInfo } from "@/package_nzgx/services/initInfo";
+import { initAllInfo, updateOriFlowInfo } from "@/package_nzgx/services/initInfo";
+import { allClues, updateOriClueInfo } from "@/package_nzgx/services/clues";
+import { getInfoById } from "@/package_nzgx/services/updateInfo";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
-onMounted(() => {
-  if (!memberStore.info) memberStore.setInfo(initAllInfo)
-    // 创建 WebSocket 连接
-    const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
-    wsService.connect()
-    // 监听 WebSocket 连接成功事件
-    wsService.onOpen = () => {
-        console.log("WebSocket 连接成功");
 
-        // 连接成功后执行后续操作
-        webSocketStore.gameWebSocketService = wsService;
-        // webSocketStore.gameConnect();
-        setTimeout(() => {
-            webSocketStore.gameplayerFirstSend()
-            webSocketStore.getPlayerInfo()
-        }, 500);
+onMounted(async () => {
+  // 获取最新的原始流程信息和线索集信息
+  uni.showLoading({
+    title: '加载中'
+  });
+  await updateOriFlowInfo()
+  await updateOriClueInfo()
+  uni.hideLoading()
+
+  if (!memberStore.info) {
+    memberStore.setInfo(initAllInfo)
+  }
+  // 创建 WebSocket 连接
+  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+  wsService.connect()
+  // 监听 WebSocket 连接成功事件
+  wsService.onOpen = () => {
+    console.log("WebSocket 连接成功");
+
+    // 连接成功后执行后续操作
+    webSocketStore.gameWebSocketService = wsService;
+    // webSocketStore.gameConnect();
+    setTimeout(() => {
+      webSocketStore.gameplayerFirstSend()
+      webSocketStore.getPlayerInfo()
+    }, 500);
 
 
-    };
+  };
 
-    // 监听连接错误或关闭事件
-    wsService.onError = (error) => {
-        console.error("WebSocket 连接失败", error);
-        // 在这里可以添加错误处理逻辑
-    };
+  // 监听连接错误或关闭事件
+  wsService.onError = (error) => {
+    console.error("WebSocket 连接失败", error);
+    // 在这里可以添加错误处理逻辑
+  };
 });
 
 onUnmounted(() => {
-    webSocketStore.gameClose();
+  webSocketStore.gameClose();
 });
 </script>
 
@@ -66,10 +79,11 @@ scroll-view {
 @import url("@/package_nzgx/static/fonts/stylesheet.css");
 @import url("@/package_nzgx/styles/common.css");
 
-.almm{
+.almm {
   font-family: 'Alimama ShuHeiTi';
 }
-.hyshtj{
+
+.hyshtj {
   font-family: 'hyshtj';
 }
 </style>

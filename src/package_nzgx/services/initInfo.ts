@@ -1,9 +1,11 @@
-export const initAllInfo = {
+import { getInfoById } from "./updateInfo"
+
+export let initAllInfo = {
     characters: [
         {
             name: '陈敏',
             avatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -19,7 +21,7 @@ export const initAllInfo = {
         {
             name: '白鹭',
             avatar: 'http://159.138.147.87/statics/avatar/bailu.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -35,7 +37,7 @@ export const initAllInfo = {
         {
             name: '尹萍',
             avatar: 'http://159.138.147.87/statics/avatar/yinpin.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -51,7 +53,7 @@ export const initAllInfo = {
         {
             name: '林佳',
             avatar: 'http://159.138.147.87/statics/avatar/linjia.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -66,7 +68,7 @@ export const initAllInfo = {
         }, {
             name: '李梦',
             avatar: 'http://159.138.147.87/statics/avatar/limeng.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -82,7 +84,7 @@ export const initAllInfo = {
         {
             name: '何阑',
             avatar: 'http://159.138.147.87/statics/avatar/helan.svg',
-            playerAvatar:'http://159.138.147.87/statics/avatar/chenmin.svg',
+            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -415,7 +417,7 @@ export const initAllInfo = {
                     isSwitchOn: false,
                     content: [
                         {
-                            locations: [7,9]
+                            locations: [7, 9]
                         }
                     ],
                     status: 0
@@ -609,7 +611,7 @@ export const initAllInfo = {
         {
             inner: [
             ],
-            send:0,
+            send: 0,
             status: 0,
             title: '海报分享',
             isSwitchOn: false
@@ -799,4 +801,9 @@ export const initAllInfo = {
             },
         ]
 
+}
+export const updateOriFlowInfo = async () => {
+    const res_flow = await getInfoById(1)
+    initAllInfo = res_flow.data.description
+    console.log('aa')
 }

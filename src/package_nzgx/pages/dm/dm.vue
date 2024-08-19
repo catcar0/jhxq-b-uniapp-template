@@ -5,9 +5,11 @@ import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { onMounted, onUnmounted } from "vue";
 import { WebSocketService } from "@/package_nzgx/services/WebSocketService";
+import { initAllInfo } from "@/package_nzgx/services/initInfo";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 onMounted(() => {
+  if (!memberStore.info) memberStore.setInfo(initAllInfo)
     // 创建 WebSocket 连接
     const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
     wsService.connect()
@@ -58,5 +60,16 @@ scroll-view {
   aspect-ratio: 7.8/1;
   font-size: 24.5rpx;
   margin-bottom: 20rpx;
+}
+</style>
+<style>
+@import url("@/package_nzgx/static/fonts/stylesheet.css");
+@import url("@/package_nzgx/styles/common.css");
+
+.almm{
+  font-family: 'Alimama ShuHeiTi';
+}
+.hyshtj{
+  font-family: 'hyshtj';
 }
 </style>

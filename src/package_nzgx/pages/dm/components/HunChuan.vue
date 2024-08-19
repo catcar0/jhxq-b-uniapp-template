@@ -377,7 +377,7 @@ const sendPoster = () => {
             <!-- 魂穿名称和状态 -->
             <view class="flex-row-sb hunchuan-title ">
                 <view class="hunchuan-info">
-                    <text @tap="ShowToast('你好')" class="name almm">{{ item.title }}</text>
+                    <text  class="name almm">{{ item.title }}</text>
                     <view class="flex-row-center status" :class="'status-' + item.status">{{
                         statusText[item.status] }}</view>
                 </view>

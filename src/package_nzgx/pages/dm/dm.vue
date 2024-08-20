@@ -10,7 +10,12 @@ import { allClues, updateOriClueInfo } from "@/package_nzgx/services/clues";
 import { getInfoById } from "@/package_nzgx/services/updateInfo";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
+const initInfo = async () => {
+  webSocketStore.gameSend(
+    initAllInfo
+  )
 
+}
 onMounted(async () => {
   // 获取最新的原始流程信息和线索集信息
   uni.showLoading({
@@ -34,6 +39,7 @@ onMounted(async () => {
     webSocketStore.gameWebSocketService = wsService;
     // webSocketStore.gameConnect();
     setTimeout(() => {
+      initInfo();
       webSocketStore.gameplayerFirstSend()
       webSocketStore.getPlayerInfo()
     }, 500);

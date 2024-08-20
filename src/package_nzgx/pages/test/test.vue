@@ -66,7 +66,7 @@ const joinGame = (_role: string) => {
   memberStore.setVirtualRoleId(_role);
 
   // 创建 WebSocket 连接
-  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`);
+  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=gm`);
   wsService.connect()
   // 监听 WebSocket 连接成功事件
   wsService.onOpen = () => {

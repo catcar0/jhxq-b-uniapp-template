@@ -418,7 +418,7 @@ export let allClues: Clues = {
 };
 export const updateOriClueInfo = async () => {
     const res_flow = await getInfoById(2)
-    allClues = res_flow.data.description
+    allClues = JSON.parse(res_flow.data.description)
 }
 
 

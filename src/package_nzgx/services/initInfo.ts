@@ -804,6 +804,6 @@ export let initAllInfo = {
 }
 export const updateOriFlowInfo = async () => {
     const res_flow = await getInfoById(1)
-    initAllInfo = res_flow.data.description
+    initAllInfo = JSON.parse(res_flow.data.description)
     console.log('aa')
 }

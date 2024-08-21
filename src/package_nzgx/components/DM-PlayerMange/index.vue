@@ -2,7 +2,6 @@
 import RoomInfosDM from "@/package_nzgx/components/DM-RoomInfos/index.vue";
 import LemDialog from "@/package_nzgx/components/LemDialog/LemDialog.vue";
 import { BanPlayer, GetPlayerList } from "@/services/play";
-import type { Player } from "@/services/play";
 import { Toast, setPageOverflow } from "@/utils/uniUtils";
 import { onMounted, onUnmounted, ref, watch } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'
@@ -12,10 +11,15 @@ const webSocketStore = useWebSocketStore();
 const props = defineProps<{
     show: boolean
 }>()
-
+type Player = {
+    name: string,
+    avatar: string,
+    playerAvatar: string,
+    user: string,
+}
 const emit = defineEmits(["update:show"]);
 const banPlayerVisible = ref<boolean>(false);
-const selectPlayer = ref<Player>();
+const selectPlayer = ref();
 const playerList = ref<Player[]>();
 const loopTimer = ref<any>();
 
@@ -25,7 +29,7 @@ watch(() => props.show, (value) => {
     if (value) {
         init();
         loopApi();
-    }else{
+    } else {
         clearInterval(loopTimer.value);
     }
 })
@@ -34,16 +38,16 @@ onMounted(() => {
     init();
 })
 
-onUnmounted(()=>{
+onUnmounted(() => {
     setPageOverflow('auto');
     clearInterval(loopTimer.value);
 })
 
 const loopApi = () => {
     clearInterval(loopTimer.value);
-    loopTimer.value = setInterval(()=>{
+    loopTimer.value = setInterval(() => {
         init();
-    },1000)
+    }, 1000)
 }
 
 const init = async () => {
@@ -53,21 +57,27 @@ const init = async () => {
     // } catch (err: any) { }
 }
 
-const toBanPlayer = async () => {
+const toBanPlayer = () => {
     banPlayerVisible.value = false;
     try {
-        await BanPlayer(selectPlayer.value?.role_id!);
+        webSocketStore.kickplayer(selectPlayer.value)
+        webSocketStore.getPlayerInfo()
         init();
+        memberStore.info.characters[selectPlayer.value - 1].playerAvatar = 'http://159.138.147.87/statics/avatar/chenmin.svg'
+        memberStore.info.characters[selectPlayer.value - 1].user = '未知选手'
+        webSocketStore.gameSend(
+            memberStore.info
+        )
         Toast("成功踢出玩家");
     } catch (err: any) { }
 }
 
-const selectBanPlayer = (player: Player) => {
-    if (player.player_name || player.player_avatar) {
-        banPlayerVisible.value = true;
-        selectPlayer.value = player;
-    } else {
+const selectBanPlayer = (item: Player, index: number) => {
+    if (item.user === '未知选手' || item.playerAvatar === 'http://159.138.147.87/statics/avatar/chenmin.svg') {
         Toast("此角色还没有玩家")
+    } else {
+        banPlayerVisible.value = true;
+        selectPlayer.value = index + 1;
     }
 }
 
@@ -77,17 +87,17 @@ const toClose = () => {
 
 const kick = (id: any) => {
     uni.showModal({
-		title: '踢出玩家',
-		content: '确认要踢出玩家' + id +'吗？',
-		success: function(res) {
-		if (res.confirm) {
-			webSocketStore.kickplayer(id)
-            webSocketStore.getPlayerInfo() 
-		} else {
-			console.log('点击了取消')
-		}
-	}
-})
+        title: '踢出玩家',
+        content: '确认要踢出玩家' + id + '吗？',
+        success: function (res) {
+            if (res.confirm) {
+                webSocketStore.kickplayer(id)
+                webSocketStore.getPlayerInfo()
+            } else {
+                console.log('点击了取消')
+            }
+        }
+    })
 
 }
 </script>
@@ -95,9 +105,9 @@ const kick = (id: any) => {
 <template>
     <LemDialog v-model:show="banPlayerVisible" @confirm="toBanPlayer" title="注意">
         <text>是否确认移出？</text>
-        <view class="ban-player-infos">
-            <image :src="selectPlayer?.player_avatar" />
-            <text>{{ selectPlayer?.player_name }}</text>
+        <view class="ban-player-infos" v-if="memberStore.info.characters[selectPlayer - 1]">
+            <image :src="memberStore.info.characters[selectPlayer - 1].playerAvatar" />
+            <text>{{ memberStore.info.characters[selectPlayer - 1].user }}</text>
         </view>
     </LemDialog>
     <view v-if="show" class="pop-mask">
@@ -111,19 +121,21 @@ const kick = (id: any) => {
             <view class="container">
                 <text class="title">玩家列表</text>
                 <view class="player-list">
-                    <view class="player-item" v-for="item in memberStore.playerInfo.players" :key="item.role_id" v-show="item.virtualRoleId !== 'gm'">
-                        <view class="player-info" v-if="item.virtualRoleId !=='gm'">
+                    <view class="player-item" v-for="(item, index) in memberStore.info.characters" :key="item.name">
+                        <view class="player-info">
                             <view class="avatar">
-                                <image :src="memberStore.info.characters[item.virtualRoleId - 1].avatar" />
+                                <image :src="item.avatar" />
                             </view>
-                            <text>{{ memberStore.info.characters[item.virtualRoleId - 1].name }}</text>
+                            <text>{{ item.name }}</text>
                         </view>
-                        <view class="player-info" v-if="item.virtualRoleId !=='gm'" @tap="kick(item.virtualRoleId)">
+                        <view class="player-info" @tap="selectBanPlayer(item, index)">
                             <view class="avatar">
-                                <image :src="memberStore.info.characters[item.virtualRoleId - 1].playerAvatar" />
-                                <image v-if="item.player_name || item.player_avatar" class="del" src="@/static/icons/common_close_white.png" />
+                                <image
+                                    :src="item.playerAvatar === 'http://159.138.147.87/statics/avatar/chenmin.svg' ? item.avatar : item.playerAvatar" />
+                                <image v-if="item.playerAvatar !== 'http://159.138.147.87/statics/avatar/chenmin.svg'"
+                                    class="del" src="@/static/icons/common_close_white.png" />
                             </view>
-                            <text>{{ memberStore.info.characters[item.virtualRoleId - 1].user || "???" }}</text>
+                            <text>{{ item.user === '未知选手' ? "???" : item.user }}</text>
                         </view>
                     </view>
                 </view>
@@ -263,7 +275,7 @@ const kick = (id: any) => {
     height: 100%;
 }
 
-.avatar>image.del{
+.avatar>image.del {
     position: absolute;
     top: 0;
     right: 0;

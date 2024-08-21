@@ -1,7 +1,7 @@
 import { http } from '@/package_nzgx/utils/https'
 type RoomsParams = {
     name:string
-    expire_time:string
+    end_time:string
 }
 /**
  * 创建房间/开本

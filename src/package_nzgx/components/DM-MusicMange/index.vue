@@ -11,7 +11,13 @@ const props = defineProps<{
 const BgmStore = useBgmStore();
 const emit = defineEmits(['update:show']);
 
-const bgms = ref<BgAudio[]>([]);
+const bgms = ref<BgAudio[]>([
+    {
+        loop:true,
+        title:'test',
+        url:'http://159.138.147.87/statics/clues/clue19.mp3'
+    }
+]);
 const CurrentBgm = computed(() => BgmStore.CurrentBgm);
 const BgmStatus = computed(() => BgmStore.BgmStatus);
 

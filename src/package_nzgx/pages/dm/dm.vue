@@ -29,7 +29,7 @@ onMounted(async () => {
     memberStore.setInfo(initAllInfo)
   }
   // 创建 WebSocket 连接
-  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=gm}`);
+  const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=gm`);
   wsService.connect()
   // 监听 WebSocket 连接成功事件
   wsService.onOpen = () => {
@@ -39,7 +39,7 @@ onMounted(async () => {
     webSocketStore.gameWebSocketService = wsService;
     // webSocketStore.gameConnect();
     setTimeout(() => {
-      initInfo();
+      if(!memberStore.playerInfo) initInfo();
       webSocketStore.gameplayerFirstSend()
       webSocketStore.getPlayerInfo()
     }, 500);

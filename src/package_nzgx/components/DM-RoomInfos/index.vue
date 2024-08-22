@@ -12,7 +12,7 @@ const closeRoomVisible = ref<boolean>(false);
 const timer = ref<any>();
 const start_time = ref<number>(0);
 const current_time = ref<number>(0);
-const time_str = computed(() => secondsToMinutesSeconds(current_time.value - start_time.value));
+const time_str_zh = computed(() => secondsToHoursMinutes(current_time.value - start_time.value, 'zh'));
 
 
 onMounted(async () => {
@@ -51,11 +51,16 @@ const stopTime = () => {
     timer.value = null;
 }
 
-function secondsToMinutesSeconds(seconds: number): string {
-    const minutes: number = Math.floor(seconds / 60);
-    const remainingSeconds: number = seconds % 60;
-    const formattedSeconds: string = remainingSeconds < 10 ? `0${remainingSeconds}` : `${remainingSeconds}`;
-    return `${minutes}:${formattedSeconds}`;
+function secondsToHoursMinutes(seconds: number, type: 'zh' | 'en'): string {
+    const hours: number = Math.floor(seconds / 3600);
+    const remainingMinutes: number = Math.floor((seconds % 3600) / 60);
+    const formattedMinutes: string = remainingMinutes < 10 ? `0${remainingMinutes}` : `${remainingMinutes}`;
+
+    if (type == 'zh') {
+        return `${hours}小时${formattedMinutes}分钟`;
+    } else {
+        return `${hours}:${formattedMinutes}`;
+    }
 }
 </script>
 
@@ -66,7 +71,7 @@ function secondsToMinutesSeconds(seconds: number): string {
             <image :src="infos?.script_preview" mode="heightFix" />
             <view class="opening-tip">
                 <text>您本场的开局时长为 </text>
-                <text class="opened-time">{{ time_str }}</text>
+                <text class="opened-time">{{ time_str_zh }}</text>
             </view>
             <text>若开错房间在5分钟之内关闭房间，请联系客服处理。</text>
         </view>

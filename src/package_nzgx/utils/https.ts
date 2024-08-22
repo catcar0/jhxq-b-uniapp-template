@@ -1,6 +1,7 @@
 import { useMemberStore } from "@/package_nzgx/stores"
 
-const baseURL = `http://132.232.57.64`
+const baseURL = `http://mn.nzgx.api.wanjuyuanxian.com`
+// const baseURL = `http://132.232.57.64`
 const httpInterceptor = {
     invoke(options: UniApp.RequestOptions) {
         if (!options.url.startsWith('http')) {

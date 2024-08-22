@@ -11,7 +11,8 @@ export class WebSocketService {
   public onClose: (() => void) | null = null;
 
   constructor(url: string, reconnectInterval: number = 5000) {
-    this.url = 'ws://132.232.57.64:8030/?' + url;
+    this.url = 'ws://mn.nzgx.api.wanjuyuanxian.com/ws/?' + url;
+    // this.url = 'ws://132.232.57.64:8030/?' + url;
     this.reconnectInterval = reconnectInterval;
   }
 

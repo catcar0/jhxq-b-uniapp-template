@@ -8,8 +8,13 @@ import { WebSocketService } from "@/package_nzgx/services/WebSocketService";
 import { initAllInfo, updateOriFlowInfo } from "@/package_nzgx/services/initInfo";
 import { allClues, updateOriClueInfo } from "@/package_nzgx/services/clues";
 import { getInfoById } from "@/package_nzgx/services/updateInfo";
+import { PlayToken } from "@/utils/auth";
+import { usePlayStore } from "@/stores/play";
+import { useAuthStore } from "@/stores/auth";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
+const PlayStore = usePlayStore();
+const AuthStore = useAuthStore();
 const initInfo = async () => {
   webSocketStore.gameSend(
     initAllInfo
@@ -28,6 +33,7 @@ onMounted(async () => {
   if (!memberStore.info) {
     memberStore.setInfo(initAllInfo)
   }
+  await init();
   // 创建 WebSocket 连接
   const wsService = new WebSocketService(`token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=gm`);
   wsService.connect()
@@ -57,6 +63,17 @@ onMounted(async () => {
 onUnmounted(() => {
   webSocketStore.gameClose();
 });
+
+
+const init = async () => {
+  await PlayStore.GetRoomInfo();
+  memberStore.setProfile({
+    ...memberStore.profile,
+    token: PlayToken.get()
+  })
+  memberStore.setRoomId(PlayStore.PlayInfos?.room_number);
+  memberStore.setVirtualRoleId('gm');
+}
 </script>
 
 <template>

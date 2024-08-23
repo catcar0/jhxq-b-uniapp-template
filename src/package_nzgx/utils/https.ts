@@ -1,8 +1,8 @@
 import { useMemberStore } from "@/package_nzgx/stores"
 import { useScriptStore } from "@/stores/script";
 
-const DM_Api_Url = 'http://nzgx.api.wanjuyuanxian.com';
-const DM_TEST_Api_Url = 'http://mn.nzgx.api.wanjuyuanxian.com';
+const DM_Api_Url = 'https://nzgx.api.wanjuyuanxian.com';
+const DM_TEST_Api_Url = 'https://mn.nzgx.api.wanjuyuanxian.com';
 // const baseURL = `http://132.232.57.64`
 const httpInterceptor = {
     invoke(options: UniApp.RequestOptions) {

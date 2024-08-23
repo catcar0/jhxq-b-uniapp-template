@@ -1,8 +1,8 @@
 import { useWebSocketStore } from '@/package_nzgx/stores';
 import { useScriptStore } from '@/stores/script';
 
-const DM_Api_Url = 'ws://nzgx.api.wanjuyuanxian.com/ws/?';
-const DM_TEST_Api_Url = 'ws://mn.nzgx.api.wanjuyuanxian.com/ws/?';
+const DM_Api_Url = 'wss://nzgx.api.wanjuyuanxian.com/ws/?';
+const DM_TEST_Api_Url = 'wss://mn.nzgx.api.wanjuyuanxian.com/ws/?';
 
 export class WebSocketService {
   private url: string;

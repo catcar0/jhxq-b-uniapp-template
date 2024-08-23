@@ -32,6 +32,7 @@ const confirm = () => {
             else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay 
         }else memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay 
     }
+    updateInfo(memberStore.info)
     dialogObj.value.dialogVisible = false
 }
 const showDialog = () => {

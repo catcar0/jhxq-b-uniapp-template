@@ -68,8 +68,7 @@ export const useWebSocketStore = defineStore('webSocket', {
             this.gameWebSocketService.close();
         },
         addMessage(message: any) {
-            memberStore.setPlayerInfo(message)
-            memberStore.playerInfo = message
+            if (message.players) memberStore.setPlayerInfo(message)
             if (message.type && message.type === 'error') {
                 this.messages.push(message);
                 return

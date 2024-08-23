@@ -51,9 +51,9 @@ const confirm = () => {
     emit('confirm');
     console.log(props.dialogObj.type)
     console.log(props.dialogObj.clue, '--', props.dialogObj.deepClue)
-    if (props.dialogObj.type === '开启下一环节') {
-        props.onConfirm;
-    }
+    // if (props.dialogObj.type === '开启下一环节') {
+    //     props.onConfirm;
+    // }
     if (props.dialogObj.type === '找尸体') {
         zst(zstselectIndex.value, props.dialogObj.clue, props.dialogObj.zst_index)
     }

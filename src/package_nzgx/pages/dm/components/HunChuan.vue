@@ -85,7 +85,14 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-
+    if(previousFlow.title === '音频搜证' && IsTestPlay.value) {
+        currentFlow.status = 2;
+        previousFlow.status = 3
+        currentFlow.isSwitchOn = true;
+        updateInfo(memberStore.info);
+        dialogObj.value.type = currentFlow.title;
+        return;        
+    }
     const showWarning = () => {
         updateSwitch.value = false;
         setTimeout(() => {
@@ -149,7 +156,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     isRead: false,
                     isNew: true,
                     isError: false,
-                    type: -1,
+                    type: 0,
                 });
             });
         };
@@ -331,12 +338,17 @@ const confirm = () => {
         if (newInfo.teamInfo.flowIndex + 1 !== 4) newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
         updateInfo(newInfo)
     }
+    if (dialogObj.value.type === '开启下一环节') {
+        onConfirm.value()
+    }
 }
 const showDialog = () => {
     dialogObj.value.dialogVisible = true
 }
 const openhy = (index: number) => {
-    memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 2
+    if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status !== 3) {
+        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 2
+    }
     updateInfo(memberStore.info);
     uni.navigateTo({
         url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.hy.name}&index=${index}`
@@ -345,7 +357,9 @@ const openhy = (index: number) => {
 const openxa = (index: number) => {
     if (glContent.value.hy.canReplay) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 3
+        if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status !== 3) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
+    }
         updateInfo(memberStore.info);
         uni.navigateTo({
             url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.xa.name}&index=${index}`

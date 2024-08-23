@@ -6,7 +6,7 @@ import { useWebSocketStore } from '@/package_nzgx/stores'
 import { onMounted, onUnmounted, ref } from 'vue'
 import { WebSocketService } from '@/package_nzgx/services/WebSocketService'
 import { initAllInfo } from '@/package_nzgx/services/initInfo'
-import { AuthorizationPlayer } from '@/services/play'
+import { AuthorizationDM } from '@/services/play'
 import { getInfoById, updateInfoById } from '@/package_nzgx/services/updateInfo'
 import { allClues } from '@/package_nzgx/services/clues'
 
@@ -31,7 +31,7 @@ const webSocketStore = useWebSocketStore();
 const code = ref('')
 const login = async () => {
   memberStore.setInfo(initAllInfo)
-  const res = await AuthorizationPlayer(code.value)
+  const res = await AuthorizationDM(code.value)
   console.log(res.token)
   loginSuccess(res)
 }

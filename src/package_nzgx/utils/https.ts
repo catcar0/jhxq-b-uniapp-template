@@ -1,11 +1,15 @@
 import { useMemberStore } from "@/package_nzgx/stores"
+import { useScriptStore } from "@/stores/script";
 
-const baseURL = `http://mn.nzgx.api.wanjuyuanxian.com`
+const DM_Api_Url = 'http://nzgx.api.wanjuyuanxian.com';
+const DM_TEST_Api_Url = 'http://mn.nzgx.api.wanjuyuanxian.com';
 // const baseURL = `http://132.232.57.64`
 const httpInterceptor = {
     invoke(options: UniApp.RequestOptions) {
+        const IsTestPlay = useScriptStore().IsTestPlay;
+        console.log(IsTestPlay)
         if (!options.url.startsWith('http')) {
-            options.url = baseURL + options.url
+            options.url = (IsTestPlay ? DM_TEST_Api_Url : DM_Api_Url) + options.url
         }
         options.timeout = 10000
 

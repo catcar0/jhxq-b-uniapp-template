@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-// import DMTabBar from "@/components/DM-TabBar/index.vue"
+import DMTabBar from "@/components/DM-TabBar/index.vue"
 import dm from "@/package_nzgx/pages/dm/dm.vue";
 </script>
 <!-- const wsService = new WebSocketService(`ws://132.232.57.64:8030/?token=${memberStore.profile.token}&room_id=${memberStore.roomId}&virtual_role_id=${memberStore.virtualRoleId}`); -->

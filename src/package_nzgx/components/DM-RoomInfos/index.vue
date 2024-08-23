@@ -1,13 +1,13 @@
 <script setup lang='ts'>
 import LemDialog from "@/package_nzgx/components/LemDialog/LemDialog.vue";
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, onMounted, onUnmounted, ref } from "vue";
 import { usePlayStore } from "@/stores/play";
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const PlayStore = usePlayStore();
-const infos = computed(() => PlayStore.PlayInfos);
+const PlayInfos = computed(() => PlayStore.PlayInfos);
 const closeRoomVisible = ref<boolean>(false);
 const timer = ref<any>();
 const start_time = ref<number>(0);
@@ -16,7 +16,7 @@ const time_str_zh = computed(() => secondsToHoursMinutes(current_time.value - st
 
 
 onMounted(async () => {
-    // await PlayStore.GetRoomInfo();
+    await PlayStore.GetRoomInfo();
     webSocketStore.getPlayerInfo()
 })
 
@@ -39,7 +39,7 @@ const toCloseRoom = () => {
 }
 
 const loopTime = () => {
-    start_time.value = infos.value?.start_time || 0;
+    start_time.value = PlayInfos.value?.start_time || 0;
     current_time.value = Math.ceil(Date.now() / 1000);
     timer.value = setInterval(() => {
         current_time.value++
@@ -66,9 +66,9 @@ function secondsToHoursMinutes(seconds: number, type: 'zh' | 'en'): string {
 
 <template>
     <LemDialog @cancel="stopTime" v-model:show="closeRoomVisible" @confirm="toCloseRoom" title="注意">
-        <text>是否确认结束本场《{{ infos?.script_name }}》？</text>
+        <text>是否确认结束本场《{{ PlayInfos?.script_name }}》？</text>
         <view class="script-infos">
-            <image :src="infos?.script_preview" mode="heightFix" />
+            <image :src="PlayInfos?.script_preview" mode="heightFix" />
             <view class="opening-tip">
                 <text>您本场的开局时长为 </text>
                 <text class="opened-time">{{ time_str_zh }}</text>
@@ -87,15 +87,15 @@ function secondsToHoursMinutes(seconds: number, type: 'zh' | 'en'): string {
             </view>
         </view>
         <view class="header-item text-14">
-            <text class="script-name">{{ infos?.script_name }}</text>
+            <text class="script-name">{{ PlayInfos?.script_name }}</text>
             <text class="room-number">房间号：{{ memberStore.roomId }}</text>
         </view>
         <view class="header-item text-12">
-            <text>DM - {{ infos?.DM }}</text>
+            <text>DM - {{ PlayInfos?.DM }}</text>
             <text>房间人数：{{ Object.keys(memberStore.playerInfo.players).length}}</text>
         </view>
         <view class="end-time">
-            <text>预计结束时间：{{ infos?.room_end_time.split(" ")[1] }}</text>
+            <text>预计结束时间：{{ PlayInfos?.room_end_time.split(" ")[1] }}</text>
         </view>
     </view>
 </template>

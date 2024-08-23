@@ -1,17 +1,22 @@
 import { useWebSocketStore } from '@/package_nzgx/stores';
+import { useScriptStore } from '@/stores/script';
+
+const DM_Api_Url = 'ws://nzgx.api.wanjuyuanxian.com/ws/?';
+const DM_TEST_Api_Url = 'ws://mn.nzgx.api.wanjuyuanxian.com/ws/?';
 
 export class WebSocketService {
   private url: string;
   private reconnectInterval: number;
   private socketTask: UniApp.SocketTask | null = null;
-  
+
   // 定义 onOpen、onError 和 onClose 回调函数
   public onOpen: (() => void) | null = null;
   public onError: ((error: any) => void) | null = null;
   public onClose: (() => void) | null = null;
 
   constructor(url: string, reconnectInterval: number = 5000) {
-    this.url = 'ws://mn.nzgx.api.wanjuyuanxian.com/ws/?' + url;
+    let IsTestPlay = useScriptStore().IsTestPlay;
+    this.url = (IsTestPlay ? DM_TEST_Api_Url : DM_Api_Url) + url;
     // this.url = 'ws://132.232.57.64:8030/?' + url;
     this.reconnectInterval = reconnectInterval;
   }
@@ -51,7 +56,7 @@ export class WebSocketService {
       console.log(parsedData)
       if (parsedData.type === 'scores') {
         websocketStore.gameAddMessage(parsedData.data.statuses.allinfo.info);
-      } else if(parsedData.players)  {
+      } else if (parsedData.players) {
         websocketStore.addMessage(parsedData);
       } else if (parsedData.type === 'error') {
         websocketStore.addMessage(parsedData);

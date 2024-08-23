@@ -7,8 +7,11 @@ import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { scoreChange } from '@/package_nzgx/services/info';
+import { useScriptStore } from "@/stores/script";
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
+const ScriptStore = useScriptStore();
+const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const getContent = (title: string) => {
     return computed(() => memberStore.info?.flow[flowIndex.value].inner?.find((item: { title: string; }) => item.title === title)?.content ?? null);
 };
@@ -63,7 +66,7 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    if(!qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
+    if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
         uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
         return
     }
@@ -197,6 +200,7 @@ onShow(()=>{
 </script>
 
 <template>
+    <Watermark></Watermark>
     <scroll-view scroll-y>
         <view class="questionnaire">
             <!-- 问卷 -->

@@ -64,7 +64,6 @@ onUnmounted(() => {
   webSocketStore.gameClose();
 });
 
-
 const init = async () => {
   await PlayStore.GetRoomInfo();
   memberStore.setProfile({
@@ -77,6 +76,7 @@ const init = async () => {
 </script>
 
 <template>
+  <Watermark></Watermark>
   <scroll-view scroll-y>
     <navigator url="/package_nzgx/pages/dm/team-management" hover-class="none">
       <view class="team flex-row-center shadow-box  almm"> <text class="orange-font">团队管理</text> </view>

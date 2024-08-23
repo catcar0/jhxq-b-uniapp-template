@@ -4,8 +4,11 @@ import { computed, ref } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
+import { useScriptStore } from '@/stores/script';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
+const ScriptStore = useScriptStore();
+const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
 const ShowToast = (content: string) => {
@@ -27,7 +30,7 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    if (Object.keys(memberStore.playerInfo.players).length < 7) {
+    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
         uni.showToast({ icon: 'none', title: '玩家人数不足' })
         updateSwitch.value = false;
         setTimeout(() => {
@@ -377,7 +380,7 @@ const sendPoster = () => {
             <!-- 魂穿名称和状态 -->
             <view class="flex-row-sb hunchuan-title ">
                 <view class="hunchuan-info">
-                    <text  class="name almm">{{ item.title }}</text>
+                    <text class="name almm">{{ item.title }}</text>
                     <view class="flex-row-center status" :class="'status-' + item.status">{{
                         statusText[item.status] }}</view>
                 </view>
@@ -461,7 +464,7 @@ const sendPoster = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                }}</text>
+                                    }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -764,9 +767,10 @@ const sendPoster = () => {
 @import url("@/package_nzgx/styles/common.css");
 
 .almm {
-  font-family: 'Alimama ShuHeiTi';
+    font-family: 'Alimama ShuHeiTi';
 }
 
 .hyshtj {
-  font-family: 'hyshtj';
-}</style>
+    font-family: 'hyshtj';
+}
+</style>

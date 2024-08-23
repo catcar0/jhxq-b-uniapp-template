@@ -32,7 +32,8 @@ const confirm = () => {
 </script>
 
 <template>
-        <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm"  />
+    <Watermark></Watermark>
+    <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm"  />
     <view class="team-management">
         <view class="team-info shadow-box flex-column-sb">
             <view class="title flex-row-center info-item almm">队伍信息</view>

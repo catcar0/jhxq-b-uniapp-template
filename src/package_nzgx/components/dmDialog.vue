@@ -280,7 +280,6 @@ const inputText = props.dialogObj.initInput ?? ''
     color: #FFFFFF;
 }
 </style>
-</style>
 <style>
 @import url("@/package_nzgx/static/fonts/stylesheet.css");
 @import url("@/package_nzgx/styles/common.css");

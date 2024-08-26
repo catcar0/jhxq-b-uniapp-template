@@ -15,7 +15,7 @@ const bgms = ref<BgAudio[]>([
     {
         loop:true,
         title:'test',
-        url:'http://159.138.147.87/statics/clues/clue19.mp3'
+        url:'https://applet.cdn.wanjuyuanxian.com/nzgx/static/clues/clue19.mp3'
     }
 ]);
 const CurrentBgm = computed(() => BgmStore.CurrentBgm);

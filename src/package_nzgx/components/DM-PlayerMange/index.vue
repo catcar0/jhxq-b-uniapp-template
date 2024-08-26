@@ -63,7 +63,7 @@ const toBanPlayer = () => {
         webSocketStore.kickplayer(selectPlayer.value)
         webSocketStore.getPlayerInfo()
         init();
-        memberStore.info.characters[selectPlayer.value - 1].playerAvatar = 'http://159.138.147.87/statics/avatar/chenmin.svg'
+        memberStore.info.characters[selectPlayer.value - 1].playerAvatar = 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg'
         memberStore.info.characters[selectPlayer.value - 1].user = '未知选手'
         webSocketStore.gameSend(
             memberStore.info
@@ -73,7 +73,7 @@ const toBanPlayer = () => {
 }
 
 const selectBanPlayer = (item: Player, index: number) => {
-    if (item.user === '未知选手' || item.playerAvatar === 'http://159.138.147.87/statics/avatar/chenmin.svg') {
+    if (item.user === '未知选手' || item.playerAvatar === 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg') {
         Toast("此角色还没有玩家")
     } else {
         banPlayerVisible.value = true;
@@ -131,8 +131,8 @@ const kick = (id: any) => {
                         <view class="player-info" @tap="selectBanPlayer(item, index)">
                             <view class="avatar">
                                 <image
-                                    :src="item.playerAvatar === 'http://159.138.147.87/statics/avatar/chenmin.svg' ? item.avatar : item.playerAvatar" />
-                                <image v-if="item.playerAvatar !== 'http://159.138.147.87/statics/avatar/chenmin.svg'"
+                                    :src="item.playerAvatar === 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg' ? item.avatar : item.playerAvatar" />
+                                <image v-if="item.playerAvatar !== 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg'"
                                     class="del" src="@/static/icons/common_close_white.png" />
                             </view>
                             <text>{{ item.user === '未知选手' ? "???" : item.user }}</text>

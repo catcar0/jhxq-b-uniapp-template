@@ -4,8 +4,8 @@ export let initAllInfo = {
     characters: [
         {
             name: '陈敏',
-            avatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -20,8 +20,8 @@ export let initAllInfo = {
         },
         {
             name: '白鹭',
-            avatar: 'http://159.138.147.87/statics/avatar/bailu.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/bailu.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -36,8 +36,8 @@ export let initAllInfo = {
         },
         {
             name: '尹萍',
-            avatar: 'http://159.138.147.87/statics/avatar/yinpin.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/yinpin.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -52,8 +52,8 @@ export let initAllInfo = {
         },
         {
             name: '林佳',
-            avatar: 'http://159.138.147.87/statics/avatar/linjia.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/linjia.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -67,8 +67,8 @@ export let initAllInfo = {
             }
         }, {
             name: '李梦',
-            avatar: 'http://159.138.147.87/statics/avatar/limeng.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/limeng.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {
@@ -83,8 +83,8 @@ export let initAllInfo = {
         },
         {
             name: '何阑',
-            avatar: 'http://159.138.147.87/statics/avatar/helan.svg',
-            playerAvatar: 'http://159.138.147.87/statics/avatar/chenmin.svg',
+            avatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/helan.svg',
+            playerAvatar: 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/avatar/chenmin.svg',
             user: '未知选手',
             score: 0,
             cueset: {

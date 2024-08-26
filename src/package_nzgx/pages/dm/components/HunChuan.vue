@@ -515,7 +515,7 @@ const sendPoster = () => {
                         <view>店名</view>
                         <view class="flex-row-sb">
                             <view class="poster-info-item-edittext">花椒喜剧</view>
-                            <view><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png"
+                            <view><img class="edit-icon" src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png"
                                     alt="">
                             </view>
                         </view>
@@ -524,7 +524,7 @@ const sendPoster = () => {
                         <view>DM</view>
                         <view class="flex-row-sb">
                             <view class="poster-info-item-edittext">易达</view>
-                            <view><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png"
+                            <view><img class="edit-icon" src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png"
                                     alt="">
                             </view>
                         </view>

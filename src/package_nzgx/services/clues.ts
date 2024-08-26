@@ -1,6 +1,6 @@
 import { getInfoById } from "./updateInfo";
 
-const baseUrl = 'http://159.138.147.87/statics/clues/'
+const baseUrl = 'https://applet.cdn.wanjuyuanxian.com/nzgx/static/clues/'
 type Clue = {
     id: number;
     type: '物品' | '人物' | '场景' | string; // 可以根据实际情况扩展类型的可选值

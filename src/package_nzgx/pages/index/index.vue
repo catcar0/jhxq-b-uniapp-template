@@ -8,7 +8,7 @@ import dm from "@/package_nzgx/pages/dm/dm.vue";
    开发时间非常有限 需要功能基本实现 代码待优化 -->
 <template>
     <dm></dm>
-    <!-- <DMTabBar></DMTabBar> -->
+    <DMTabBar></DMTabBar>
 </template>
 
 <style scoped></style>

@@ -42,7 +42,7 @@ const confirm = () => {
                 <text>名称</text>
                 <view class="flex-row-sb orange-font team-name">
                     <text> {{ memberStore.info.teamInfo.name }} 小分队</text>
-                    <view @tap="showDialog"><img class="edit-icon" src="http://159.138.147.87/statics/img/dm_edit_icon.png" alt=""></view>
+                    <view @tap="showDialog"><img class="edit-icon" src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt=""></view>
                 </view>
             </view>
             <view class="info-item flex-row-sb">

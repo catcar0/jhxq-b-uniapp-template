@@ -7,18 +7,21 @@ const DM_TEST_Api_Url = 'wss://mn.nzgx.api.wanjuyuanxian.com/ws/?';
 export class WebSocketService {
   private url: string;
   private reconnectInterval: number;
+  private heartbeatInterval: number;
   private socketTask: UniApp.SocketTask | null = null;
+  private heartbeatTimer: number | null = null;
 
   // 定义 onOpen、onError 和 onClose 回调函数
   public onOpen: (() => void) | null = null;
   public onError: ((error: any) => void) | null = null;
   public onClose: (() => void) | null = null;
 
-  constructor(url: string, reconnectInterval: number = 5000) {
+  constructor(url: string, reconnectInterval: number = 5000,heartbeatInterval: number = 10000) {
     let IsTestPlay = useScriptStore().IsTestPlay;
     this.url = (IsTestPlay ? DM_TEST_Api_Url : DM_Api_Url) + url;
     // this.url = 'ws://132.232.57.64:8030/?' + url;
     this.reconnectInterval = reconnectInterval;
+    this.heartbeatInterval = heartbeatInterval;
   }
 
   public connect() {
@@ -34,7 +37,6 @@ export class WebSocketService {
       },
       fail: (error) => {
         console.error('WebSocket connection failed:', error);
-        // 调用 onError 回调函数（如果有）
         if (this.onError) {
           this.onError(error);
         }
@@ -43,10 +45,10 @@ export class WebSocketService {
 
     this.socketTask.onOpen(() => {
       console.log('WebSocket connection opened');
-      // 调用 onOpen 回调函数（如果有）
       if (this.onOpen) {
         this.onOpen();
       }
+      this.startHeartbeat();
     });
 
     this.socketTask.onMessage((event) => {
@@ -65,21 +67,52 @@ export class WebSocketService {
 
     this.socketTask.onError((error) => {
       console.error('WebSocket error:', error);
-      // 调用 onError 回调函数（如果有）
       if (this.onError) {
         this.onError(error);
       }
+      this.stopHeartbeat();
     });
 
     this.socketTask.onClose(() => {
       console.log('WebSocket connection closed, reconnecting...');
       this.socketTask = null;
-      // 调用 onClose 回调函数（如果有）
       if (this.onClose) {
         this.onClose();
       }
-      // setTimeout(() => this.connect(), this.reconnectInterval);
+      this.stopHeartbeat();
+      setTimeout(() => this.connect(), this.reconnectInterval);
     });
+  }
+
+  private startHeartbeat() {
+    this.stopHeartbeat(); // 清除任何现有的心跳计时器
+    this.heartbeatTimer = setInterval(() => {
+      this.sendHeartbeat();
+    }, this.heartbeatInterval);
+  }
+
+  private stopHeartbeat() {
+    if (this.heartbeatTimer) {
+      clearInterval(this.heartbeatTimer);
+      this.heartbeatTimer = null;
+    }
+  }
+
+  private sendHeartbeat() {
+    if (this.socketTask) {
+      this.socketTask.send({
+        data: JSON.stringify({ type: 'ping' }), // 自定义心跳消息
+        success: () => {
+          console.log('Heartbeat sent');
+        },
+        fail: (error) => {
+          console.error('Heartbeat sending failed:', error);
+          if (this.onError) {
+            this.onError(error);
+          }
+        },
+      });
+    }
   }
 
   public send(message: string) {
@@ -91,7 +124,6 @@ export class WebSocketService {
         },
         fail: (error) => {
           console.error('Message sending failed:', error);
-          // 调用 onError 回调函数（如果有）
           if (this.onError) {
             this.onError(error);
           }
@@ -110,12 +142,12 @@ export class WebSocketService {
         },
         fail: (error) => {
           console.error('WebSocket close failed:', error);
-          // 调用 onError 回调函数（如果有）
           if (this.onError) {
             this.onError(error);
           }
         },
       });
+      this.stopHeartbeat();
     }
   }
 }

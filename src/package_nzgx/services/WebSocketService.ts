@@ -90,7 +90,7 @@ export class WebSocketService {
       if (this.reconnectAttempts < this.maxReconnectAttempts) {
         console.log(`Reconnecting attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts}...`);
         this.reconnectAttempts++;
-        setTimeout(() => this.connect(), this.reconnectInterval);
+        // setTimeout(() => this.connect(), this.reconnectInterval);
       } else {
         console.warn('Max reconnect attempts reached, no longer trying to reconnect');
         if (this.onClose) {

@@ -8,6 +8,8 @@ export class WebSocketService {
   private url: string;
   private reconnectInterval: number;
   private heartbeatInterval: number;
+  private maxReconnectAttempts: number; // 最大重连次数
+  private reconnectAttempts: number; // 当前重连次数
   private socketTask: UniApp.SocketTask | null = null;
   private heartbeatTimer: number | null = null;
 
@@ -16,12 +18,18 @@ export class WebSocketService {
   public onError: ((error: any) => void) | null = null;
   public onClose: (() => void) | null = null;
 
-  constructor(url: string, reconnectInterval: number = 5000,heartbeatInterval: number = 10000) {
+  constructor(
+    url: string, 
+    reconnectInterval: number = 5000,
+    heartbeatInterval: number = 30000,
+    maxReconnectAttempts: number = 5 // 设置最大重连次数
+  ) {
     let IsTestPlay = useScriptStore().IsTestPlay;
     this.url = (IsTestPlay ? DM_TEST_Api_Url : DM_Api_Url) + url;
-    // this.url = 'ws://132.232.57.64:8030/?' + url;
     this.reconnectInterval = reconnectInterval;
     this.heartbeatInterval = heartbeatInterval;
+    this.maxReconnectAttempts = maxReconnectAttempts;
+    this.reconnectAttempts = 0;
   }
 
   public connect() {
@@ -45,6 +53,7 @@ export class WebSocketService {
 
     this.socketTask.onOpen(() => {
       console.log('WebSocket connection opened');
+      this.reconnectAttempts = 0; // 重置重连次数
       if (this.onOpen) {
         this.onOpen();
       }
@@ -74,13 +83,20 @@ export class WebSocketService {
     });
 
     this.socketTask.onClose(() => {
-      console.log('WebSocket connection closed, reconnecting...');
+      console.log('WebSocket connection closed');
       this.socketTask = null;
-      if (this.onClose) {
-        this.onClose();
-      }
       this.stopHeartbeat();
-      setTimeout(() => this.connect(), this.reconnectInterval);
+
+      if (this.reconnectAttempts < this.maxReconnectAttempts) {
+        console.log(`Reconnecting attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts}...`);
+        this.reconnectAttempts++;
+        setTimeout(() => this.connect(), this.reconnectInterval);
+      } else {
+        console.warn('Max reconnect attempts reached, no longer trying to reconnect');
+        if (this.onClose) {
+          this.onClose();
+        }
+      }
     });
   }
 

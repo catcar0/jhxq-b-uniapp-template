@@ -37,6 +37,10 @@ onUnmounted(() => {
     setPageOverflow('auto');
 })
 
+const hide = () =>{
+    emit('update:show', false);
+    emit('cancel');
+}
 const close = () => {
     emit('update:show', false);
     emit('cancel');
@@ -75,7 +79,7 @@ const confirm = () => {
     }
 
     if (props.dialogObj.type === 'editTeamName') {
-        memberStore.info.teamInfo.name = inputText
+        memberStore.info.teamInfo.name = inputText.value
         updateInfo(memberStore.info)
     }
 }
@@ -98,7 +102,7 @@ const zstselectIndex = ref<number>(0)
 const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
 }
-const inputText = props.dialogObj.initInput ?? ''
+const inputText = ref(props.dialogObj.initInput ?? '')
 </script>
 
 <template>
@@ -106,7 +110,7 @@ const inputText = props.dialogObj.initInput ?? ''
         <view class="dialog-inner">
             <view class="dialog-header">
                 <text>{{ dialogObj.title }}</text>
-                <image v-if="dialogObj.showCancel" @tap="close" src="@/static/icons/common_close.png"
+                <image v-if="dialogObj.showCancel" @tap="hide" src="@/static/icons/common_close.png"
                     :mode="'widthFix'" />
             </view>
             <view class="dialog-content" v-html="dialogObj.content">

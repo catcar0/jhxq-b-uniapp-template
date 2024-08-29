@@ -85,10 +85,20 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if(previousFlow.title === '音频搜证' && IsTestPlay.value) {
+    if(previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
+        ypContent.value.forEach(element => {
+            for (let index = 0; index < 6; index++) {
+            memberStore.info.characters[index].cueset.audio.push({
+                name: element.clue,
+                isNew: true,
+                deepClue: '',
+                type: 0
+            })
+        } 
+        });
         updateInfo(memberStore.info);
         dialogObj.value.type = currentFlow.title;
         return;        
@@ -156,7 +166,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     isRead: false,
                     isNew: true,
                     isError: false,
-                    type: 0,
+                    type: -1,
                 });
             });
         };
@@ -253,7 +263,7 @@ const matchResult = (result: string) => {
         for (let index = 0; index < 6; index++) {
             memberStore.info.characters[index].cueset.audio.push({
                 name: ypContent.value[matchIndex.value].clue,
-                isNew: ypContent.value[matchIndex.value].users.includes(index),
+                isNew: true,
                 deepClue: '',
                 type: 0
             })

@@ -71,9 +71,9 @@ const confirm = () => {
                     </view>
                     <view class="score-progress">
                         <text class="score" v-if="item.score>0" >{{ item.score }}</text>
-                        <text class="score" v-if="item.score<0" >0</text>
+                        <text class="score" v-if="item.score<=0" >0</text>
                         <text class="score-max">500</text>
-                        <view class="score-progress-bar" :style="{ width: (item.score / 500) * 464 + 'rpx' }">
+                        <view class="score-progress-bar" :style="{ width: (item.score <= 0 ? 0 : item.score / 500) * 464 + 'rpx' }">
                         </view>
                     </view>
                 </view>

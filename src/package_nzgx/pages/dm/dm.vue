@@ -39,6 +39,9 @@ onMounted(async () => {
   wsService.connect()
   // 监听 WebSocket 连接成功事件
   wsService.onOpen = () => {
+    if(webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'error'){
+      return
+    }
     console.log("WebSocket 连接成功");
 
     // 连接成功后执行后续操作

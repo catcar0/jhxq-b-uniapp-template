@@ -22,7 +22,7 @@ export class WebSocketService {
     url: string, 
     reconnectInterval: number = 2000,
     heartbeatInterval: number = 30000,
-    maxReconnectAttempts: number = 5 // 设置最大重连次数
+    maxReconnectAttempts: number = 3 // 设置最大重连次数
   ) {
     let IsTestPlay = useScriptStore().IsTestPlay;
     this.url = (IsTestPlay ? DM_TEST_Api_Url : DM_Api_Url) + url;
@@ -53,7 +53,6 @@ export class WebSocketService {
 
     this.socketTask.onOpen(() => {
       console.log('WebSocket connection opened');
-      this.reconnectAttempts = 0; // 重置重连次数
       if (this.onOpen) {
         this.onOpen();
       }
@@ -91,7 +90,7 @@ export class WebSocketService {
         console.log(`Reconnecting attempt ${this.reconnectAttempts + 1}/${this.maxReconnectAttempts}...`);
         this.reconnectAttempts++;
         this.connect()
-        setTimeout(() => this.connect(), this.reconnectInterval);
+        // setTimeout(() => this.connect(), this.reconnectInterval);
       } else {
         console.warn('Max reconnect attempts reached, no longer trying to reconnect');
         if (this.onClose) {
@@ -138,6 +137,7 @@ export class WebSocketService {
         data: message,
         success: () => {
           console.log('Message sent');
+          this.reconnectAttempts = 0; // 重置重连次数
         },
         fail: (error) => {
           console.error('Message sending failed:', error);
@@ -155,7 +155,8 @@ export class WebSocketService {
     if (this.socketTask) {
       this.socketTask.close({
         success: () => {
-          console.log('WebSocket connection closed');
+          this.reconnectAttempts = 3
+          console.log('WebSocket connection closed by user');
         },
         fail: (error) => {
           console.error('WebSocket close failed:', error);

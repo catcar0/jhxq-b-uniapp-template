@@ -1,10 +1,23 @@
 <script setup lang='ts'>
 import PlayerManage from "@/components/DM-PlayerMange/index.vue";
 import MusicManage from "@/components/DM-MusicMange/index.vue";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 
 const PlayerManageVisible = ref<boolean>(false);
 const MusicManageVisible = ref<boolean>(false);
+
+const props = withDefaults(defineProps<{
+    autoShow?: boolean
+}>(), {
+    autoShow: true
+})
+
+onMounted(() => {
+    if (props.autoShow) {
+        showPlayerManage();
+    }
+})
+
 const showPlayerManage = () => {
     uni.vibrateShort({ type: "light" });
     PlayerManageVisible.value = true;
@@ -19,17 +32,17 @@ const showMusicManage = () => {
     <PlayerManage v-model:show="PlayerManageVisible"></PlayerManage>
     <MusicManage v-model:show="MusicManageVisible"></MusicManage>
     <view class="tab-bar">
-        <view @tap="showPlayerManage" class="tab-item" :class="PlayerManageVisible?'active':''">
+        <view @tap="showPlayerManage" class="tab-item" :class="PlayerManageVisible ? 'active' : ''">
             <image v-if="PlayerManageVisible" src="@/static/icons/dm/room_selected.svg" />
             <image v-else src="@/static/icons/dm/room_unselected.svg" />
             <text>房间管理</text>
         </view>
-        <view class="tab-item" :class="(!PlayerManageVisible && !MusicManageVisible)?'active':''">
+        <view class="tab-item" :class="(!PlayerManageVisible && !MusicManageVisible) ? 'active' : ''">
             <image v-if="PlayerManageVisible || MusicManageVisible" src="@/static/icons/dm/game_unselected.svg" />
             <image v-else src="@/static/icons/dm/game_selected.svg" />
             <text>游戏进程</text>
         </view>
-        <view @tap="showMusicManage" class="tab-item" :class="MusicManageVisible?'active':''">
+        <view @tap="showMusicManage" class="tab-item" :class="MusicManageVisible ? 'active' : ''">
             <image v-if="MusicManageVisible" src="@/static/icons/dm/audio_selected.svg" />
             <image v-else src="@/static/icons/dm/audio_unselected.svg" />
             <text>游戏音频</text>
@@ -64,7 +77,7 @@ const showMusicManage = () => {
     color: #C4C4C4;
 }
 
-.tab-item>image{
+.tab-item>image {
     width: 40rpx;
     height: 40rpx;
 }

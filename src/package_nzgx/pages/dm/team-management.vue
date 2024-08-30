@@ -80,7 +80,7 @@ const confirm = () => {
             </view>
         </view>
     </view>
-    <DMTabBar></DMTabBar>
+    <DMTabBar :autoShow="false"></DMTabBar>
 </template>
 
 <style scoped>

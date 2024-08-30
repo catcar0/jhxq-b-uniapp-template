@@ -39,7 +39,7 @@ onMounted(async () => {
   wsService.connect()
   // 监听 WebSocket 连接成功事件
   wsService.onOpen = () => {
-    if(webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'error'){
+    if(webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'error' && webSocketStore.messages.slice(-1)[0].message !== '未知的消息类型'){
       return
     }
     console.log("WebSocket 连接成功");

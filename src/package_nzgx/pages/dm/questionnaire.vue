@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import DMTabBar from "@/package_nzgx/components/DM-TabBar/index.vue"
+import DMTabBar from "@/components/DM-TabBar/index.vue"
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
 import { computed, ref } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'

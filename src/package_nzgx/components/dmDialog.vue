@@ -82,6 +82,14 @@ const confirm = () => {
         memberStore.info.teamInfo.name = inputText.value
         updateInfo(memberStore.info)
     }
+    if (props.dialogObj.type === 'editShopName') {
+        memberStore.info.teamInfo.location = shopName.value
+        updateInfo(memberStore.info)
+    }
+    if (props.dialogObj.type === 'editDmName') {
+        memberStore.info.teamInfo.dmName = dmName.value
+        updateInfo(memberStore.info)
+    }
 }
 const zst = (userIndex: number, clue: string, index: number) => {
     if (!clue) return
@@ -103,6 +111,8 @@ const zstSelectUser = (index: number) => {
     zstselectIndex.value = index
 }
 const inputText = ref(props.dialogObj.initInput ?? '')
+const shopName = ref(memberStore.info.teamInfo.location)
+const dmName = ref(memberStore.info.teamInfo.dmName)
 </script>
 
 <template>
@@ -117,6 +127,12 @@ const inputText = ref(props.dialogObj.initInput ?? '')
             </view>
             <view class="input-box flex-row-center" v-show="dialogObj.type === 'editTeamName'">
                 <input style="text-align: center;" v-model="inputText" type="text">
+            </view>
+            <view class="input-box flex-row-center" v-show="dialogObj.type === 'editShopName'">
+                <input style="text-align: center;" v-model="shopName" type="text">
+            </view>
+            <view class="input-box flex-row-center" v-show="dialogObj.type === 'editDmName'">
+                <input style="text-align: center;" v-model="dmName" type="text">
             </view>
             <view style="height: 200rpx;font-weight: 700;font-size: 34rpx;" class="flex-row-center"
                 v-show="dialogObj.type === 'nextHunchuan'">开启后无法返回下一环节</view>

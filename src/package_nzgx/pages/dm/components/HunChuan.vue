@@ -5,9 +5,13 @@ import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
 import { useScriptStore } from '@/stores/script';
+import { usePlayStore } from '@/stores/play';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const ScriptStore = useScriptStore();
+const PlayStore = usePlayStore();
+memberStore.info.teamInfo.dmName = computed(() => PlayStore.PlayInfos?.DM || '未知DM');
+memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.players.gm.business_name??'未知地点')
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
@@ -30,14 +34,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
-        uni.showToast({ icon: 'none', title: '玩家人数不足' })
-        updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
-        return
-    }
+    // if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
+    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
+    //     updateSwitch.value = false;
+    //     setTimeout(() => {
+    //         updateSwitch.value = true;
+    //     }, 0);
+    //     return
+    // }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -45,7 +49,7 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
             newInfo.flow[newInfo.teamInfo.flowIndex + 1].status = 1
             updateInfo(newInfo)
         } else {
-            if (newInfo.flow[index - 1].inner.slice(-1)[0].status === 0) {
+            if (newInfo.flow[index - 1].inner.slice(-1)[0].status !== 0) {
                 // newInfo.flow[newInfo.teamInfo.flowIndex].isSwitchOn = false
                 updateSwitch.value = false
                 setTimeout(() => {
@@ -85,23 +89,23 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if(previousFlow.title === '音频搜证') {
+    if (previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
         ypContent.value.forEach(element => {
             for (let index = 0; index < 6; index++) {
-            memberStore.info.characters[index].cueset.audio.push({
-                name: element.clue,
-                isNew: true,
-                deepClue: '',
-                type: 0
-            })
-        } 
+                memberStore.info.characters[index].cueset.audio.push({
+                    name: element.clue,
+                    isNew: true,
+                    deepClue: '',
+                    type: 0
+                })
+            }
         });
         updateInfo(memberStore.info);
         dialogObj.value.type = currentFlow.title;
-        return;        
+        return;
     }
     const showWarning = () => {
         updateSwitch.value = false;
@@ -239,6 +243,8 @@ const dialogObj = ref({
     qa_index: 0,
     userIndex: 0,
     flowIndex: 0,
+    shopName: '',
+    dmName: '',
     qa: []
 })
 
@@ -368,8 +374,8 @@ const openxa = (index: number) => {
     if (glContent.value.hy.canReplay) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.hy.status = 3
         if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status !== 3) {
-        memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
-    }
+            memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '卦灵').content.xa.status = 2
+        }
         updateInfo(memberStore.info);
         uni.navigateTo({
             url: `/package_nzgx/pages/dm/questionnaire?name=${glContent.value.xa.name}&index=${index}`
@@ -386,6 +392,26 @@ const goAllReplay = (index: number) => {
 const sendPoster = () => {
     memberStore.info.flow[3].send++
     updateInfo(memberStore.info);
+}
+const editShopName = () => {
+    dialogObj.value.title = '修改店名',
+        dialogObj.value.type = 'editShopName',
+        dialogObj.value.confirmText = '确定',
+        dialogObj.value.cancelText = '取消',
+        dialogObj.value.content = ''
+        dialogObj.value.showCancel = true, // 是否显示按钮
+        dialogObj.value.shopName = memberStore.info.teamInfo.dmName,
+        dialogObj.value.dialogVisible = true
+}
+const editDM = () => {
+    dialogObj.value.title = '修改DM信息',
+        dialogObj.value.type = 'editDmName',
+        dialogObj.value.confirmText = '确定',
+        dialogObj.value.content = ''
+        dialogObj.value.cancelText = '取消',
+        dialogObj.value.showCancel = true, // 是否显示按钮
+        dialogObj.value.dmName = memberStore.info.teamInfo.location,
+        dialogObj.value.dialogVisible = true
 }
 </script>
 
@@ -488,7 +514,7 @@ const sendPoster = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                    }}</text>
+                                }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -524,18 +550,18 @@ const sendPoster = () => {
                     <view class="flex-row-sb poster-info-item">
                         <view>店名</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">花椒喜剧</view>
-                            <view><img class="edit-icon" src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png"
-                                    alt="">
+                            <view class="poster-info-item-edittext">{{memberStore.info.teamInfo.location}}</view>
+                            <view><img @tap="editShopName" class="edit-icon"
+                                    src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>
                         </view>
                     </view>
                     <view class="flex-row-sb poster-info-item">
                         <view>DM</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">易达</view>
-                            <view><img class="edit-icon" src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png"
-                                    alt="">
+                            <view class="poster-info-item-edittext">{{memberStore.info.teamInfo.dmName}}</view>
+                            <view><img @tap="editDM" class="edit-icon"
+                                    src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>
                         </view>
                     </view>

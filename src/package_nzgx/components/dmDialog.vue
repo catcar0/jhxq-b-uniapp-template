@@ -147,6 +147,7 @@ const dmName = ref(memberStore.info.teamInfo.dmName)
                     <view @tap="zstSelectUser(index)" v-for="(item, index) in charactersList" :key="item.name">
                         <img class="avatar" :class="zstselectIndex == index ? 'avatar-selected' : ''" :src="item.avatar"
                             alt="">
+                            <view style="font-size: 20rpx;margin-left: 20rpx;">{{ item.name }}</view>
                     </view>
                 </view>
             </view>

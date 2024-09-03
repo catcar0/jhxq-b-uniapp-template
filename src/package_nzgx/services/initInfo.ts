@@ -104,6 +104,8 @@ export let initAllInfo = {
         score: 0,
         status: 0,
         flowIndex: 0,
+        dmName:'',
+        location:'',
         replay: [
             {
                 name: '第一次魂穿复盘',

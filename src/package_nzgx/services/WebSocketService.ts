@@ -64,7 +64,7 @@ export class WebSocketService {
       const websocketStore = useWebSocketStore();
       const parsedData = JSON.parse(event.data);
       console.log(parsedData)
-      if (parsedData.type === 'scores') {
+      if (parsedData.type === 'scores' && parsedData.data.statuses.allinfo) {
         websocketStore.gameAddMessage(parsedData.data.statuses.allinfo.info);
       } else if (parsedData.players) {
         websocketStore.addMessage(parsedData);

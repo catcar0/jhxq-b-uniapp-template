@@ -60,7 +60,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '尹萍的个人线索',
         content1: '一些纱布和外伤药物，以及一张医务室的诊断书：左手大拇指指甲盖断裂。',
-        content2: '',
+        content2: '诊断书上写着左手大拇指指甲盖断裂',
         url: baseUrl + 'clue6',
     },
     clue7:{
@@ -68,7 +68,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '李梦的个人线索',
         content1: '一张课外活动时间的社团签到表，其中尹萍的签名力透纸背十分漂亮',
-        content2: '',
+        content2: '尹萍的签名力透纸背十分漂亮',
         url: baseUrl + 'clue7',
     },
     clue8:{
@@ -76,7 +76,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '林佳的个人线索',
         content1: '一张陈慧娴的海报，上面有两个小字——黄鹂（可深入）',
-        content2: '',
+        content2: '海报上面有两个小字——黄鹂',
         url: baseUrl + 'clue8',
     },
     clue9:{
@@ -108,7 +108,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '举报信',
         content1: '一张写满了字的纸条，标题上写着：举报信',
-        content2: '',
+        content2: '陈敏的纸条原来是一封举报信。',
         url: baseUrl + 'clue12',
     },
     clue13:{
@@ -116,7 +116,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '海报背面',
         content1: '海报背面写着：从后山逃出去以后就可以举报他们了，你也受不了他们很久了吧？这次我一定会配合你（是春天的字迹）',
-        content2: '',
+        content2: '海报背面写着：从后山逃出去以后就可以举报他们了，你也受不了他们很久了吧？这次我一定会配合你。（是春天的字迹）',
         url: baseUrl + 'clue13',
     },
     clue14:{
@@ -268,7 +268,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '陈敏的个人线索2',
         content1: '一张老旧的学生证，上面的照片有些模糊，照片中的人看样子比陈敏成熟很多，但是依稀能看出和陈敏长得很像',
-        content2: '这个人，和陈敏有点像',
+        content2: '一张非常老旧的学生证，上面的人和陈敏有点像',
         url: baseUrl + 'clue32',
     },
     clue33:{
@@ -276,7 +276,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '白鹭的个人线索2',
         content1: '一张生物实验室上课的照片（可深入）',
-        content2: '',
+        content2: '一张生物实验室的照片',
         url: baseUrl + 'clue33',
     },
     clue34:{
@@ -292,7 +292,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '生物实验室里的骨架',
         content1: '白鹭在生物实验室聊天站的位置正对着一具骨架，骨架上面还有些泥土沾染的痕迹',
-        content2: '',
+        content2: '白璐在生物实验室聊天时站的位置正对着一具骨架，骨架上面还有些泥土沾染的痕迹',
         url: baseUrl + 'clue35',
     },
     clue36:{
@@ -308,7 +308,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '一则恐怖怪谈',
         content1: '这里流传着关于深夜出没的白衣女鬼传闻',
-        content2: '这里流传着关于深夜出没的白衣女鬼传闻',
+        content2: '学校里流传着关于深夜出没的白衣女鬼传闻，似乎有一个天大的不可告人的秘',
         url: baseUrl + 'clue37',
     },
     clue38:{
@@ -396,7 +396,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '毛线织物',
         content1: '有婴儿的衣物，还有一条围巾，围巾角落织有春天的名字',
-        content2: '',
+        content2: '围巾角落织有春天的名字，李梦那为什么会有春天的围巾',
         url: baseUrl + 'clue48',
     },
     clue49:{

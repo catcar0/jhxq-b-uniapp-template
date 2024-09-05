@@ -26,11 +26,11 @@ const confirm = () => {
         checkAnswersAndSetStatus(qaList.value[0].qa)
     }
     if (dialogObj.value.type === 'giveReplay') {
-        console.log(memberStore.info.teamInfo.replay[flowIndex.value],glType.value)
-        if (glType.value === 'all'){
-            if (replayName.value === '还原问卷') memberStore.info.teamInfo.replay[flowIndex.value].hy = qaList.value[0].replay 
-            else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay 
-        }else memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay 
+        console.log(memberStore.info.teamInfo.replay[flowIndex.value], glType.value)
+        if (glType.value === 'all') {
+            if (replayName.value === '还原问卷') memberStore.info.teamInfo.replay[flowIndex.value].hy = qaList.value[0].replay
+            else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay
+        } else memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay
     }
     updateInfo(memberStore.info)
     dialogObj.value.dialogVisible = false
@@ -67,10 +67,10 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
-        uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
-        return
-    }
+    // if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
+    //     uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
+    //     return
+    // }
     dialogObj.value.title = '注意'
     dialogObj.value.content = '将会验证所有问题'
     dialogObj.value.type = 'checkAnswersAndSetStatus'
@@ -78,7 +78,7 @@ const verifyQa = () => {
 }
 const giveReplay = () => {
     dialogObj.value.title = '注意'
-    dialogObj.value.content = '确定要发送复盘给所有玩家吗？更推荐主持人口述。'
+    dialogObj.value.content = '<div style="font-size: 40rpx;color: red;font-weight: 700;">确定要将复盘发给玩家阅读吗 <br/>由主持人讲解案件复盘，玩家体验会好很多 </div>'
     dialogObj.value.type = 'giveReplay'
     showDialog()
 }
@@ -134,8 +134,16 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
             // 对于其他问题，按原逻辑处理
             question.usersAnswer.forEach((userAnswer, questionIndex) => {
                 const userAnswers = userAnswer.answer.slice().sort(); // 对用户答案进行排序
+
                 const isCorrect = correctAnswers.length === userAnswers.length &&
-                    correctAnswers.every((answer, index) => answer === userAnswers[index]);
+                    correctAnswers.every((answer, index) => {
+                        // 如果答案是 clue10，并且用户答案是 clue12，视为正确
+                        if (answer === 'clue10' && userAnswers[index] === 'clue12') {
+                            return true;
+                        }
+                        // 否则按原逻辑比较
+                        return answer === userAnswers[index];
+                    });
 
                 if (isCorrect) {
                     userAnswer.status = 2;
@@ -146,6 +154,7 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
                     scoreChange('user', (qaList.value[0].score * -0.5), [questionIndex]);
                 }
             });
+
         }
     });
 
@@ -167,10 +176,10 @@ const qaList = computed(() => {
     } else if (glType.value === 'xa') {
         return [glContent.value.xa];
     }
-    return [glContent.value.hy,glContent.value.xa]; 
+    return [glContent.value.hy, glContent.value.xa];
 });
 const replayName = ref('')
-const createReplay = (allitem:any) =>{
+const createReplay = (allitem: any) => {
     replayName.value = allitem.name
     replayShow.value = true
     replayContext.value = allitem.replay
@@ -184,7 +193,7 @@ const createReplay = (allitem:any) =>{
 // 初次加载时设置 glType.value
 onLoad((Option) => {
     const dataKey = Option!.name;
-    flowIndex.value =  Option!.index
+    flowIndex.value = Option!.index
     if (dataKey === '还原问卷') {
         console.log('hy');
         glType.value = 'hy';
@@ -195,7 +204,7 @@ onLoad((Option) => {
         glType.value = 'all'
     }
 });
-onShow(()=>{
+onShow(() => {
     // replayShow.value = false
 })
 </script>
@@ -206,10 +215,11 @@ onShow(()=>{
         <view class="questionnaire">
             <!-- 问卷 -->
             <view v-show="!replayShow" v-if="qaList" v-for="(allitem, index) in qaList">
-                <view class="shadow-box questionnaire-box" >
+                <view class="shadow-box questionnaire-box">
                     <view class="flex-row-sb">
                         <view @tap="allitem.selectedIndex = index" v-for="(item, index) in allitem.qa"
-                            :class="allitem.selectedIndex === index ? 'question-selected' : 'question-select'">{{ item.name }}
+                            :class="allitem.selectedIndex === index ? 'question-selected' : 'question-select'">{{
+                            item.name }}
                         </view>
                     </view>
                     <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">
@@ -217,8 +227,8 @@ onShow(()=>{
                     <view class="flex-row-sb" style="margin-top: 20rpx;"
                         v-for="(item, index) in allitem.qa[allitem.selectedIndex].usersAnswer" :key="index">
                         <view> {{ memberStore.info.characters[index].name }} ：</view>
-                        <view v-if="allitem.usersSubmit[index] !== 0" v-for="(clue,index) in item.answer">
-                            {{ allClues[clue].name}}
+                        <view v-if="allitem.usersSubmit[index] !== 0" v-for="(clue, index) in item.answer">
+                            {{ allClues[clue].name }}
                         </view>
                         <view v-if="allitem.usersSubmit[index] === 0" class="status flex-row-center"
                             :class="'status-' + item.status">{{ statusList[0] }}</view>
@@ -234,23 +244,25 @@ onShow(()=>{
                 <view @tap="createReplay(allitem)" v-if="allitem.status !== 3 && allitem.canReplay && !replayShow"
                     style="margin-top: 30rpx;" class="button">生成整体复盘</view>
 
-                <view @tap="createReplay(allitem)" v-if="allitem.status === 3" style="margin-top: 30rpx;" class="button">查看{{ allitem.name ===
-                    '还原问卷' ? '还原' : '凶案' }}复盘</view>
+                <view @tap="createReplay(allitem)" v-if="allitem.status === 3" style="margin-top: 30rpx;"
+                    class="button">查看{{ allitem.name ===
+                        '还原问卷' ? '还原' : '凶案' }}复盘</view>
             </view>
 
 
 
             <!-- 复盘 -->
             <view v-if="replayShow">
-                <view  class="shadow-box questionnaire-box">
-                    <view style="text-align: center;">{{ `问题${replayContext[0].charAt(0)}-${replayContext.slice(-1)[0].charAt(0)}` }}</view>
-                    <view v-for="(item,index) in replayContext" style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
+                <view class="shadow-box questionnaire-box">
+                    <view style="text-align: center;">{{
+                        `问题${replayContext[0].charAt(0)}-${replayContext.slice(-1)[0].charAt(0)}` }}</view>
+                    <view v-for="(item, index) in replayContext"
+                        style="display: flex;margin-top: 30rpx;gap: 20rpx;font-weight: 700;font-size: 25rpx;">
                         <view>{{ item.charAt(0) }}.</view>
                         <view>{{ item.slice(1) }}</view>
                     </view>
                 </view>
-                <view @tap="giveReplay()" 
-                    style="margin-top: 30rpx;" class="button">分发到玩家</view>
+                <view @tap="giveReplay()" style="margin-top: 30rpx;" class="button">分发到玩家</view>
             </view>
         </view>
     </scroll-view>
@@ -313,9 +325,10 @@ onShow(()=>{
 @import url("@/package_nzgx/styles/common.css");
 
 .almm {
-  font-family: 'Alimama ShuHeiTi';
+    font-family: 'Alimama ShuHeiTi';
 }
 
 .hyshtj {
-  font-family: 'hyshtj';
-}</style>
+    font-family: 'hyshtj';
+}
+</style>

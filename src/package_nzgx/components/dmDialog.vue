@@ -168,8 +168,8 @@ const dmName = ref(memberStore.info.teamInfo.dmName)
             </view>
 
             <view class="dialog-control">
-                <button @tap="confirm" class="theme-button button">{{ dialogObj.confirmText || '确认' }}</button>
-                <button v-if="dialogObj.showCancel" @tap="close" class="theme-button cancel-button">{{
+                <button @tap="confirm" :class="dialogObj.type === 'giveReplay' ? 'cancel-button':'button'" class="theme-button">{{ dialogObj.confirmText || '确认' }}</button>
+                <button v-if="dialogObj.showCancel" @tap="close" :class="dialogObj.type === 'giveReplay' ? 'button':'cancel-button'" class="theme-button ">{{
                     dialogObj.cancelText || '取消'
                     }}</button>
             </view>

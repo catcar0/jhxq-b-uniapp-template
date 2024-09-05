@@ -16,6 +16,7 @@ const webSocketStore = useWebSocketStore();
 const PlayStore = usePlayStore();
 const AuthStore = useAuthStore();
 const initInfo = async () => {
+  console.log(initAllInfo)
   webSocketStore.gameSend(
     initAllInfo
   )
@@ -29,8 +30,9 @@ onMounted(async () => {
   await updateOriFlowInfo()
   await updateOriClueInfo()
   uni.hideLoading()
-
+  
   if (!memberStore.info) {
+    console.log(initAllInfo)
     memberStore.setInfo(initAllInfo)
   }
   await init();
@@ -84,7 +86,7 @@ const init = async () => {
     <navigator url="/package_nzgx/pages/dm/team-management" hover-class="none">
       <view class="team flex-row-center shadow-box  almm"> <text class="orange-font">团队管理</text> </view>
     </navigator>
-    <HunChuan v-if="memberStore.info" />
+    <HunChuan v-if="memberStore.info && memberStore.playerInfo" />
   </scroll-view>
   <!-- <DMTabBar :userinfo="memberStore.playerInfo"></DMTabBar> -->
 </template>

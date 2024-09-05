@@ -275,7 +275,7 @@ export let initAllInfo = {
                                 {
                                     name: '问题4',
                                     question: '为什么何阑会对李梦说“有人比我们更着急”？这和春天的死有没有联系？',
-                                    answer: ['clue17'],
+                                    answer: ['clue6'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
@@ -448,7 +448,7 @@ export let initAllInfo = {
                                 {
                                     name: '问题2',
                                     question: '谁会担心春天举报成功？',
-                                    answer: ['clue27', 'clue26', 'clue25'],
+                                    answer: ['clue27', 'clue26', 'clue24'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
                             ]
@@ -472,7 +472,7 @@ export let initAllInfo = {
                                 },
                                 {
                                     name: '问题5',
-                                    question: 'Ta为什么要杀害春天并分尸？',
+                                    question: 'Ta杀害春天并分尸，是想要隐藏什么？',
                                     answer: ['clue37'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 }
@@ -497,7 +497,7 @@ export let initAllInfo = {
                 {
                     title: '开启逐风',
                     content: [{}],
-                    status: 3,
+                    status: 0,
                     isSwitchOn: false
                 },
                 {
@@ -552,19 +552,25 @@ export let initAllInfo = {
                             score: 10,
                             canReplay: false,
                             replay: [
-                                '1在陈敏第二次魂穿的视角中，看到春天的举报信上写着“男女关系”等字样，可以得知春天真正要举报的是和男女关系有关的流氓罪。',
-                                '2林佳和李梦剧本中都有暗示他们有可能怀孕的，而何阑和两人尤其是李梦看上去关系很亲密，且之前看上去针对春天的行动基本上是何阑在进行指示。'
+                                '1陈敏在春天的住处找到的箱子，箱子里面装着男人的衣物和剃须刀等工具，应该是我们对春天的性别产生了错误的判断，春天其实是个男性，而作为在女校读书的春天也一定是和何阑一样男扮女装潜进的学校，而凶手一定因为某种原因知道了这个秘密，而Ta拿走躯干要隐藏的就一定是春天的性别特征',
+                                '2如果春天是男性那就不可能怀孕，那林佳和李梦提及的“和我们情况一样”指的就是春天和她们一样都犯了流氓罪，不过春天如果是男性，那他之前举报信中提及的也包含他自己，那信中的男女关系，指的究竟是他和谁呢？'
                             ],
                             usersSubmit: [0, 0, 0, 0, 0, 0],
                             qa: [
                                 {
                                     name: '问题1',
+                                    question: '如果凶手拿走躯干要隐藏的不是“指甲盖”和“腹中婴儿”，还有可能是？',
+                                    answer: ['clue46'],
+                                    usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
+                                },
+                                {
+                                    name: '问题2',
                                     question: '基于这个前提，林佳对李梦提起的“春天和我们情况一样”指的是？',
                                     answer: ['clue36'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {
-                                    name: '问题2',
+                                    name: '问题3',
                                     question: '林佳李梦怀孕，孩子可能是谁的？',
                                     answer: ['clue21'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
@@ -806,6 +812,5 @@ export let initAllInfo = {
 }
 export const updateOriFlowInfo = async () => {
     const res_flow = await getInfoById(1)
-    initAllInfo = JSON.parse(res_flow.data.description)
-    console.log('aa')
+    initAllInfo = await JSON.parse(res_flow.data.description)
 }

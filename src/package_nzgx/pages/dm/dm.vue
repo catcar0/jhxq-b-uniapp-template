@@ -3,7 +3,7 @@
 import HunChuan from './components/HunChuan.vue'
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
-import { onMounted, onUnmounted } from "vue";
+import { onMounted, onUnmounted, watch } from "vue";
 import { WebSocketService } from "@/package_nzgx/services/WebSocketService";
 import { initAllInfo, updateOriFlowInfo } from "@/package_nzgx/services/initInfo";
 import { allClues, updateOriClueInfo } from "@/package_nzgx/services/clues";
@@ -11,6 +11,7 @@ import { getInfoById } from "@/package_nzgx/services/updateInfo";
 import { PlayToken } from "@/utils/auth";
 import { usePlayStore } from "@/stores/play";
 import { useAuthStore } from "@/stores/auth";
+import { addNewItem } from '@/package_nzgx/services/info';
 const memberStore = useMemberStore()
 const webSocketStore = useWebSocketStore();
 const PlayStore = usePlayStore();
@@ -22,6 +23,16 @@ const initInfo = async () => {
   )
 
 }
+watch(() => memberStore.info.flow[0].inner[1].status, (a, b) => {
+    console.log(a, b)
+    if (a === 3 && b == 2) {
+        setTimeout(() => {
+            setTimeout(() => {
+                addNewItem(0, 'clue5', 0, 'clues', '')
+            }, 3000)
+        }, 3000);
+    }
+}, { deep: true })
 onMounted(async () => {
   // 获取最新的原始流程信息和线索集信息
   uni.showLoading({

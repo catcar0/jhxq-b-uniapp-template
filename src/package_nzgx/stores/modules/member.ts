@@ -38,6 +38,9 @@ export const useMemberStore = defineStore(
     const setPlayerInfo = (val: any) => {
       playerInfo.value = val
     }
+    const clearPlayerInfo = () => {
+      playerInfo.value = undefined
+    }
     const setTime = (startTime: any, endTime: any) => {
       startTime.value = startTime
       endTime.value = endTime
@@ -67,6 +70,7 @@ export const useMemberStore = defineStore(
       setAvatar,
       clearProfile,
       setTime,
+      clearPlayerInfo,
       clearInfo
     }
   },

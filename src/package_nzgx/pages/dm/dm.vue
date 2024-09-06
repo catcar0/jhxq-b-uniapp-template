@@ -67,6 +67,8 @@ onMounted(async () => {
 
 onUnmounted(() => {
   webSocketStore.gameClose();
+  memberStore.clearInfo();
+  // memberStore.clearPlayerInfo();
 });
 
 const init = async () => {
@@ -78,6 +80,7 @@ const init = async () => {
   memberStore.setRoomId(PlayStore.PlayInfos?.room_number);
   memberStore.setVirtualRoleId('gm');
 }
+
 </script>
 
 <template>

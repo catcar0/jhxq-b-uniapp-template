@@ -38,12 +38,16 @@ export const useMemberStore = defineStore(
     const setPlayerInfo = (val: any) => {
       playerInfo.value = val
     }
-    const setTime = (startTime: any,endTime:any) => {
+    const setTime = (startTime: any, endTime: any) => {
       startTime.value = startTime
       endTime.value = endTime
     }
     const setInfo = (val: any) => {
       info.value = val
+    }
+    // 清理会员信息，退出时使用
+    const clearInfo = () => {
+      info.value = undefined
     }
     // 记得 return
     return {
@@ -63,6 +67,7 @@ export const useMemberStore = defineStore(
       setAvatar,
       clearProfile,
       setTime,
+      clearInfo
     }
   },
   // TODO: 持久化

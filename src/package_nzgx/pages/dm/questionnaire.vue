@@ -30,7 +30,10 @@ const confirm = () => {
         if (glType.value === 'all') {
             if (replayName.value === '还原问卷') memberStore.info.teamInfo.replay[flowIndex.value].hy = qaList.value[0].replay
             else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay
-        } else memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay
+        } else {
+            memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay
+            memberStore.info.teamInfo.replay[flowIndex.value].userRead = [0,0,0,0,0,0]
+        }
     }
     updateInfo(memberStore.info)
     dialogObj.value.dialogVisible = false
@@ -67,10 +70,10 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    // if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
-    //     uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
-    //     return
-    // }
+    if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
+        uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
+        return
+    }
     dialogObj.value.title = '注意'
     dialogObj.value.content = '将会验证所有问题'
     dialogObj.value.type = 'checkAnswersAndSetStatus'
@@ -267,7 +270,7 @@ onShow(() => {
         </view>
     </scroll-view>
     <dmDialog :dialogObj="dialogObj" @cancel="closeDialog" @confirm="confirm" />
-    <DMTabBar></DMTabBar>
+    <DMTabBar :autoShow="false"></DMTabBar>
 </template>
 
 <style scoped>

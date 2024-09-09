@@ -109,16 +109,19 @@ export let initAllInfo = {
         replay: [
             {
                 name: '第一次魂穿复盘',
+                userRead:[0,0,0,0,0,0],
                 hy: [],
                 xa: []
             },
             {
                 name: '第二次魂穿复盘',
+                userRead:[0,0,0,0,0,0],
                 hy: [],
                 xa: []
             },
             {
                 name: '第三次魂穿复盘',
+                userRead:[0,0,0,0,0,0],
                 hy: [],
                 xa: []
             }

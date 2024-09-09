@@ -89,7 +89,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (previousFlow.title === '音频搜证') {
+    if (IsTestPlay.value && previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
@@ -98,6 +98,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                 memberStore.info.characters[index].cueset.audio.push({
                     name: element.clue,
                     isNew: true,
+                    isRead:false,
                     deepClue: '',
                     type: 0
                 })
@@ -127,7 +128,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         personalCluesFlow = flow.find(f => f.inner.some(inner => inner.title === '个人线索发放+个人问题'));
         personalCluesStatus = personalCluesFlow?.inner.find(inner => inner.title === '个人线索发放+个人问题')?.status;
 
-        if (personalCluesStatus !== 3) {
+        if (personalCluesStatus !== 3 || previousFlow.status !== 3) {
             showWarning();
             return; // 如果 "个人线索发放+个人问题" 的状态不是 3，阻止弹窗的显示
         }
@@ -271,6 +272,7 @@ const matchResult = (result: string) => {
                 name: ypContent.value[matchIndex.value].clue,
                 isNew: true,
                 deepClue: '',
+                isRead:false,
                 type: 0
             })
         }

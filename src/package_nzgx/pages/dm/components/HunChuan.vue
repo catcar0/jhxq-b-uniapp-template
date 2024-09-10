@@ -89,7 +89,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (!IsTestPlay.value && previousFlow.title === '音频搜证') {
+    if (IsTestPlay.value && previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;

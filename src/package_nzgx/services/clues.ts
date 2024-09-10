@@ -380,7 +380,7 @@ export let allClues: Clues = {
         type: '物品',
         name: '陈敏的个人线索3',
         content1: '一本字典，男人的衣物和剃须刀。字典上面写着一行字：“Dear my honey” ',
-        content2: '东西都被装在箱子里，看起来不想让人看到',
+        content2: '箱子里有一本字典，男人的衣物和剃须刀。字典上面写着一行字:"Dear my honey东西都被装在箱子里，看起来不想让人看到',
         url: baseUrl + 'clue46',
     },
     clue47:{

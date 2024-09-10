@@ -445,7 +445,7 @@ export let initAllInfo = {
                                 {
                                     name: '问题1',
                                     question: '除霸凌外，春天还要举报的内容是什么？',
-                                    answer: ['clue33'],
+                                    answer: ['clue36'],
                                     usersAnswer: [{ answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }, { answer: [], status: 0 }]
                                 },
                                 {

@@ -32,7 +32,7 @@ const confirm = () => {
             else memberStore.info.teamInfo.replay[flowIndex.value].xa = qaList.value[1].replay
         } else {
             memberStore.info.teamInfo.replay[flowIndex.value][glType.value] = qaList.value[0].replay
-            memberStore.info.teamInfo.replay[flowIndex.value].userRead = [0,0,0,0,0,0]
+            memberStore.info.teamInfo.replay[flowIndex.value].userRead = [0, 0, 0, 0, 0, 0]
         }
     }
     updateInfo(memberStore.info)
@@ -70,8 +70,8 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    if(!IsTestPlay.value && !qaList.value[0].qa.every(question =>question.usersAnswer.every(userAnswer => userAnswer.answer.length === 0))){
-        uni.showToast({ icon:'none', title: '请待玩家全部作答完毕后再尝试' })
+    if (!IsTestPlay.value && qaList.value[0].qa.some(question =>question.usersAnswer.some(userAnswer =>userAnswer.answer.length === 0 ))) {
+        uni.showToast({ icon: 'none', title: '请待玩家全部作答完毕后再尝试' })
         return
     }
     dialogObj.value.title = '注意'
@@ -222,7 +222,7 @@ onShow(() => {
                     <view class="flex-row-sb">
                         <view @tap="allitem.selectedIndex = index" v-for="(item, index) in allitem.qa"
                             :class="allitem.selectedIndex === index ? 'question-selected' : 'question-select'">{{
-                            item.name }}
+                                item.name }}
                         </view>
                     </view>
                     <view style="text-align: center;margin-top: 10rpx;margin-bottom: 10rpx;">

@@ -34,14 +34,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    // if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
-    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
-    //     updateSwitch.value = false;
-    //     setTimeout(() => {
-    //         updateSwitch.value = true;
-    //     }, 0);
-    //     return
-    // }
+    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
+        uni.showToast({ icon: 'none', title: '玩家人数不足' })
+        updateSwitch.value = false;
+        setTimeout(() => {
+            updateSwitch.value = true;
+        }, 0);
+        return
+    }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -178,8 +178,10 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 
         if (currentFlow.title === '个人线索发放+个人问题') {
             if (previousFlow.status === 3 && currentFlow.status === 0) {
-                addCluesAndMasks();
                 updateFlowStatus(2, true);
+                setTimeout(() => {
+                    addCluesAndMasks();
+                }, 1000);
             }
         } else if (currentFlow.title === '开启逐风') {
             updateFlowStatus(3, true);

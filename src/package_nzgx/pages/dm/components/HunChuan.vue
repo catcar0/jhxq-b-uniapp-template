@@ -11,7 +11,7 @@ const webSocketStore = useWebSocketStore();
 const ScriptStore = useScriptStore();
 const PlayStore = usePlayStore();
 memberStore.info.teamInfo.dmName = computed(() => PlayStore.PlayInfos?.DM || '未知DM');
-memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.players.gm.business_name??'未知地点')
+memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.players.gm.business_name ?? '未知地点')
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
@@ -34,14 +34,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
-        uni.showToast({ icon: 'none', title: '玩家人数不足' })
-        updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
-        return
-    }
+    // if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
+    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
+    //     updateSwitch.value = false;
+    //     setTimeout(() => {
+    //         updateSwitch.value = true;
+    //     }, 0);
+    //     return
+    // }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -89,7 +89,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (IsTestPlay.value && previousFlow.title === '音频搜证') {
+    if (!IsTestPlay.value && previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
@@ -98,7 +98,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                 memberStore.info.characters[index].cueset.audio.push({
                     name: element.clue,
                     isNew: true,
-                    isRead:false,
+                    isRead: false,
                     deepClue: '',
                     type: 0
                 })
@@ -272,7 +272,7 @@ const matchResult = (result: string) => {
                 name: ypContent.value[matchIndex.value].clue,
                 isNew: true,
                 deepClue: '',
-                isRead:false,
+                isRead: false,
                 type: 0
             })
         }
@@ -394,6 +394,9 @@ const goAllReplay = (index: number) => {
 const sendPoster = () => {
     memberStore.info.flow[3].send++
     updateInfo(memberStore.info);
+    memberStore.info.teamInfo.dmName = PlayStore.PlayInfos?.DM
+    memberStore.info.teamInfo.location = memberStore.playerInfo.players.gm.business_name
+    updateInfo(memberStore.info);
 }
 const editShopName = () => {
     dialogObj.value.title = '修改店名',
@@ -401,7 +404,7 @@ const editShopName = () => {
         dialogObj.value.confirmText = '确定',
         dialogObj.value.cancelText = '取消',
         dialogObj.value.content = ''
-        dialogObj.value.showCancel = true, // 是否显示按钮
+    dialogObj.value.showCancel = true, // 是否显示按钮
         dialogObj.value.shopName = memberStore.info.teamInfo.dmName,
         dialogObj.value.dialogVisible = true
 }
@@ -410,7 +413,7 @@ const editDM = () => {
         dialogObj.value.type = 'editDmName',
         dialogObj.value.confirmText = '确定',
         dialogObj.value.content = ''
-        dialogObj.value.cancelText = '取消',
+    dialogObj.value.cancelText = '取消',
         dialogObj.value.showCancel = true, // 是否显示按钮
         dialogObj.value.dmName = memberStore.info.teamInfo.location,
         dialogObj.value.dialogVisible = true
@@ -516,7 +519,7 @@ const editDM = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                }}</text>
+                                    }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -552,7 +555,7 @@ const editDM = () => {
                     <view class="flex-row-sb poster-info-item">
                         <view>店名</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">{{memberStore.info.teamInfo.location}}</view>
+                            <view class="poster-info-item-edittext">{{ memberStore.info.teamInfo.location }}</view>
                             <view><img @tap="editShopName" class="edit-icon"
                                     src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>
@@ -561,7 +564,7 @@ const editDM = () => {
                     <view class="flex-row-sb poster-info-item">
                         <view>DM</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">{{memberStore.info.teamInfo.dmName}}</view>
+                            <view class="poster-info-item-edittext">{{ memberStore.info.teamInfo.dmName }}</view>
                             <view><img @tap="editDM" class="edit-icon"
                                     src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>

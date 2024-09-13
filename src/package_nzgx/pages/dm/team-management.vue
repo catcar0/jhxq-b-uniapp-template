@@ -59,14 +59,15 @@ const confirm = () => {
                 <view class="user-item-info flex-column-sb">
                     <view class="flex-row-sb">
                         <view class="characters flex-row-sb">
+                            <!-- {{ item.user }} -->
                             <text class="user-name">{{ item.user }}</text>
                             <text class="shi">饰</text>
                             <view class="character-name flex-row-center">{{ item.name }}</view>
                         </view>
-                        <text v-if="item.score>400" class="ding almm">甲</text>
-                        <text v-if="item.score>300 && item.score<400" class="ding almm">乙</text>
-                        <text v-if="item.score>200 && item.score<300" class="ding almm">丙</text>
-                        <text v-if="item.score>100 && item.score<200" class="ding almm">丁</text>
+                        <text v-if="item.score>=400" class="ding almm">甲</text>
+                        <text v-if="item.score>=300 && item.score<400" class="ding almm">乙</text>
+                        <text v-if="item.score>=200 && item.score<300" class="ding almm">丙</text>
+                        <text v-if="item.score>=100 && item.score<200" class="ding almm">丁</text>
                         <text v-if="item.score<100" class="ding almm">戊</text>
                     </view>
                     <view class="score-progress">
@@ -147,11 +148,15 @@ const confirm = () => {
 }
 
 .user-name {
+    width: 200rpx;
     font-size: 21rpx;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .characters {
-    width: 231rpx;
+    width: 331rpx;
 }
 
 .character-name {

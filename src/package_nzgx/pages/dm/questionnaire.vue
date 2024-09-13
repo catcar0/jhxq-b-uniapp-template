@@ -214,8 +214,8 @@ onShow(() => {
 
 <template>
     <Watermark></Watermark>
-    <scroll-view scroll-y>
-        <view class="questionnaire">
+    <scroll-view scroll-y style="height: 100vh;">
+        <view class="questionnaire" style="height: 1550rpx;background-color: aliceblue;">
             <!-- 问卷 -->
             <view v-show="!replayShow" v-if="qaList" v-for="(allitem, index) in qaList">
                 <view class="shadow-box questionnaire-box">

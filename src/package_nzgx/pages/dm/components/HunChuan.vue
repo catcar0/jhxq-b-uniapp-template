@@ -93,6 +93,9 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
+        for (let index = 0; index < 6; index++) {
+                memberStore.info.characters[index].cueset.audio = []
+            }
         ypContent.value.forEach(element => {
             for (let index = 0; index < 6; index++) {
                 memberStore.info.characters[index].cueset.audio.push({
@@ -162,9 +165,6 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         };
 
         const addCluesAndMasks = () => {
-            currentFlow.clues.forEach(element => {
-                addNewItem(-1, element, 1, 'clues', '');
-            });
             currentFlow.content.forEach(element => {
                 characters[element.userIndex].mask.push({
                     qa: element.qalist,
@@ -173,6 +173,9 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     isError: false,
                     type: -1,
                 });
+            });
+            currentFlow.clues.forEach(element => {
+                addNewItem(-1, element, 1, 'clues', '');
             });
         };
 
@@ -396,9 +399,9 @@ const goAllReplay = (index: number) => {
 const sendPoster = () => {
     memberStore.info.flow[3].send++
     updateInfo(memberStore.info);
-    memberStore.info.teamInfo.dmName = PlayStore.PlayInfos?.DM
-    memberStore.info.teamInfo.location = memberStore.playerInfo.players.gm.business_name
-    updateInfo(memberStore.info);
+    // memberStore.info.teamInfo.dmName = PlayStore.PlayInfos?.DM
+    // memberStore.info.teamInfo.location = memberStore.playerInfo.players.gm.business_name
+    // updateInfo(memberStore.info);
 }
 const editShopName = () => {
     dialogObj.value.title = '修改店名',

@@ -94,8 +94,8 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
         for (let index = 0; index < 6; index++) {
-                memberStore.info.characters[index].cueset.audio = []
-            }
+            memberStore.info.characters[index].cueset.audio = []
+        }
         ypContent.value.forEach(element => {
             for (let index = 0; index < 6; index++) {
                 memberStore.info.characters[index].cueset.audio.push({
@@ -175,7 +175,20 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                 });
             });
             currentFlow.clues.forEach(element => {
-                addNewItem(-1, element, 1, 'clues', '');
+                // addNewItem(-1, element, 1, 'clues', '');
+                for (let index = 0; index < memberStore.info.characters.length; index++) {
+                    memberStore.info.characters[index].cueset['clues'].push(
+                        {
+                            name: element,
+                            isNew: true,
+                            deepClue: '',
+                            type: 1,
+                            isRead: false,
+                            timestamp: Date.now() // 当前时间戳
+                        }
+                    );
+                }
+                updateInfo(memberStore.info)
             });
         };
 
@@ -268,13 +281,13 @@ const fyContent2 = getContent('封印动画2');
 const aa = () => {
     console.log(ypContent)
 }
-const matchResult = (result: string) => {
+const matchResult = (result: string, clue: string) => {
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].result = result
     if (result === '验证成功') {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '音频搜证').content[matchIndex.value].status = 3
         for (let index = 0; index < 6; index++) {
             memberStore.info.characters[index].cueset.audio.push({
-                name: ypContent.value[matchIndex.value].clue,
+                name: clue === '' ? ypContent.value[matchIndex.value].clue : clue,
                 isNew: true,
                 deepClue: '',
                 isRead: false,
@@ -302,10 +315,30 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     let foundPartialMatch = false;
     let missingUser = null;
     let foundInOtherLocation = false;
-
+    if (currentContent.name === '宿舍') {
+        const aInArray = [1, 3, 4].includes(currentUsers[0]);
+        const bInArray = [1, 3, 4].includes(currentUsers[1]);
+        const hasClue38 = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.some(c => c.name === 'clue38');
+        const hasClue39 = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.some(c => c.name === 'clue39');
+        if (!hasClue38 && JSON.stringify(currentUsers) === JSON.stringify([3, 4])) {
+            matchResult("验证成功", 'clue38');
+        }
+        else if (!hasClue39 && JSON.stringify(currentUsers) === JSON.stringify([1, 4])) {
+            matchResult("验证成功", 'clue39');
+        } else if(aInArray && !bInArray) {
+            matchResult(`这里似乎没有${memberStore.info.characters[currentUsers[1]].name}的声音。`, '');
+        } else if (!aInArray && bInArray) {
+            matchResult(`这里似乎没有${memberStore.info.characters[currentUsers[0]].name}的声音。`, '');
+        } else if (!aInArray && !bInArray && JSON.stringify(currentUsers) !== JSON.stringify([0, 3]) && JSON.stringify(currentUsers) !== JSON.stringify([0, 4])) {
+            matchResult("TA们似乎没有在此处对话过。", '');
+        }else{
+            matchResult("换个地方试试吧。", '');
+        }
+        return
+    }
     // 检查 currentContent 内部的完全匹配和部分匹配
     if (JSON.stringify(currentUsers) === JSON.stringify(currentAnswer)) {
-        matchResult("验证成功");
+        matchResult("验证成功", '');
         return;
     } else {
         const partialMatch = currentUsers.filter(user => currentAnswer.includes(user));
@@ -337,14 +370,14 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     // 根据检查结果输出消息
     if (foundPartialMatch) {
         if (missingUser !== null) {
-            matchResult(`这里似乎没有${memberStore.info.characters[missingUser].name}的声音。`);
+            matchResult(`这里似乎没有${memberStore.info.characters[missingUser].name}的声音。`, '');
         } else {
-            matchResult("换个地方试试吧。");
+            matchResult("换个地方试试吧。", '');
         }
     } else if (foundInOtherLocation) {
-        matchResult("换个地方试试吧。");
+        matchResult("换个地方试试吧。", '');
     } else {
-        matchResult("TA们似乎没有在此处对话过。");
+        matchResult("TA们似乎没有在此处对话过。", '');
     }
 }
 // 关闭弹窗
@@ -524,7 +557,7 @@ const editDM = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                    }}</text>
+                                }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>

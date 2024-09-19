@@ -166,7 +166,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 
         const addCluesAndMasks = () => {
             currentFlow.content.forEach(element => {
-                characters[element.userIndex].mask.push({
+                memberStore.info.characters[element.userIndex].mask.push({
                     qa: element.qalist,
                     isRead: false,
                     isNew: true,
@@ -188,8 +188,8 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                         }
                     );
                 }
-                updateInfo(memberStore.info)
             });
+            updateInfo(memberStore.info)
         };
 
         if (currentFlow.title === '个人线索发放+个人问题') {

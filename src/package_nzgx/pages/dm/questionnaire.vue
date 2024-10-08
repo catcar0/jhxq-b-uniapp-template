@@ -124,7 +124,7 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
                         correctAnswers.every((answer, index) => answer === userAnswers[index]);
 
                     if (isCorrect) {
-                        userAnswer.status = 2;
+                        userAnswer.status = 3;
                         console.log('score', qaList.value[0].score);
                         scoreChange('user', qaList.value[0].score, [questionIndex]);
                     } else {

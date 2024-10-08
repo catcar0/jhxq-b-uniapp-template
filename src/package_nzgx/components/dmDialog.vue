@@ -95,11 +95,11 @@ const zst = (userIndex: number, clue: string, index: number) => {
     if (!clue) return
     memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content[index].status = 3
     scoreChange('user', 10, [userIndex])
-    addNewItem(userIndex, clue, 0, 'clues', '')
     if (memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').content.every((contentItem: { status: number }) => contentItem.status === 3)) {
         memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner.find((item: { title: string; }) => item.title === '找尸体').status = 3;
-        updateInfo(memberStore.info)
+        // updateInfo(memberStore.info)
     }
+    addNewItem(userIndex, clue, 0, 'clues', '')
 }
 // const fun = (content: any) => {
 //   const newInfo = memberStore.info

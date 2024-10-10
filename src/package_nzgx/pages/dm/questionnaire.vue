@@ -110,9 +110,16 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
             });
 
             // 如果正确的用户人数大于等于 3，所有用户都算回答正确
+            //status 4567 分别表示 任务成功且该用户回答正确 任务成功且该用户回答错误 任务失败且该用户回答正确 任务失败且该用户回答错误
             if (correctUserCount >= 3) {
                 question.usersAnswer.forEach((userAnswer, questionIndex) => {
-                    userAnswer.status = 2;
+                    const isCorrect = correctAnswers.length === userAnswers.length &&
+                        correctAnswers.every((answer, index) => answer === userAnswers[index]);
+                    if (isCorrect) {
+                        userAnswer.status = 4;
+                    } else {
+                        userAnswer.status = 5;
+                    }
                     scoreChange('user', qaList.value[0].score, [questionIndex]);
                     scoreChange('team', 1, []);
                 });
@@ -124,11 +131,11 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
                         correctAnswers.every((answer, index) => answer === userAnswers[index]);
 
                     if (isCorrect) {
-                        userAnswer.status = 3;
+                        userAnswer.status = 6;
                         console.log('score', qaList.value[0].score);
                         scoreChange('user', qaList.value[0].score, [questionIndex]);
                     } else {
-                        userAnswer.status = 3;
+                        userAnswer.status = 7;
                         scoreChange('user', (qaList.value[0].score * -0.5), [questionIndex]);
                     }
                 });
@@ -237,8 +244,12 @@ onShow(() => {
                             :class="'status-' + item.status">{{ statusList[0] }}</view>
                         <view v-else-if="allitem.usersSubmit[index] !== 0 && item.status === 0"
                             class="status flex-row-center status-1">{{ statusList[1] }}</view>
-                        <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
+                        <view v-else>
+                            <view v-if="allitem.qa[allitem.selectedIndex].question === '凶手是谁？'" class="status flex-row-center" :class="'status-' + (item.status === 4 ||item.status === 6 ? '2':'3')">{{
+                            statusList[(item.status === 4 ||item.status === 6 ? 2:3)] }}</view>
+                                                        <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
                             statusList[item.status] }}</view>
+                        </view>
                     </view>
                 </view>
                 <view @tap="verifyQa" v-if="allitem.status !== 3 && !allitem.canReplay" style="margin-top: 30rpx;"

@@ -310,13 +310,14 @@ export let initAllInfo = {
                         }
                     },
                     status: 0
-                },
-                {
-                    title: '封印动画',
-                    isSwitchOn: false,
-                    content: [{}],
-                    status: 0
-                },
+                }
+                // ,
+                // {
+                //     title: '封印动画',
+                //     isSwitchOn: false,
+                //     content: [{}],
+                //     status: 0
+                // },
             ],
             status: 1,
             title: '第一次魂穿',
@@ -483,13 +484,14 @@ export let initAllInfo = {
                         }
                     },
                     status: 0
-                },
-                {
-                    title: '封印动画',
-                    isSwitchOn: false,
-                    content: [{}],
-                    status: 0
-                },
+                }
+                // ,
+                // {
+                //     title: '封印动画',
+                //     isSwitchOn: false,
+                //     content: [{}],
+                //     status: 0
+                // },
             ],
             status: 0,
             title: '第二次魂穿',
@@ -607,13 +609,14 @@ export let initAllInfo = {
                         }
                     },
                     status: 0
-                },
-                {
-                    title: '封印动画',
-                    isSwitchOn: false,
-                    content: [{}],
-                    status: 0
-                },
+                }
+                // ,
+                // {
+                //     title: '封印动画',
+                //     isSwitchOn: false,
+                //     content: [{}],
+                //     status: 0
+                // },
             ],
             status: 0,
             title: '第三次魂穿',

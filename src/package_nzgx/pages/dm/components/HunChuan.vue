@@ -1,6 +1,6 @@
 <script setup lang='ts'>
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
-import { computed, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
@@ -15,6 +15,9 @@ memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.playe
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
+const timeoutId = ref() 
+const sendMask =ref()
+const canMask = ref(true)
 const ShowToast = (content: string) => {
     isShowToast.value = true
     toastContent.value = content
@@ -57,6 +60,7 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
                 }, 10);
                 ShowToast('请按照游戏流程逐步开启')
             } else {
+                canMask.value = true
                 dialogObj.value.title = '注意'
                 dialogObj.value.content = `<text style="font-weight: 700;color:#000">${flowName[index - 1]}</text>已完成，是否开启<text style="font-weight: 700;color:#000">${flowName[index]}</text>?`
                 dialogObj.value.type = 'nextHunchuan'
@@ -165,6 +169,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         };
 
         const addCluesAndMasks = () => {
+            canMask.value = false
             currentFlow.content.forEach(element => {
                 memberStore.info.characters[element.userIndex].mask.push({
                     qa: element.qalist,
@@ -174,6 +179,16 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     type: -1,
                 });
             });
+            sendMask.value = () =>{
+                currentFlow.content.forEach(element => {
+                        memberStore.info.characters[element.userIndex].mask.slice(-1)[0].type = 0
+                });
+                updateInfo(memberStore.info)
+                canMask.value = true
+            }
+            timeoutId.value = setTimeout(() => {
+                sendMask.value();
+            }, 35000);
             currentFlow.clues.forEach(element => {
                 // addNewItem(-1, element, 1, 'clues', '');
                 for (let index = 0; index < memberStore.info.characters.length; index++) {
@@ -216,8 +231,11 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
     };
 };
 
-
-
+// 组件或页面卸载时清除计时器并执行回调
+onBeforeUnmount(() => {
+    clearTimeout(timeoutId.value);
+    sendMask.value()
+});
 const showZstDialog = (location: string, clue: any, zst_index: number) => {
     if (clue === '') return
     console.log(clue, 'aa')
@@ -232,6 +250,10 @@ const showZstDialog = (location: string, clue: any, zst_index: number) => {
     showDialog()
 }
 const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string, status: number) => {
+    if (!canMask.value){
+        ShowToast('个人问题正在发放中');
+        return
+    }
     if (status === 3) return
     dialogObj.value.title = '注意'
     dialogObj.value.content = '请DM确认向以下用户提问并核对答案:'
@@ -325,13 +347,13 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
         }
         else if (!hasClue39 && JSON.stringify(currentUsers) === JSON.stringify([1, 4])) {
             matchResult("验证成功", 'clue39');
-        } else if(aInArray && !bInArray) {
+        } else if (aInArray && !bInArray) {
             matchResult(`这里似乎没有${memberStore.info.characters[currentUsers[1]].name}的声音。`, '');
         } else if (!aInArray && bInArray) {
             matchResult(`这里似乎没有${memberStore.info.characters[currentUsers[0]].name}的声音。`, '');
         } else if (!aInArray && !bInArray && JSON.stringify(currentUsers) !== JSON.stringify([0, 3]) && JSON.stringify(currentUsers) !== JSON.stringify([0, 4])) {
             matchResult("TA们似乎没有在此处对话过。", '');
-        }else{
+        } else {
             matchResult("换个地方试试吧。", '');
         }
         return
@@ -557,7 +579,7 @@ const editDM = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                }}</text>
+                                    }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>

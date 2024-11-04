@@ -15,6 +15,7 @@ export const useMemberStore = defineStore(
     const playerInfo = ref<any>()
     const startTime = ref<any>()
     const endTime = ref<any>()
+    const clientVersion = ref<any>()
     // 保存会员信息，登录时使用
     const setProfile = (val: any) => {
       profile.value = val
@@ -52,6 +53,9 @@ export const useMemberStore = defineStore(
     const clearInfo = () => {
       info.value = undefined
     }
+    const setClientVersion= (val: any) => {
+      clientVersion.value = val
+    }
     // 记得 return
     return {
       info,
@@ -62,6 +66,7 @@ export const useMemberStore = defineStore(
       playerInfo,
       startTime,
       endTime,
+      clientVersion,
       setInfo,
       setPlayerInfo,
       setRoomId,
@@ -71,7 +76,8 @@ export const useMemberStore = defineStore(
       clearProfile,
       setTime,
       clearPlayerInfo,
-      clearInfo
+      clearInfo,
+      setClientVersion
     }
   },
   // TODO: 持久化

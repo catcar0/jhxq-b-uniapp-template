@@ -2,8 +2,8 @@ import { useWebSocketStore } from '@/package_nzgx/stores';
 import { useScriptStore } from '@/stores/script';
 
 const DM_Api_Url = 'wss://nzgx.api.wanjuyuanxian.com/ws/?';
+// const DM_TEST_Api_Url = 'ws://132.232.57.64:8020/ws?';
 const DM_TEST_Api_Url = 'wss://mn.nzgx.api.wanjuyuanxian.com/ws/?';
-
 export class WebSocketService {
   private url: string;
   private reconnectInterval: number;
@@ -65,10 +65,12 @@ export class WebSocketService {
       const parsedData = JSON.parse(event.data);
       console.log(parsedData)
       if (parsedData.type === 'scores' && parsedData.data.statuses.allinfo) {
-        websocketStore.gameAddMessage(parsedData.data.statuses.allinfo.info);
+        websocketStore.gameAddMessage(parsedData.data.statuses.allinfo.info,parsedData.data.statuses.allinfo.version);
       } else if (parsedData.players) {
         websocketStore.addMessage(parsedData);
       } else if (parsedData.type === 'error') {
+        websocketStore.addMessage(parsedData);
+      } else if (parsedData.type === 'versionError'){
         websocketStore.addMessage(parsedData);
       }
     });

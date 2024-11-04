@@ -1,12 +1,46 @@
 <script setup lang='ts'>
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
-import { computed, onBeforeMount, onBeforeUnmount, ref } from 'vue';
+import { computed, onBeforeMount, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
 import { useScriptStore } from '@/stores/script';
 import { usePlayStore } from '@/stores/play';
-const memberStore = useMemberStore()
+
+const memberStoreM = useMemberStore()
+const deepClone = (obj) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj; // 如果是基本数据类型，直接返回
+    }
+    
+    return JSON.parse(JSON.stringify(obj)); // 否则进行深拷贝
+};
+
+const memberStore = reactive({
+    info: deepClone(memberStoreM.info),
+    profile: deepClone(memberStoreM.profile),
+    virtualRoleId: deepClone(memberStoreM.virtualRoleId),
+    roomId: deepClone(memberStoreM.roomId),
+    avatar: deepClone(memberStoreM.avatar),
+    playerInfo: deepClone(memberStoreM.playerInfo),
+    startTime: deepClone(memberStoreM.startTime),
+    endTime: deepClone(memberStoreM.endTime),
+    clientVersion: deepClone(memberStoreM.clientVersion),
+});
+// 监听 memberStoreM 的变化
+watch(() => memberStoreM, (newVal) => {
+    memberStore.info = deepClone(newVal.info);
+    memberStore.profile = deepClone(newVal.profile);
+    memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
+    memberStore.roomId = deepClone(newVal.roomId);
+    memberStore.avatar = deepClone(newVal.avatar);
+    memberStore.playerInfo = deepClone(newVal.playerInfo);
+    memberStore.startTime = deepClone(newVal.startTime);
+    memberStore.endTime = deepClone(newVal.endTime);
+    memberStore.clientVersion = deepClone(newVal.clientVersion);
+}, { deep: true }); // 使用 deep 选项以深度监听
+
+
 const webSocketStore = useWebSocketStore();
 const ScriptStore = useScriptStore();
 const PlayStore = usePlayStore();
@@ -15,8 +49,8 @@ memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.playe
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
-const timeoutId = ref() 
-const sendMask =ref()
+const timeoutId = ref()
+const sendMask = ref()
 const canMask = ref(true)
 const ShowToast = (content: string) => {
     isShowToast.value = true
@@ -79,6 +113,27 @@ const onChangeHunchuan = (ev: any, item: any, index: number) => {
 const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海报分享']
 
 const onConfirm = ref<Function>();
+watch(() => webSocketStore.messages, (a, b) => {
+    if (webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'versionError')  {
+        updateSwitch.value = false
+        setTimeout(() => {
+            updateSwitch.value = true
+        }, 10);
+        uni.showToast({ icon: 'none', title: '当前网络不稳定' })
+      const  newVal = memberStoreM
+        memberStore.info = deepClone(newVal.info);
+    memberStore.profile = deepClone(newVal.profile);
+    memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
+    memberStore.roomId = deepClone(newVal.roomId);
+    memberStore.avatar = deepClone(newVal.avatar);
+    memberStore.playerInfo = deepClone(newVal.playerInfo);
+    memberStore.startTime = deepClone(newVal.startTime);
+    memberStore.endTime = deepClone(newVal.endTime);
+    memberStore.clientVersion = deepClone(newVal.clientVersion);
+    }
+
+},
+    { deep: true })
 const onChangeDetail = (ev: any, item: any, index: number) => {
     // 如果当前状态是 2 或 3，直接返回，不执行后续逻辑
     if (item.status === 2 || item.status === 3) return;
@@ -93,7 +148,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (IsTestPlay.value && previousFlow.title === '音频搜证') {
+    if (!IsTestPlay.value && previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;
@@ -179,9 +234,9 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     type: -1,
                 });
             });
-            sendMask.value = () =>{
+            sendMask.value = () => {
                 currentFlow.content.forEach(element => {
-                        memberStore.info.characters[element.userIndex].mask.slice(-1)[0].type = 0
+                    memberStore.info.characters[element.userIndex].mask.slice(-1)[0].type = 0
                 });
                 updateInfo(memberStore.info)
                 canMask.value = true
@@ -250,7 +305,7 @@ const showZstDialog = (location: string, clue: any, zst_index: number) => {
     showDialog()
 }
 const showQaDialog = (index: number, qa: any, userIndex: number, deepclue: string, clue: string, status: number) => {
-    if (!canMask.value){
+    if (!canMask.value) {
         ShowToast('个人问题正在发放中');
         return
     }
@@ -340,12 +395,13 @@ const match = (canMatch: boolean, currentContent: any, allContent: any) => {
     if (currentContent.name === '宿舍') {
         const aInArray = [1, 3, 4].includes(currentUsers[0]);
         const bInArray = [1, 3, 4].includes(currentUsers[1]);
-        const hasClue38 = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.some(c => c.name === 'clue38');
-        const hasClue39 = memberStore.info.characters[memberStore.virtualRoleId - 1].cueset.audio.some(c => c.name === 'clue39');
-        if (!hasClue38 && JSON.stringify(currentUsers) === JSON.stringify([3, 4])) {
+        const hasClue38 = memberStore.info.characters[currentUsers[0] - 1].cueset.audio.some(c => c.name === 'clue38');
+        const hasClue39 = memberStore.info.characters[currentUsers[0] - 1].cueset.audio.some(c => c.name === 'clue39');
+        console.log(hasClue38, hasClue39, JSON.stringify(currentUsers), JSON.stringify([3, 4]))
+        if (!hasClue38 && (JSON.stringify(currentUsers) === JSON.stringify([3, 4]) || JSON.stringify(currentUsers) === JSON.stringify([4, 3]))) {
             matchResult("验证成功", 'clue38');
         }
-        else if (!hasClue39 && JSON.stringify(currentUsers) === JSON.stringify([1, 4])) {
+        else if (!hasClue39 && (JSON.stringify(currentUsers) === JSON.stringify([1, 4]) || JSON.stringify(currentUsers) === JSON.stringify([4, 1]))) {
             matchResult("验证成功", 'clue39');
         } else if (aInArray && !bInArray) {
             matchResult(`这里似乎没有${memberStore.info.characters[currentUsers[1]].name}的声音。`, '');
@@ -490,7 +546,8 @@ const editDM = () => {
 
     <!-- 三次魂穿+海报分享 -->
     <view style="padding-bottom: 300rpx;" @tap="aa">
-        <view class=" shadow-box" v-for="(item, index) in memberStore.info.flow" :class="'hunchuan-box-' + item.status">
+        <view class=" shadow-box" v-for="(item, index) in memberStoreM.info.flow"
+            :class="'hunchuan-box-' + item.status">
 
             <!-- 魂穿名称和状态 -->
             <view class="flex-row-sb hunchuan-title ">
@@ -510,7 +567,7 @@ const editDM = () => {
             <view class="flex-column-sb  hunchuan-details-box" v-show="item.status === 2 && index !== 3">
 
                 <view class="hunchuan-details" :class="'hunchuan-box-' + (detail.status === 3 ? 3 : '01')"
-                    v-for="(detail, detailIndex) in memberStore.info.flow[memberStore.info.teamInfo.flowIndex].inner"
+                    v-for="(detail, detailIndex) in memberStoreM.info.flow[memberStoreM.info.teamInfo.flowIndex].inner"
                     :key="detail.title">
 
                     <!-- 具体魂穿任务名称和状态 -->
@@ -544,8 +601,8 @@ const editDM = () => {
                             <view
                                 @tap="showQaDialog(qa_index, qa.qalist, qa.userIndex, qa.deepClue, qa.clue, qa.status)"
                                 class="flex-column-sb-center gap-10" v-for="(qa, qa_index) in detail.content">
-                                <img class="avatar" :src="memberStore.info.characters[qa.userIndex].avatar" alt="">
-                                <text>{{ memberStore.info.characters[qa.userIndex].name }}</text>
+                                <img class="avatar" :src="memberStoreM.info.characters[qa.userIndex].avatar" alt="">
+                                <text>{{ memberStoreM.info.characters[qa.userIndex].name }}</text>
                                 <view v-show="qa.status === 3" class="flex-row-center status" :class="'status-' + 3">
                                     {{
                                         statusText[3] }}</view>
@@ -573,13 +630,13 @@ const editDM = () => {
                         <view class="flex-row-center evidence-avatar-box">
                             <view class="flex-column-sb-center gap-10" v-for="(item, index) in 2">
                                 <img v-if="ypContent[matchIndex].users[index] !== -1" class="avatar"
-                                    :src="memberStore.info.characters[ypContent[matchIndex].users[index]].avatar"
+                                    :src="memberStoreM.info.characters[ypContent[matchIndex].users[index]].avatar"
                                     alt="">
                                 <view v-else class="avatar evidence-avatar">
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
-                                    memberStore.info.characters[ypContent[matchIndex].users[index]].name
-                                    }}</text>
+                                    memberStoreM.info.characters[ypContent[matchIndex].users[index]].name
+                                }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -615,7 +672,7 @@ const editDM = () => {
                     <view class="flex-row-sb poster-info-item">
                         <view>店名</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">{{ memberStore.info.teamInfo.location }}</view>
+                            <view class="poster-info-item-edittext">{{ memberStoreM.info.teamInfo.location }}</view>
                             <view><img @tap="editShopName" class="edit-icon"
                                     src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>
@@ -624,7 +681,7 @@ const editDM = () => {
                     <view class="flex-row-sb poster-info-item">
                         <view>DM</view>
                         <view class="flex-row-sb">
-                            <view class="poster-info-item-edittext">{{ memberStore.info.teamInfo.dmName }}</view>
+                            <view class="poster-info-item-edittext">{{ memberStoreM.info.teamInfo.dmName }}</view>
                             <view><img @tap="editDM" class="edit-icon"
                                     src="https://applet.cdn.wanjuyuanxian.com/nzgx/static/img/dm_edit_icon.png" alt="">
                             </view>
@@ -871,7 +928,7 @@ const editDM = () => {
 }
 
 .fupan-button {
-    width: 108rpx;
+    width:108rpx;
     height: 49rpx;
     border-radius: 17.5rpx;
     font-size: 17.5rpx;

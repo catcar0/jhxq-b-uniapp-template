@@ -14,9 +14,10 @@ export const useWebSocketStore = defineStore('webSocket', {
         info: []
     }),
     actions: {
-        gameAddMessage(newInfo: any) {
+        gameAddMessage(newInfo: any,version:any) {
             this.info = newInfo;
             memberStore.setInfo(this.info)
+            memberStore.setClientVersion(version)
         },
         gameConnect() {
             this.gameWebSocketService.connect();
@@ -26,15 +27,16 @@ export const useWebSocketStore = defineStore('webSocket', {
                 type: 'update_status',
                 status_key: 'info',
                 status_value: info,
-                virtual_role_id: 'allinfo'
+                virtual_role_id: 'allinfo',
+                client_version: memberStore.clientVersion?memberStore.clientVersion:1
             }));
         },
         gameplayerFirstSend() {
             this.gameWebSocketService.send(JSON.stringify({
-                type: 'update_status',
-                status_key: 'first',
-                status_value: '',
-                virtual_role_id: 'first'
+                type: 'get_status'
+                // status_key: 'first',
+                // status_value: '',
+                // virtual_role_id: 'first'
             }));
         },
         kickplayer(id:any){

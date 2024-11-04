@@ -1,14 +1,62 @@
 <script setup lang='ts'>
 import DMTabBar from "@/components/DM-TabBar/index.vue"
 import dmDialog from '@/package_nzgx/components/dmDialog.vue';
-import { computed, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useMemberStore } from '@/package_nzgx/stores'
 import { useWebSocketStore } from '@/package_nzgx/stores'
 import { allClues } from '@/package_nzgx/services/clues';
 import { onLoad, onShow } from "@dcloudio/uni-app";
 import { scoreChange } from '@/package_nzgx/services/info';
 import { useScriptStore } from "@/stores/script";
-const memberStore = useMemberStore()
+const memberStoreM = useMemberStore()
+const deepClone = (obj) => {
+    if (obj === null || typeof obj !== 'object') {
+        return obj; // 如果是基本数据类型，直接返回
+    }
+
+    return JSON.parse(JSON.stringify(obj)); // 否则进行深拷贝
+};
+
+const memberStore = reactive({
+    info: deepClone(memberStoreM.info),
+    profile: deepClone(memberStoreM.profile),
+    virtualRoleId: deepClone(memberStoreM.virtualRoleId),
+    roomId: deepClone(memberStoreM.roomId),
+    avatar: deepClone(memberStoreM.avatar),
+    playerInfo: deepClone(memberStoreM.playerInfo),
+    startTime: deepClone(memberStoreM.startTime),
+    endTime: deepClone(memberStoreM.endTime),
+    clientVersion: deepClone(memberStoreM.clientVersion),
+});
+// 监听 memberStoreM 的变化
+watch(() => memberStoreM, (newVal) => {
+    memberStore.info = deepClone(newVal.info);
+    memberStore.profile = deepClone(newVal.profile);
+    memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
+    memberStore.roomId = deepClone(newVal.roomId);
+    memberStore.avatar = deepClone(newVal.avatar);
+    memberStore.playerInfo = deepClone(newVal.playerInfo);
+    memberStore.startTime = deepClone(newVal.startTime);
+    memberStore.endTime = deepClone(newVal.endTime);
+    memberStore.clientVersion = deepClone(newVal.clientVersion);
+}, { deep: true }); // 使用 deep 选项以深度监听
+watch(() => webSocketStore.messages, (a, b) => {
+    if (webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'versionError')  {
+        uni.showToast({ icon: 'none', title: '当前网络不稳定' })
+        const newVal = memberStoreM
+        memberStore.info = deepClone(newVal.info);
+        memberStore.profile = deepClone(newVal.profile);
+        memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
+        memberStore.roomId = deepClone(newVal.roomId);
+        memberStore.avatar = deepClone(newVal.avatar);
+        memberStore.playerInfo = deepClone(newVal.playerInfo);
+        memberStore.startTime = deepClone(newVal.startTime);
+        memberStore.endTime = deepClone(newVal.endTime);
+        memberStore.clientVersion = deepClone(newVal.clientVersion);
+    }
+
+},
+    { deep: true })
 const webSocketStore = useWebSocketStore();
 const ScriptStore = useScriptStore();
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
@@ -70,7 +118,7 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    if (!IsTestPlay.value && qaList.value[0].qa.some(question =>question.usersAnswer.some(userAnswer =>userAnswer.answer.length === 0 ))) {
+    if (!IsTestPlay.value && qaList.value[0].qa.some(question => question.usersAnswer.some(userAnswer => userAnswer.answer.length === 0))) {
         uni.showToast({ icon: 'none', title: '请待玩家全部作答完毕后再尝试' })
         return
     }
@@ -245,10 +293,12 @@ onShow(() => {
                         <view v-else-if="allitem.usersSubmit[index] !== 0 && item.status === 0"
                             class="status flex-row-center status-1">{{ statusList[1] }}</view>
                         <view v-else>
-                            <view v-if="allitem.qa[allitem.selectedIndex].question === '凶手是谁？'" class="status flex-row-center" :class="'status-' + (item.status === 4 ||item.status === 6 ? '2':'3')">{{
-                            statusList[(item.status === 4 ||item.status === 6 ? 2:3)] }}</view>
-                                                        <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
-                            statusList[item.status] }}</view>
+                            <view v-if="allitem.qa[allitem.selectedIndex].question === '凶手是谁？'"
+                                class="status flex-row-center"
+                                :class="'status-' + (item.status === 4 || item.status === 6 ? '2' : '3')">{{
+                                    statusList[(item.status === 4 || item.status === 6 ? 2 : 3)] }}</view>
+                            <view v-else class="status flex-row-center" :class="'status-' + item.status">{{
+                                statusList[item.status] }}</view>
                         </view>
                     </view>
                 </view>

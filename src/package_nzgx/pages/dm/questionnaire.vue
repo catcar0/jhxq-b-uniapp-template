@@ -118,10 +118,10 @@ const statusList = ref(['未提交', '待验证', '正确', '错误'])
 const replayShow = ref(false)
 const glType = ref('')
 const verifyQa = () => {
-    if (!IsTestPlay.value && qaList.value[0].qa.some(question => question.usersAnswer.some(userAnswer => userAnswer.answer.length === 0))) {
-        uni.showToast({ icon: 'none', title: '请待玩家全部作答完毕后再尝试' })
-        return
-    }
+    // if (!IsTestPlay.value && qaList.value[0].qa.some(question => question.usersAnswer.some(userAnswer => userAnswer.answer.length === 0))) {
+    //     uni.showToast({ icon: 'none', title: '请待玩家全部作答完毕后再尝试' })
+    //     return
+    // }
     dialogObj.value.title = '注意'
     dialogObj.value.content = '将会验证所有问题'
     dialogObj.value.type = 'checkAnswersAndSetStatus'

@@ -71,14 +71,14 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
-        uni.showToast({ icon: 'none', title: '玩家人数不足' })
-        updateSwitch.value = false;
-        setTimeout(() => {
-            updateSwitch.value = true;
-        }, 0);
-        return
-    }
+    // if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
+    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
+    //     updateSwitch.value = false;
+    //     setTimeout(() => {
+    //         updateSwitch.value = true;
+    //     }, 0);
+    //     return
+    // }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -148,7 +148,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (IsTestPlay.value && previousFlow.title === '音频搜证') {
+    if (previousFlow.title === '音频搜证') {
         currentFlow.status = 2;
         previousFlow.status = 3
         currentFlow.isSwitchOn = true;

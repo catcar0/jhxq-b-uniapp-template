@@ -141,17 +141,17 @@ export let initAllInfo = {
                     isSwitchOn: false,
                     content: [
                         {
-                            location: '后山',
+                            location: '操场',
                             status: 0,
                             clue: 'clue1'
                         },
                         {
-                            location: '教室',
+                            location: '后山',
                             status: 0,
                             clue: 'clue2'
                         },
                         {
-                            location: '食堂',
+                            location: '花坛',
                             status: 0,
                             clue: 'clue3'
                         },
@@ -181,7 +181,7 @@ export let initAllInfo = {
                             ]
                         },
                         {
-                            userIndex: 3,
+                            userIndex: 2,
                             status: 0,
                             clue: 'clue13',
                             deepClue: 'clue8',

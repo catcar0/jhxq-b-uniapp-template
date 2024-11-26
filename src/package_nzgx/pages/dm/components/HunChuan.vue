@@ -6,6 +6,7 @@ import { useWebSocketStore } from '@/package_nzgx/stores'
 import { addNewItem, scoreChange } from '@/package_nzgx/services/info';
 import { useScriptStore } from '@/stores/script';
 import { usePlayStore } from '@/stores/play';
+import { onHide } from '@dcloudio/uni-app';
 
 const memberStoreM = useMemberStore()
 const deepClone = (obj) => {
@@ -231,6 +232,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     isRead: false,
                     isNew: true,
                     isError: false,
+                    index:memberStore.info.teamInfo.flowIndex,
                     type: -1,
                 });
             });
@@ -287,7 +289,8 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
 };
 
 // 组件或页面卸载时清除计时器并执行回调
-onBeforeUnmount(() => {
+onHide(() => {
+    canMask.value = true
     clearTimeout(timeoutId.value);
     sendMask.value()
 });

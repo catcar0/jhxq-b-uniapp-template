@@ -150,6 +150,7 @@ export class WebSocketService {
       });
     } else {
       console.warn('WebSocket is not open');
+          uni.showToast({ icon: 'none', title: '你已经断开,连接请检查网络,然后重新进入房间'})
     }
   }
 

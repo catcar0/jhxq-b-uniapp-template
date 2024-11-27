@@ -71,7 +71,11 @@ const closeDialog = () => {
 }
 const confirm = () => {
     if (dialogObj.value.type === 'checkAnswersAndSetStatus') {
-        checkAnswersAndSetStatus(qaList.value[0].qa)
+        try {
+            checkAnswersAndSetStatus(qaList.value[0].qa)
+        } catch (error) {
+            uni.showToast({ icon: 'none', title: '验证失败:'+error.message })
+        }
     }
     if (dialogObj.value.type === 'giveReplay') {
         console.log(memberStore.info.teamInfo.replay[flowIndex.value], glType.value)
@@ -220,8 +224,8 @@ const checkAnswersAndSetStatus = (qa: any[]) => {
         qaList.value[0].canReplay = true;
         // qaList.value[0].status = 3;
     }
-
     updateInfo(memberStore.info);
+    uni.showToast({ icon: 'none', title: '验证成功'})
 };
 
 

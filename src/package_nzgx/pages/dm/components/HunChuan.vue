@@ -13,7 +13,7 @@ const deepClone = (obj) => {
     if (obj === null || typeof obj !== 'object') {
         return obj; // 如果是基本数据类型，直接返回
     }
-    
+
     return JSON.parse(JSON.stringify(obj)); // 否则进行深拷贝
 };
 
@@ -45,8 +45,6 @@ watch(() => memberStoreM, (newVal) => {
 const webSocketStore = useWebSocketStore();
 const ScriptStore = useScriptStore();
 const PlayStore = usePlayStore();
-memberStore.info.teamInfo.dmName = computed(() => PlayStore.PlayInfos?.DM || '未知DM');
-memberStore.info.teamInfo.location = computed(() => memberStore.playerInfo.players.gm.business_name ?? '未知地点')
 const IsTestPlay = computed(() => ScriptStore.IsTestPlay);
 const isShowToast = ref(false)
 const toastContent = ref('')
@@ -72,14 +70,16 @@ const fun = (content: any) => {
 }
 const updateSwitch = ref(true)
 const onChangeHunchuan = (ev: any, item: any, index: number) => {
-    // if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
-    //     uni.showToast({ icon: 'none', title: '玩家人数不足' })
-    //     updateSwitch.value = false;
-    //     setTimeout(() => {
-    //         updateSwitch.value = true;
-    //     }, 0);
-    //     return
-    // }
+    memberStore.info.teamInfo.dmName = PlayStore.PlayInfos?.DM || '未知DM';
+    memberStore.info.teamInfo.location = memberStore.playerInfo.players.gm.business_name ?? '未知店铺';
+    if (!IsTestPlay.value && Object.keys(memberStore.playerInfo.players).length < 7) {
+        uni.showToast({ icon: 'none', title: '玩家人数不足' })
+        updateSwitch.value = false;
+        setTimeout(() => {
+            updateSwitch.value = true;
+        }, 0);
+        return
+    }
     if (ev.detail.value) {
         const newInfo = memberStore.info
         if (memberStore.info.teamInfo.flowIndex === 0 && index === 0) {
@@ -115,22 +115,22 @@ const flowName = ['第一次魂穿', '第二次魂穿', '第三次魂穿', '海�
 
 const onConfirm = ref<Function>();
 watch(() => webSocketStore.messages, (a, b) => {
-    if (webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'versionError')  {
+    if (webSocketStore.messages.slice(-1)[0] && webSocketStore.messages.slice(-1)[0].type && webSocketStore.messages.slice(-1)[0].type === 'versionError') {
         updateSwitch.value = false
         setTimeout(() => {
             updateSwitch.value = true
         }, 10);
         uni.showToast({ icon: 'none', title: '当前网络不稳定' })
-      const  newVal = memberStoreM
+        const newVal = memberStoreM
         memberStore.info = deepClone(newVal.info);
-    memberStore.profile = deepClone(newVal.profile);
-    memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
-    memberStore.roomId = deepClone(newVal.roomId);
-    memberStore.avatar = deepClone(newVal.avatar);
-    memberStore.playerInfo = deepClone(newVal.playerInfo);
-    memberStore.startTime = deepClone(newVal.startTime);
-    memberStore.endTime = deepClone(newVal.endTime);
-    memberStore.clientVersion = deepClone(newVal.clientVersion);
+        memberStore.profile = deepClone(newVal.profile);
+        memberStore.virtualRoleId = deepClone(newVal.virtualRoleId);
+        memberStore.roomId = deepClone(newVal.roomId);
+        memberStore.avatar = deepClone(newVal.avatar);
+        memberStore.playerInfo = deepClone(newVal.playerInfo);
+        memberStore.startTime = deepClone(newVal.startTime);
+        memberStore.endTime = deepClone(newVal.endTime);
+        memberStore.clientVersion = deepClone(newVal.clientVersion);
     }
 
 },
@@ -149,27 +149,67 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
         dialogObj.value.type = currentFlow.title;
         return;
     }
-    if (previousFlow.title === '音频搜证') {
-        currentFlow.status = 2;
-        previousFlow.status = 3
-        currentFlow.isSwitchOn = true;
-        for (let index = 0; index < 6; index++) {
-            memberStore.info.characters[index].cueset.audio = []
-        }
-        ypContent.value.forEach(element => {
-            for (let index = 0; index < 6; index++) {
-                memberStore.info.characters[index].cueset.audio.push({
-                    name: element.clue,
-                    isNew: true,
-                    isRead: false,
-                    deepClue: '',
-                    type: 0
-                })
+    if (previousFlow.title === '音频搜证' && previousFlow.status !== 3) {
+        uni.showModal({
+            title: '提醒',
+            content: '音频搜证环节还没完成，你确定要跳过该环节吗？',
+            success: (res) => {
+                if (res.confirm) {
+                    // 第一次确认后，再显示第二次确认弹窗
+                    uni.showModal({
+                        title: '确认操作',
+                        content: '确定要跳过音频搜证进入下一个环节吗？',
+                        success: (res) => {
+                            if (res.confirm) {
+                                // 第一次确认后，再显示第二次确认弹窗
+
+                                currentFlow.status = 2;
+                                previousFlow.status = 3
+                                currentFlow.isSwitchOn = true;
+                                if (memberStore.info.teamInfo.flowIndex === 1) {
+                                    for (let index = 0; index < 6; index++) {
+                                        memberStore.info.characters[index].cueset.audio = memberStore.info.characters[index].cueset.audio.slice(0, 2);
+                                    }
+                                } else {
+                                    for (let index = 0; index < 6; index++) {
+                                        memberStore.info.characters[index].cueset.audio = []
+                                    }
+                                }
+                                ypContent.value.forEach(element => {
+                                    for (let index = 0; index < 6; index++) {
+                                        memberStore.info.characters[index].cueset.audio.push({
+                                            name: element.clue,
+                                            isNew: true,
+                                            isRead: false,
+                                            deepClue: '',
+                                            type: 0
+                                        })
+                                    }
+                                });
+                                updateInfo(memberStore.info);
+                                dialogObj.value.type = currentFlow.title;
+                                return;
+                            } else {
+                                // 用户取消操作
+                                updateSwitch.value = false;
+                                setTimeout(() => {
+                                    updateSwitch.value = true;
+                                }, 0);
+                                console.log('用户取消了第二次确认');
+                            }
+                        }
+                    });
+                } else {
+                    // 用户取消操作
+                    updateSwitch.value = false;
+                    setTimeout(() => {
+                        updateSwitch.value = true;
+                    }, 0);
+                    console.log('用户取消了第一次确认');
+                }
             }
         });
-        updateInfo(memberStore.info);
-        dialogObj.value.type = currentFlow.title;
-        return;
+        return
     }
     const showWarning = () => {
         updateSwitch.value = false;
@@ -232,7 +272,7 @@ const onChangeDetail = (ev: any, item: any, index: number) => {
                     isRead: false,
                     isNew: true,
                     isError: false,
-                    index:memberStore.info.teamInfo.flowIndex,
+                    index: memberStore.info.teamInfo.flowIndex,
                     type: -1,
                 });
             });
@@ -511,8 +551,13 @@ const goAllReplay = (index: number) => {
     })
 }
 const sendPoster = () => {
-    memberStore.info.flow[3].send++
-    updateInfo(memberStore.info);
+    try {
+        memberStore.info.flow[3].send++
+        updateInfo(memberStore.info);
+        uni.showToast({ icon: 'none', title: '发送海报成功' })
+    } catch (error) {
+        uni.showToast({ icon: 'none', title: '发送海报失败' })
+    }
     // memberStore.info.teamInfo.dmName = PlayStore.PlayInfos?.DM
     // memberStore.info.teamInfo.location = memberStore.playerInfo.players.gm.business_name
     // updateInfo(memberStore.info);
@@ -639,7 +684,7 @@ const editDM = () => {
                                 </view>
                                 <text v-if="ypContent[matchIndex].users[index] !== -1">{{
                                     memberStoreM.info.characters[ypContent[matchIndex].users[index]].name
-                                }}</text>
+                                    }}</text>
                                 <text v-else>&nbsp;</text>
                             </view>
                         </view>
@@ -931,7 +976,7 @@ const editDM = () => {
 }
 
 .fupan-button {
-    width:108rpx;
+    width: 108rpx;
     height: 49rpx;
     border-radius: 17.5rpx;
     font-size: 17.5rpx;
